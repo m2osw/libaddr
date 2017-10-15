@@ -1,0 +1,50 @@
+Source: libaddr
+Priority: optional
+Maintainer: Alexis Wilke <alexis@m2osw.com>
+Build-Depends: catch,
+    cmake,
+    debhelper,
+    doxygen,
+    graphviz,
+    libexcept-dev (>= 1.0.2.124~xenial),
+    snapcmakemodules (>= 1.0.34.89~xenial)
+Standards-Version: 3.9.4
+Section: libs
+Homepage: http://snapwebsites.org/project/libaddr
+Vcs-Git: https://github.com/m2osw/snapcpp.git
+Vcs-Browser: https://github.com/m2osw/snapcpp
+
+Package: libaddr
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: C++ library to convert IP addresses.
+ Runtime library of the libaddr project.
+ .
+ This library is used by C++ applications to convert IP addresses between
+ text notations and binary and vice versa. It supports IPv4 and IPv6, port
+ notation, port range, multi-ports, and CIDR masks.
+
+Package: libaddr-dev
+Architecture: any
+Section: libdevel
+Depends: libaddr (= ${binary:Version}), ${misc:Depends}
+Description: C++ library to convert IP addresses.
+ Development library of the libaddr project.
+ .
+ This library is used by C++ applications to convert IP addresses between
+ text notations and binary and vice versa. It supports IPv4 and IPv6, port
+ notation, port range, multi-ports, and CIDR masks.
+
+Package: libaddr-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends}
+Description: C++ library to convert IP addresses.
+ Documentation of the libaddr project.
+ .
+ This library is used by C++ applications to convert IP addresses between
+ text notations and binary and vice versa. It supports IPv4 and IPv6, port
+ notation, port range, multi-ports, and CIDR masks.
+
+# vim: ts=4 sw=4 et

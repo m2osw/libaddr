@@ -1,0 +1,76 @@
+
+ABOUT libtld
+============
+
+The project can be found online at this URI:
+
+  http://snapwebsites.org/project/libtld
+
+That page has some basic documentation and latest information about the
+library.
+
+
+INSTALLING UNDER UBUNTU 12.10+
+==============================
+
+Packages are available on launchpad in the snapcpp PPA. You may want to
+consider using the packages directly instead of attempting to compile
+libtld yourself. It should save you a lot of time.
+
+Check this page for a package you may be able to use:
+
+      https://code.launchpad.net/~snapcpp/+archive/ppa/+packages
+
+If the packages are not available for your version, check out the
+source instead. The source can be found in the SourceForge.net
+git and you may download various versions from the Files area of
+the libtld project.
+
+
+REQUIREMENTS
+============
+
+The library requirements are:
+
+. Qt 4.8+ -- to compile the tld_parser.cpp which generates the tld_data.c file
+. boost -- for the C++ code
+. doxygen -- currently required with the new cmake scheme
+. dot (optional) -- recommanded if you want more complete documentations
+. php5-dev -- if you want to create the PHP extension
+. cmake -- the tool to generate the Makefile (no auto-tool or configure!)
+. make -- to run the Makefile
+. gcc & g++ -- to compile everything
+. gcov & lcov -- to run coverage tests and generate HTML as output
+
+
+BUILDING
+========
+
+The following are the basic steps one all the necessary requirements were
+installed on your system:
+
+  tar xf snapcmakemodules_x.y.z.tar.gz
+  tar xf libtld-x.y.z.tar.gz
+  mkdir BUILD
+  cd BUILD
+  cmake -DCMAKE_MODULE_PATH=../snapCMakeModules/Modules ../libtld
+  make
+  sudo make install
+
+To install the package exactly where you would like it to be, you will
+want to make sure that the cmake tool is called with the correct
+installation prefix.
+
+
+COMMAND LINE TEST
+=================
+
+You may test a URI from the command line, once you installed everything
+(or from your BUILD directory) using the validate_tld tool as in:
+
+  # Valid test:
+  validate_tld http://snapwebsites.org/project/libtld
+
+  # Invalid test:
+  validate_tld http://snapwebsites.organization/project/libtld
+
