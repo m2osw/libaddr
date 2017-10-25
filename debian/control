@@ -6,8 +6,8 @@ Build-Depends: catch,
     debhelper,
     doxygen,
     graphviz,
-    libexcept-dev (>= 1.0.2.124~xenial),
-    snapcmakemodules (>= 1.0.34.89~xenial)
+    libexcept-dev (>= 1.0.2.250~xenial),
+    snapcmakemodules (>= 1.0.35.3~xenial)
 Standards-Version: 3.9.4
 Section: libs
 Homepage: http://snapwebsites.org/project/libaddr
