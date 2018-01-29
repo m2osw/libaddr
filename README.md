@@ -1,7 +1,8 @@
+
 Introduction
 ============
 
-libaddr is an easy to use C++ library that parses IP addresses to objects.
+`libaddr` is an easy to use C++ library that parses IP addresses to objects.
 This includes parsing IPv4 and IPv6 addresses, with a port or a CIDR mask.
 
 
@@ -48,3 +49,12 @@ be absolutely anything. (i.e. 85.85.85.85 would clear all even bits of
 an IPv4 address.)
 
 
+
+Bugs
+====
+
+Submit bug reports and patches on
+[github](https://github.com/m2osw/libaddr/issues).
+
+
+_This file is part of the [snapcpp project](https://snapwebsites.org/)._
