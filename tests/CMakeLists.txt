@@ -2,8 +2,7 @@
 # File:         tests/CMakeLists.txt
 # Object:       Definitions to create the build environment with cmake
 #
-# Copyright:    Copyright (c) 2011-2017 Made to Order Software Corp.
-#               All Rights Reserved.
+# Copyright:    Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
 # http://snapwebsites.org/project/libaddr
 # contact@m2osw.com

@@ -1,5 +1,5 @@
 // Network Address -- classes functions to ease handling IP addresses
-// Copyright (C) 2012-2017  Made to Order Software Corp.
+// Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
 // http://snapwebsites.org/project/libaddr
 //
