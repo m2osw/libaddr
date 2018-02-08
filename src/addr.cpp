@@ -1,7 +1,7 @@
 // Network Address -- classes functions to ease handling IP addresses
 // Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
 //
-// http://snapwebsites.org/project/libaddr
+// https://snapwebsites.org/project/libaddr
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

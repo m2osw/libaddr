@@ -1,8 +1,8 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: libaddr
 Upstream-Contact: Alexis Wilke <alexis@m2osw.com>
- http://www.m2osw.com/contact
-Source: http://snapwebsites.org/project/libaddr
+ https://www.m2osw.com/contact
+Source: https://snapwebsites.org/project/libaddr
 License: MIT
 Disclaimer: This package is part of the Snap! C++ system. It is not a native Debian package.
 Copyright:

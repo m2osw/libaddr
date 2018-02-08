@@ -10,9 +10,9 @@ Build-Depends: catch,
     snapcmakemodules (>= 1.0.35.3~xenial)
 Standards-Version: 3.9.4
 Section: libs
-Homepage: http://snapwebsites.org/project/libaddr
+Homepage: https://snapwebsites.org/project/libaddr
 Vcs-Git: https://github.com/m2osw/snapcpp.git
-Vcs-Browser: https://github.com/m2osw/snapcpp
+Vcs-Browser: https://github.com/m2osw/libaddr
 
 Package: libaddr
 Architecture: any

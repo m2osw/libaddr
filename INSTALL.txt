@@ -4,7 +4,7 @@ ABOUT libtld
 
 The project can be found online at this URI:
 
-  http://snapwebsites.org/project/libtld
+  https://snapwebsites.org/project/libtld
 
 That page has some basic documentation and latest information about the
 library.
@@ -69,8 +69,8 @@ You may test a URI from the command line, once you installed everything
 (or from your BUILD directory) using the validate_tld tool as in:
 
   # Valid test:
-  validate_tld http://snapwebsites.org/project/libtld
+  validate_tld https://snapwebsites.org/project/libtld
 
   # Invalid test:
-  validate_tld http://snapwebsites.organization/project/libtld
+  validate_tld https://snapwebsites.organization/project/libtld
 

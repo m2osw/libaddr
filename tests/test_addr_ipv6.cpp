@@ -1,7 +1,7 @@
 /* test_addr_ipv6.cpp
  * Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
  *
- * Project: http://snapwebsites.org/project/libaddr
+ * Project: https://snapwebsites.org/project/libaddr
  *
  * Permission is hereby granted, free of charge, to any
  * person obtaining a copy of this software and
