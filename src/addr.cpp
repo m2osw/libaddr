@@ -1390,8 +1390,8 @@ void addr::address_changed()
 
 /** \brief Return a list of local addresses on this machine.
  *
- * Peruse the list of available interfaces, and return any detected ip addresses
- * in a vector.
+ * Peruse the list of available interfaces, and return any detected
+ * ip addresses in a vector.
  *
  * \return A vector of all the local interface IP addresses.
  */
@@ -1412,7 +1412,10 @@ addr::vector_t addr::get_local_addresses()
     vector_t addr_list;
     for(struct ifaddrs * ifa(ifa_start); ifa != nullptr; ifa = ifa->ifa_next)
     {
-        if( ifa->ifa_addr == nullptr ) continue;
+        if( ifa->ifa_addr == nullptr )
+        {
+            continue;
+        }
 
         addr the_address;
 
@@ -1428,7 +1431,7 @@ addr::vector_t addr::get_local_addresses()
         }
         else
         {
-            // TODO: can we just ignore invalid addresses?
+            // TODO: can we just ignore unexpected addresses?
             //throw addr_invalid_structure_exception( "Unknown address family!" );
             continue;
         }
