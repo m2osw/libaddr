@@ -45,14 +45,6 @@
 //
 #include "test_addr_main.h"
 
-// C lib
-//
-//#include <string.h>
-////#include <math.h>
-////#include <time.h>
-//#include <unistd.h>
-//#include <limits.h>
-
 
 
 

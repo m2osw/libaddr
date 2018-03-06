@@ -3,7 +3,7 @@
 #
 # Copyright:    Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
 #
-# https://snapwebsites.org/
+# https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy

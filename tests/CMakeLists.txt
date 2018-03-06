@@ -33,7 +33,6 @@ if( ${CATCH_INCLUDE_DIR} STREQUAL "CATCH_INCLUDE_DIR-NOTFOUND" )
     message( FATAL_ERROR "catch.hpp not found! Please run 'apt install catch'." )
 endif()
 include_directories(
-    #SYSTEM
     ${CATCH_INCLUDE_DIR}
 )
 
@@ -69,8 +68,10 @@ target_link_libraries(${PROJECT_NAME}
 project(run_libaddr_tests)
 
 add_custom_target(run_libaddr_tests
-    COMMAND addr_test
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND
+        addr_test
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS
         addr_test
 )

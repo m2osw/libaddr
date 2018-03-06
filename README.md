@@ -49,7 +49,6 @@ be absolutely anything. (i.e. 85.85.85.85 would clear all even bits of
 an IPv4 address.)
 
 
-
 Bugs
 ====
 

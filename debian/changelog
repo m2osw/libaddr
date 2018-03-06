@@ -1,3 +1,14 @@
+libaddr (1.0.9.2~xenial) xenial; urgency=high
+
+  * Fixed the license information, it is MIT everywhere now as expected.
+  * Fixed the debian/copyright file, some paths did not exist.
+  * Added the C/C++ language tests in the main CMakeLists.txt.
+  * Fixed the INSTALL.txt, which was a verbatim copy from libtld.
+  * Fixed several URLs.
+  * Cleaned up some lines by removing useless comments.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Mar 2018 23:53:59 -0700
+
 libaddr (1.0.9.1~xenial) xenial; urgency=high
 
   * Fixed the protocol to the snapwebsites.org.

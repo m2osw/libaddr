@@ -30,6 +30,9 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(addr_library)
 
+enable_language(C)
+enable_language(CXX)
+
 #
 # Include support modules
 # (must be included in a project even though it is not made
