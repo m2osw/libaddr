@@ -191,16 +191,18 @@ struct sockaddr_storage {
 };
 
 
+typedef uint32_t in_addr_t;   // or `__be32`
+struct in_addr {
+    in_addr_t        s_addr;
+};
+
+
 // IPv4
 struct sockaddr_in {
     short            sin_family;   // e.g. AF_INET, AF_INET6
     unsigned short   sin_port;     // e.g. htons(3490)
     struct in_addr   sin_addr;     // see struct in_addr, below
     char             sin_zero[8];  // zero this if you want to
-};
-
-struct in_addr {
-	__be32	s_addr;
 };
 
 
@@ -500,7 +502,7 @@ void addr::get_mask(uint8_t * mask)
  * The IPv6 format supports embedding IPv4 addresses. This function
  * returns true if the embedded address is an IPv4. When this function
  * returns true, the get_ipv4() can be called. Otherwise, the get_ipv4()
- * function throws an error.
+ * function throws an exception.
  *
  * \return true if this address represents an IPv4 address.
  */
@@ -658,7 +660,7 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
  * used as the input of the set_addr_port() function. You may
  * also request the address without the brackets.
  *
- * \exception addr_invalid_argument_exception
+ * \exception addr_invalid_state_exception
  * If the binary IP address cannot be converted to ASCII, this exception
  * is raised.
  *
@@ -723,7 +725,7 @@ std::string addr::to_ipv6_string(string_ip_t mode) const
         return result.str();
     }
 
-    throw addr_invalid_argument_exception("The address from this addr could not be converted to a valid canonicalized IPv6 address.");  // LCOV_EXCL_LINE
+    throw addr_invalid_state_exception("The address from this addr could not be converted to a valid canonicalized IPv6 address.");  // LCOV_EXCL_LINE
 }
 
 
@@ -875,23 +877,25 @@ std::string addr::get_network_type_string() const
     std::string name;
     switch( get_network_type() )
     {
-    case addr::network_type_t::NETWORK_TYPE_UNDEFINED  : name= "Undefined";  break; // LCOV_EXCL_LINE -- get_network_type() defines it...
-    case addr::network_type_t::NETWORK_TYPE_PRIVATE    : name= "Private";    break;
-    case addr::network_type_t::NETWORK_TYPE_CARRIER    : name= "Carrier";    break;
-    case addr::network_type_t::NETWORK_TYPE_LINK_LOCAL : name= "Local Link"; break;
-    case addr::network_type_t::NETWORK_TYPE_MULTICAST  : name= "Multicast";  break;
-    case addr::network_type_t::NETWORK_TYPE_LOOPBACK   : name= "Loopback";   break;
-    case addr::network_type_t::NETWORK_TYPE_ANY        : name= "Any";        break;
-    case addr::network_type_t::NETWORK_TYPE_UNKNOWN    : name= "Unknown";    break; // == NETWORK_TYPE_PUBLIC
+    case addr::network_type_t::NETWORK_TYPE_UNDEFINED  : name = "Undefined";  break; // LCOV_EXCL_LINE -- get_network_type() defines it...
+    case addr::network_type_t::NETWORK_TYPE_PRIVATE    : name = "Private";    break;
+    case addr::network_type_t::NETWORK_TYPE_CARRIER    : name = "Carrier";    break;
+    case addr::network_type_t::NETWORK_TYPE_LINK_LOCAL : name = "Local Link"; break;
+    case addr::network_type_t::NETWORK_TYPE_MULTICAST  : name = "Multicast";  break;
+    case addr::network_type_t::NETWORK_TYPE_LOOPBACK   : name = "Loopback";   break;
+    case addr::network_type_t::NETWORK_TYPE_ANY        : name = "Any";        break;
+    case addr::network_type_t::NETWORK_TYPE_UNKNOWN    : name = "Unknown";    break; // == NETWORK_TYPE_PUBLIC
     }
     return name;
 }
 
 
-/** \brief Retrieve the interface name
+/** \brief Retrieve the interface name.
  *
  * This function retrieves the name of the interface of the address.
  * This is set using the get_local_addresses() static method.
+ *
+ * \return The name of the interface this address is assigned to.
  */
 std::string addr::get_iface_name() const
 {
@@ -1246,6 +1250,9 @@ int addr::get_protocol() const
  * other IP addresses. This function can be used to see whether
  * \p ip matches \p this IP address and mask.
  *
+ * So in other words, the mask of `this` addr object is used to mask
+ * both, `this` and `p` before comparing the masked result.
+ *
  * \warning
  * This function only checks the IP address. It totally ignores the
  * port, family, protocol and other peripheral details.
@@ -1436,7 +1443,7 @@ addr::vector_t addr::get_local_addresses()
         }
         else
         {
-            // TODO: can we just ignore unexpected addresses?
+            // TODO: can we just ignore unexpected address families?
             //throw addr_invalid_structure_exception( "Unknown address family!" );
             continue;
         }
@@ -1460,6 +1467,10 @@ addr::vector_t addr::get_local_addresses()
  * The list of addresses from getifaddrs() is not being cached. So you
  * probably do not want to call this function in a loop. That being
  * said, I still would imagine that retrieving that list is fast.
+ *
+ * \todo
+ * We need to apply the mask to make this work properly. This is why
+ * the current implementation fails big time (used by snapcommunicator.cpp).
  *
  * \return a computer_interface_address_t enumeration: error, true, or
  *         false at this time; on error errno should be set to represent
@@ -1503,7 +1514,9 @@ addr::computer_interface_address_t addr::is_computer_interface_address() const
             {
                 // the interface address structure is a 'struct sockaddr_in6'
                 //
-                if(memcmp(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)->sin6_addr, &f_address.sin6_addr, sizeof(f_address.sin6_addr)) == 0)
+                if(memcmp(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)->sin6_addr,
+                            &f_address.sin6_addr,
+                            sizeof(f_address.sin6_addr)) == 0)
                 {
                     return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE;
                 }

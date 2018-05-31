@@ -39,15 +39,6 @@
 //
 #include "addr.h"
 
-// C++ lib
-//
-#include <memory>
-#include <cstring>
-
-// C lib
-//
-#include <arpa/inet.h>
-
 
 
 namespace addr

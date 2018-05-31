@@ -2023,4 +2023,459 @@ TEST_CASE( "ipv4::network", "[ipv4]" )
 }
 
 
+TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
+{
+    GIVEN("string_to_addr() ipv4")
+    {
+        SECTION("empty address without defaults")
+        {
+            addr::addr a(addr::string_to_addr(std::string()));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = 0;
+            in.sin_addr.s_addr = htonl((0 << 24) | (0 << 16) | (0 << 8) | (0 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("explicit defaults")
+        {
+            addr::addr a(addr::string_to_addr("5.14.34.111", std::string(), -1, std::string(), false));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = 0;
+            in.sin_addr.s_addr = htonl((5 << 24) | (14 << 16) | (34 << 8) | (111 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("defaults")
+        {
+            addr::addr a(addr::string_to_addr("7.149.104.211"));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = 0;
+            in.sin_addr.s_addr = htonl((7 << 24) | (149 << 16) | (104 << 8) | (211 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr & default addr")
+        {
+            addr::addr a(addr::string_to_addr("37.149.174.11", "1.205.32.11"));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = 0;
+            in.sin_addr.s_addr = htonl((37 << 24) | (149 << 16) | (174 << 8) | (11 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("no addr, expect default addr")
+        {
+            addr::addr a(addr::string_to_addr("", "1.205.32.11"));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = 0;
+            in.sin_addr.s_addr = htonl((1 << 24) | (205 << 16) | (32 << 8) | (11 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr and port, with a default port")
+        {
+            addr::addr a(addr::string_to_addr("69.109.223.17:697", "1.205.32.11", 123));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(697);
+            in.sin_addr.s_addr = htonl((69 << 24) | (109 << 16) | (223 << 8) | (17 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr without port, with a default port")
+        {
+            addr::addr a(addr::string_to_addr("169.209.23.217", "1.205.32.11", 123));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(123);
+            in.sin_addr.s_addr = htonl((169 << 24) | (209 << 16) | (23 << 8) | (217 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr without port but protocol")
+        {
+            addr::addr a(addr::string_to_addr("4.5.123.7", "1.205.32.11", 60000, "tcp"));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(60000);
+            in.sin_addr.s_addr = htonl((4 << 24) | (5 << 16) | (123 << 8) | (7 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr with port and protocol")
+        {
+            addr::addr a(addr::string_to_addr("204.105.13.9:65", "1.205.32.11", 60000, "tcp"));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(65);
+            in.sin_addr.s_addr = htonl((204 << 24) | (105 << 16) | (13 << 8) | (9 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr with port and protocol but no mask, albeit allowed")
+        {
+            addr::addr a(addr::string_to_addr("94.95.131.18:765", "11.205.32.21", 54003, "tcp", true));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(765);
+            in.sin_addr.s_addr = htonl((94 << 24) | (95 << 16) | (131 << 8) | (18 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFF);
+        }
+        SECTION("addr with port and protocol and mask, albeit allowed")
+        {
+            addr::addr a(addr::string_to_addr("44.45.141.48:765/30", "11.205.32.21", 54003, "tcp", true));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(765);
+            in.sin_addr.s_addr = htonl((44 << 24) | (45 << 16) | (141 << 8) | (48 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xFF);
+            REQUIRE(mask[13] == 0xFF);
+            REQUIRE(mask[14] == 0xFF);
+            REQUIRE(mask[15] == 0xFC);
+        }
+        SECTION("addr with port and protocol and mask, albeit allowed")
+        {
+            addr::addr a(addr::string_to_addr("160.0.0.0:1675/4", "11.205.32.21", 14003, "udp", true));
+
+            REQUIRE(a.is_ipv4());
+
+            struct sockaddr_in in = sockaddr_in();
+            in.sin_family = AF_INET;
+            in.sin_port = htons(1675);
+            in.sin_addr.s_addr = htonl((160 << 24) | (0 << 16) | (0 << 8) | (0 << 0));
+
+            // test string_to_addr accuracy
+            //
+            struct sockaddr_in out;
+            a.get_ipv4(out);
+            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+
+            uint8_t mask[16];
+            a.get_mask(mask);
+            REQUIRE(mask[ 0] == 0xFF);
+            REQUIRE(mask[ 1] == 0xFF);
+            REQUIRE(mask[ 2] == 0xFF);
+            REQUIRE(mask[ 3] == 0xFF);
+            REQUIRE(mask[ 4] == 0xFF);
+            REQUIRE(mask[ 5] == 0xFF);
+            REQUIRE(mask[ 6] == 0xFF);
+            REQUIRE(mask[ 7] == 0xFF);
+            REQUIRE(mask[ 8] == 0xFF);
+            REQUIRE(mask[ 9] == 0xFF);
+            REQUIRE(mask[10] == 0xFF);
+            REQUIRE(mask[11] == 0xFF);
+            REQUIRE(mask[12] == 0xF0);
+            REQUIRE(mask[13] == 0x00);
+            REQUIRE(mask[14] == 0x00);
+            REQUIRE(mask[15] == 0x00);
+        }
+        SECTION("addr with port and invalid protocol so we get an exception")
+        {
+            REQUIRE_THROWS_AS(addr::string_to_addr("169.60.33.0:9322/24", std::string(), -1, "icmp", true),
+                                                                        addr::addr_invalid_argument_exception);
+        }
+    }
+    // TODO: add ipv6 tests, although at this point it's not too
+    //       important here, it may change in the future
+    //
+
+//addr string_to_addr(
+//          std::string const & a
+//        , std::string const & default_address = std::string()
+//        , int default_port = -1
+//        , std::string const & protocol = std::string()
+//        , bool mask = false);
+}
+
+
 // vim: ts=4 sw=4 et

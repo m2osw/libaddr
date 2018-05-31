@@ -103,7 +103,7 @@ int test_addr_main(int argc, char * argv[])
         .bind(&UnitTestCLData::tcp_port, "port");
 
     cli["-V"]["--version"]
-        .describe("print out the advgetopt library version these unit tests pertain to")
+        .describe("print out the libaddr library version these unit tests pertain to")
         .bind(&UnitTestCLData::version);
 
     cli.parseInto( argc, argv, configData );

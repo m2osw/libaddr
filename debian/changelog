@@ -1,3 +1,12 @@
+libaddr (1.0.10.0~xenial) xenial; urgency=high
+
+  * Added a function to convert a string to an IP address.
+  * Added a test to verify that function.
+  * Fixed an exception, return a 'state' error instead of an 'argument'.
+  * Many small clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 31 Mar 2018 00:02:02 -0700
+
 libaddr (1.0.9.2~xenial) xenial; urgency=high
 
   * Fixed the license information, it is MIT everywhere now as expected.

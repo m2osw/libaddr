@@ -64,14 +64,17 @@ public:
         FLAG_max
     };
 
-    void                    set_default_address(std::string const & addr);
+    void                    set_default_address(std::string const & address);
     std::string const &     get_default_address4() const;
     std::string const &     get_default_address6() const;
+
     void                    set_default_port(int const port);
     int                     get_default_port() const;
+
     void                    set_default_mask(std::string const & mask);
     std::string const &     get_default_mask4() const;
     std::string const &     get_default_mask6() const;
+
     void                    set_protocol(std::string const & protocol);
     void                    set_protocol(int const protocol);
     void                    clear_protocol();
@@ -85,6 +88,7 @@ public:
     std::string const &     error_messages() const;
     int                     error_count() const;
     void                    clear_errors();
+
     addr_range::vector_t    parse(std::string const & in);
 
 private:
@@ -105,6 +109,13 @@ private:
     std::string             f_error;
     int                     f_error_count = 0;
 };
+
+addr string_to_addr(
+          std::string const & a
+        , std::string const & default_address = std::string()
+        , int default_port = -1
+        , std::string const & protocol = std::string()
+        , bool mask = false);
 
 
 

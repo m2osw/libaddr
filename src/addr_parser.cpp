@@ -38,6 +38,7 @@
 // C++ library
 //
 #include <algorithm>
+#include <iostream>
 
 // C library
 //
@@ -119,30 +120,30 @@ void addrinfo_deleter(struct addrinfo * ai)
  *
  * \param[in] addr  The new address.
  */
-void addr_parser::set_default_address(std::string const & addr)
+void addr_parser::set_default_address(std::string const & address)
 {
-    if(addr.empty())
+    if(address.empty())
     {
         f_default_address4.clear();
         f_default_address6.clear();
     }
-    else if(addr[0] == '[')
+    else if(address[0] == '[')
     {
         // remove the '[' and ']'
         //
-        if(addr.back() != ']')
+        if(address.back() != ']')
         {
             throw addr_invalid_argument_exception("an IPv6 address starting with '[' must end with ']'.");
         }
-        f_default_address6 = addr.substr(1, addr.length() - 2);
+        f_default_address6 = address.substr(1, address.length() - 2);
     }
-    else if(addr.find(':') != std::string::npos)
+    else if(address.find(':') != std::string::npos)
     {
-        f_default_address6 = addr;
+        f_default_address6 = address;
     }
     else
     {
-        f_default_address4 = addr;
+        f_default_address4 = address;
     }
 }
 
@@ -447,7 +448,7 @@ void addr_parser::set_protocol(int const protocol)
 /** \brief Use this function to reset the protocol back to "no default."
  *
  * This function sets the protocol to -1 (which is something you cannot
- * do by callingt he set_protocol() functions above.)
+ * do by calling the set_protocol() functions above.)
  *
  * The -1 special value means that the protocol is not defined, that
  * there is no default. In most cases this means all the addresses
@@ -1559,6 +1560,102 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
     cidr.set_mask(mask_bits);
 }
 
+
+/** \brief Transform a string into an `addr` object.
+ *
+ * This function converts the string \p a in an IP address saved in
+ * the returned addr object or throws an error if the conversion
+ * fails.
+ *
+ * The port can be specified or set to -1. If -1, then there is no
+ * default port. Either way, the port can be defined in `a`.
+ *
+ * The protocol can be specified, as a string. For example, you can
+ * use "tcp". The default is no specific protocol which means any
+ * type of IP address can be returned.
+ *
+ * \note
+ * This function does not allow for address or port ranges. It is
+ * expected to return exactly one addresss. A mask can be allowed,
+ * though.
+ *
+ * \param[in] a  The address string to be converted.
+ * \param[in] default_addrress  The default address or an empty string.
+ * \param[in] default_port  The default port or -1
+ * \param[in] protocol  The protocol the address has to be of, or the
+ *                      empty string to allow any protocol.
+ * \param[in] m  Whether to allow a mask (true) or not (false).
+ *
+ * \return The address converted in an `addr` object.
+ */
+addr string_to_addr(
+          std::string const & a
+        , std::string const & default_address
+        , int default_port
+        , std::string const & protocol
+        , bool mask)
+{
+    addr_parser p;
+
+    if(!default_address.empty())
+    {
+        p.set_default_address(default_address);
+    }
+
+    p.set_default_port(default_port);
+
+    if(!protocol.empty())
+    {
+        p.set_protocol(protocol);
+    }
+
+    p.set_allow(addr_parser::flag_t::MASK, mask);
+
+    addr_range::vector_t result(p.parse(a));
+
+    if(result.size() != 1)
+    {
+        // when the protocol is not specified, this happens like all the
+        // time, we search for an entry with protocol TCP by default
+        // because in most cases that's what people want
+        //
+        result.erase(
+                  std::remove_if(
+                      result.begin()
+                    , result.end()
+                    , [](auto const it)
+                    {
+                        return it.has_from() && it.get_from().get_protocol() != IPPROTO_TCP;
+                    })
+                , result.end());
+        if(result.size() != 1)
+        {
+            // an invalid protocol is caught by the set_protocol()
+            // function so we should never be able to reach here
+            //
+            throw addr_invalid_argument_exception(                                                          // LCOV_EXCL_LINE
+                    "the address could not be converted in a single address in string_to_addr(), found "    // LCOV_EXCL_LINE
+                            + std::to_string(result.size())                                                 // LCOV_EXCL_LINE
+                            + " instead.");                                                                 // LCOV_EXCL_LINE
+        }
+    }
+
+    // at the movement we only can get a "to" so the following exceptions
+    // can't happen which is why we have an LCOV_EXCL_LINE
+    //
+    if(result[0].has_to()
+    || result[0].is_range())
+    {
+        throw addr_invalid_argument_exception("string_to_addr() does not support ranges.");     // LCOV_EXCL_LINE
+    }
+
+    if(!result[0].has_from())
+    {
+        throw addr_invalid_argument_exception("string_to_addr() has no 'from' address.");       // LCOV_EXCL_LINE
+    }
+
+    return result[0].get_from();
+}
 
 
 

@@ -91,7 +91,7 @@ public:
     {
         STRING_IP_ONLY,
         STRING_IP_BRACKETS,         // IPv6 only
-        STRING_IP_PORT,
+        STRING_IP_PORT,             // in IPv6, includes brackets
         STRING_IP_MASK,
         STRING_IP_BRACKETS_MASK,    // IPv6 only
         STRING_IP_ALL
