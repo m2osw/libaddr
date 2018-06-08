@@ -1,0 +1,13 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: libaddr
+Upstream-Contact: Alexis Wilke <alexis@m2osw.com>
+ https://www.m2osw.com/contact
+Source: https://snapwebsites.org/project/libaddr
+License: MIT
+Disclaimer: This package is part of the Snap! C++ system. It is not a native Debian package.
+Copyright:
+ Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
+
+Files: CMakeLists.txt cmake/* debian/* dev/* doc/* src/* tests/*
+Copyright: Copyright (c) 2011-2018  Made to Order Software Corp.  All Rights Reserved
+License: MIT

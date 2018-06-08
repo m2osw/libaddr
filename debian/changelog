@@ -1,0 +1,109 @@
+libaddr (1.0.10.0~xenial) xenial; urgency=high
+
+  * Added a function to convert a string to an IP address.
+  * Added a test to verify that function.
+  * Fixed an exception, return a 'state' error instead of an 'argument'.
+  * Many small clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 31 Mar 2018 00:02:02 -0700
+
+libaddr (1.0.9.2~xenial) xenial; urgency=high
+
+  * Fixed the license information, it is MIT everywhere now as expected.
+  * Fixed the debian/copyright file, some paths did not exist.
+  * Added the C/C++ language tests in the main CMakeLists.txt.
+  * Fixed the INSTALL.txt, which was a verbatim copy from libtld.
+  * Fixed several URLs.
+  * Cleaned up some lines by removing useless comments.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  5 Mar 2018 23:53:59 -0700
+
+libaddr (1.0.9.1~xenial) xenial; urgency=high
+
+  * Fixed the protocol to the snapwebsites.org.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu,  8 Feb 2018 00:52:52 -0700
+
+libaddr (1.0.9.0~xenial) xenial; urgency=high
+
+  * Bumped copyright notice.
+  * Cleaned up the README.md file.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 28 Jan 2018 23:51:06 -0700
+
+libaddr (1.0.8.0~xenial) xenial; urgency=high
+
+  * Fixed the tests, the tags need to be between '[' ... ']'.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 24 Feb 2017 20:52:22 -0700
+
+libaddr (1.0.7.0~xenial) xenial; urgency=high
+
+  * Changed -1LL with std::numeric_limits<uint64_t>::max() which is better.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 20 Feb 2017 16:29:22 -0700
+
+libaddr (1.0.6.0~xenial) xenial; urgency=high
+
+  * SNAP-289: Applied a fixed where variable 's' representing a socket is
+    now checked for validity before using setsockop().
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 25 Jan 2017 23:07:22 -0700
+
+libaddr (1.0.5.0~xenial) xenial; urgency=high
+
+  * Fixed the cmake file, the library name is "addr", not "tld".
+  * Added port 80 as one I can use to run the coverage tests.
+  * Fixed the STRIP_FROM_PATH in the doxy file.
+  * Fixed the path to the version.h in the doxy file.
+  * Fixed the cmake to properly install the libaddr include files.
+  * Fixed the documentation further.
+  * Broke up the header file into one file per class and exceptions.
+  * Added a couple of match() functions to the addr_range class.
+  * Added some socket related functions, although those should be moved
+    to a socket class of our future "libsnapnetwork" library...
+  * Updated the tests accordingly. We still have 100% coverage.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 23 Jan 2017 11:40:22 -0700
+
+libaddr (1.0.4.0~xenial) xenial; urgency=medium
+
+  * Put two default addresses and mask: one for IPv4 and one for IPv6.
+  * Test the commas & spaces first.
+  * Try to use the mask, if present, to know whether we deal with an
+    IPv4 or IPv6 address if we cannot otherwise know.
+  * Define a default address in case it is empty and not marked required.
+  * Updated the test accordingly.
+  * Added documentation.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 22 Jan 2017 02:55:22 -0700
+
+libaddr (1.0.3.0~xenial) xenial; urgency=medium
+
+  * Added a couple of tests to verify that a CIDR larger than 1000 generates
+    an error.
+  * Enhanced the coverage script so it publishes the coverage data.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 17:31:22 -0700
+
+libaddr (1.0.2.0~xenial) xenial; urgency=medium
+
+  * The library does not offer a static (.a) version.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 17:31:22 -0700
+
+libaddr (1.0.1.0~xenial) xenial; urgency=medium
+
+  * Fixed the mask_count test which would return an overflow error.
+  * Added a test in case the mask is an interger which is way too large.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 21 Jan 2017 16:05:22 -0700
+
+libaddr (1.0.0.0~xenial) xenial; urgency=medium
+
+  * First release of libaddr.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 18 Jan 2017 13:46:22 -0700
+

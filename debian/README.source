@@ -1,0 +1,16 @@
+libaddr for Debian
+------------------
+
+`libaddr` requires the `snapCMakeModules` package in order to be compiled.
+It also depends on the `libexcept` library.
+
+The `SnapDoxygen` package can be ignored (commented out) if you do not need
+to regenerate the documentation. (Also comment out the line:
+`add_subdirectory( doc )`)
+
+The `tests` directory makes use of `catch.hpp`. If you do not have it, you
+can just comment that line out as well. Under a Debian system, you can install
+`catch.hpp` with:
+
+    sudo apt-get install catch
+
