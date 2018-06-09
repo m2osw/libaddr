@@ -41,18 +41,49 @@
 //
 #include "test_addr_main.h"
 
+// addr lib
+//
+#include "libaddr/iface.h"
+
+// C lib
+//
+#include <net/if.h>
+
 
 TEST_CASE( "ipv4::interfaces", "[ipv4]" )
 {
-    GIVEN("addr::get_local_addresses()")
+    GIVEN("iface::get_local_addresses()")
     {
-        addr::addr::vector_t list(addr::addr::get_local_addresses());
+        addr::iface::vector_t list(addr::iface::get_local_addresses());
 
         SECTION("verify list")
         {
             REQUIRE_FALSE(list.empty()); // at least "lo"
 
             // add stuff like verify there is an "lo" entry?
+            for(auto i : list)
+            {
+                REQUIRE_FALSE(i.get_name().empty());
+                REQUIRE(i.get_flags() != 0);
+
+                switch(i.get_address().get_network_type())
+                {
+                case addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
+                case addr::addr::network_type_t::NETWORK_TYPE_PUBLIC:
+                case addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
+                case addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL:
+                    break;
+
+                default:
+std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().get_network_type()) << "\n";
+                    REQUIRE_FALSE("unexpected network type for interface");
+                    break;
+
+                }
+
+                REQUIRE(i.has_broadcast_address() == ((i.get_flags() & IFF_BROADCAST) != 0));
+                REQUIRE(i.has_destination_address() == ((i.get_flags() & IFF_POINTOPOINT) != 0));
+            }
         }
     }
 }

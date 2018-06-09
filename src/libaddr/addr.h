@@ -80,13 +80,6 @@ public:
         NETWORK_TYPE_PUBLIC = NETWORK_TYPE_UNKNOWN  // we currently do not distinguish public and unknown
     };
 
-    enum class computer_interface_address_t
-    {
-        COMPUTER_INTERFACE_ADDRESS_ERROR = -1,
-        COMPUTER_INTERFACE_ADDRESS_FALSE,
-        COMPUTER_INTERFACE_ADDRESS_TRUE
-    };
-
     enum class string_ip_t
     {
         STRING_IP_ONLY,
@@ -109,8 +102,6 @@ public:
                                     addr(struct sockaddr_in const & in);
                                     addr(struct sockaddr_in6 const & in6);
 
-    static vector_t                 get_local_addresses();
-
     void                            set_from_socket(int s, bool peer);
     void                            set_ipv4(struct sockaddr_in const & in);
     void                            set_ipv6(struct sockaddr_in6 const & in6);
@@ -120,6 +111,7 @@ public:
     void                            set_mask(uint8_t const * mask);
     void                            apply_mask();
 
+    bool                            is_default() const;
     bool                            is_ipv4() const;
     void                            get_ipv4(struct sockaddr_in & in) const;
     void                            get_ipv6(struct sockaddr_in6 & in6) const;
@@ -129,9 +121,7 @@ public:
 
     network_type_t                  get_network_type() const;
     std::string                     get_network_type_string() const;
-    computer_interface_address_t    is_computer_interface_address() const;
 
-    std::string                     get_iface_name() const;
     int                             create_socket(socket_flag_t flags) const;
     int                             connect(int s) const;
     int                             bind(int s) const;
@@ -156,7 +146,6 @@ private:
     //
     struct sockaddr_in6             f_address = init_in6();
     uint8_t                         f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
-    std::string                     f_iface_name;
     int                             f_protocol = IPPROTO_TCP;
     mutable network_type_t          f_private_network_defined = network_type_t::NETWORK_TYPE_UNDEFINED;
 };

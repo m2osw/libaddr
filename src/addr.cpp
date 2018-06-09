@@ -42,7 +42,6 @@
 
 // C library
 //
-#include <ifaddrs.h>
 #include <netdb.h>
 
 
@@ -236,32 +235,7 @@ struct in6_addr
 */
 
 
-/** \brief Details used by the addr class implementation.
- *
- * We have a function to check whether an address is part of
- * the interfaces of your computer. This check requires the
- * use of a `struct ifaddrs` and as such it requires to
- * delete that structure. We define a deleter for that
- * strucure here.
- */
-namespace
-{
 
-/** \brief Delete an ifaddrs structure.
- *
- * This deleter is used to make sure all the ifaddrs get released when
- * an exception occurs or the function using such exists.
- *
- * \param[in] ia  The ifaddrs structure to free.
- */
-void ifaddrs_deleter(struct ifaddrs * ia)
-{
-    freeifaddrs(ia);
-}
-
-
-}
-// no name namespace
 
 
 /** \brief Create an addr object that represents an ANY address.
@@ -494,6 +468,29 @@ void addr::apply_mask()
 void addr::get_mask(uint8_t * mask)
 {
     memcpy(mask, f_mask, sizeof(f_mask));
+}
+
+
+/** \brief Check whether this address represents the ANY address.
+ *
+ * The IPv4 and IPv6 have an ANY address also called the default address.
+ * This function returns true if this address represents the ANY address.
+ *
+ * The any address is represented by `"0.0.0.0"` in IPv4 and `"::"` in
+ * IPv6. (i.e. all zeroes)
+ *
+ * \note
+ * You can also determine this by calling the get_network_type() function
+ * and compare the result against `network_type_t::NETWORK_TYPE_ANY`.
+ *
+ * \return true if this addr represents the any address.
+ */
+bool addr::is_default() const
+{
+    return f_address.sin6_addr.s6_addr32[0] == 0
+        && f_address.sin6_addr.s6_addr32[1] == 0
+        && f_address.sin6_addr.s6_addr32[2] == 0
+        && f_address.sin6_addr.s6_addr32[3] == 0;
 }
 
 
@@ -887,19 +884,6 @@ std::string addr::get_network_type_string() const
     case addr::network_type_t::NETWORK_TYPE_UNKNOWN    : name = "Unknown";    break; // == NETWORK_TYPE_PUBLIC
     }
     return name;
-}
-
-
-/** \brief Retrieve the interface name.
- *
- * This function retrieves the name of the interface of the address.
- * This is set using the get_local_addresses() static method.
- *
- * \return The name of the interface this address is assigned to.
- */
-std::string addr::get_iface_name() const
-{
-    return f_iface_name;
 }
 
 
@@ -1397,134 +1381,6 @@ bool addr::operator >= (addr const & rhs) const
 void addr::address_changed()
 {
     f_private_network_defined = network_type_t::NETWORK_TYPE_UNDEFINED;
-}
-
-
-/** \brief Return a list of local addresses on this machine.
- *
- * Peruse the list of available interfaces, and return any detected
- * ip addresses in a vector.
- *
- * \return A vector of all the local interface IP addresses.
- */
-addr::vector_t addr::get_local_addresses()
-{
-    // get the list of interface addresses
-    //
-    struct ifaddrs * ifa_start(nullptr);
-    if(getifaddrs(&ifa_start) != 0)
-    {
-        // TODO: Should this throw, or just return an empty list quietly?
-        //
-        return vector_t(); // LCOV_EXCL_LINE
-    }
-
-    std::shared_ptr<struct ifaddrs> auto_free(ifa_start, ifaddrs_deleter);
-
-    vector_t addr_list;
-    for(struct ifaddrs * ifa(ifa_start); ifa != nullptr; ifa = ifa->ifa_next)
-    {
-        if( ifa->ifa_addr == nullptr )
-        {
-            continue;
-        }
-
-        addr the_address;
-
-        the_address.f_iface_name = ifa->ifa_name;
-        uint16_t const family( ifa->ifa_addr->sa_family );
-        if( family == AF_INET )
-        {
-            the_address.set_ipv4( *(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)) );
-        }
-        else if( family == AF_INET6 )
-        {
-            the_address.set_ipv6( *(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)) );
-        }
-        else
-        {
-            // TODO: can we just ignore unexpected address families?
-            //throw addr_invalid_structure_exception( "Unknown address family!" );
-            continue;
-        }
-
-        addr_list.push_back( the_address );
-    }
-
-    return addr_list;
-}
-
-
-/** \brief Check whether this address represents this computer.
- *
- * This function reads the addresses as given to us by the getifaddrs()
- * function. This is a system function that returns a complete list of
- * all the addresses this computer is managing / represents. In other
- * words, a list of address that other computers can use to connect
- * to this computer (assuming proper firewall, of course.)
- *
- * \warning
- * The list of addresses from getifaddrs() is not being cached. So you
- * probably do not want to call this function in a loop. That being
- * said, I still would imagine that retrieving that list is fast.
- *
- * \todo
- * We need to apply the mask to make this work properly. This is why
- * the current implementation fails big time (used by snapcommunicator.cpp).
- *
- * \return a computer_interface_address_t enumeration: error, true, or
- *         false at this time; on error errno should be set to represent
- *         what the error was.
- */
-addr::computer_interface_address_t addr::is_computer_interface_address() const
-{
-    // TBD: maybe we could cache the ifaddrs for a small amount of time
-    //      (i.e. 1 minute) so additional calls within that time
-    //      can go even faster?
-    //
-
-    // get the list of interface addresses
-    //
-    struct ifaddrs * ifa_start(nullptr);
-    if(getifaddrs(&ifa_start) != 0)
-    {
-        return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_ERROR; // LCOV_EXCL_LINE
-    }
-    std::shared_ptr<struct ifaddrs> auto_free(ifa_start, ifaddrs_deleter);
-
-    bool const ipv4(is_ipv4());
-    uint16_t const family(ipv4 ? AF_INET : AF_INET6);
-    for(struct ifaddrs * ifa(ifa_start); ifa != nullptr; ifa = ifa->ifa_next)
-    {
-        if(ifa->ifa_addr != nullptr
-        && ifa->ifa_addr->sa_family == family)
-        {
-            if(ipv4)
-            {
-                // the interface address structure is a 'struct sockaddr_in'
-                //
-                if(memcmp(&reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)->sin_addr,
-                            f_address.sin6_addr.s6_addr32 + 3, //&reinterpret_cast<struct sockaddr_in const *>(&f_address)->sin_addr,
-                            sizeof(struct in_addr)) == 0)
-                {
-                    return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE;
-                }
-            }
-            else
-            {
-                // the interface address structure is a 'struct sockaddr_in6'
-                //
-                if(memcmp(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)->sin6_addr,
-                            &f_address.sin6_addr,
-                            sizeof(f_address.sin6_addr)) == 0)
-                {
-                    return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE;
-                }
-            }
-        }
-    }
-
-    return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_FALSE;
 }
 
 

@@ -45,6 +45,10 @@
 //
 #include "test_addr_main.h"
 
+// addr lib
+//
+#include "libaddr/iface.h"
+
 
 
 
@@ -519,8 +523,11 @@ TEST_CASE( "ipv6::address", "[ipv6]" )
             hostname[HOST_NAME_MAX] = '\0';
             REQUIRE(gethostname(hostname, sizeof(hostname)) == 0);
             REQUIRE(hostname[0] != '\0');
-            REQUIRE(a.get_name() == hostname);
-            REQUIRE(a.is_computer_interface_address() == addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE);
+            std::string localhost(a.get_name());
+            bool const localhost_flag(localhost == hostname || localhost == "ip6-localhost");
+            REQUIRE(localhost_flag);
+
+            REQUIRE(addr::find_addr_interface(a, false) != nullptr);
         }
     }
 
@@ -1260,6 +1267,7 @@ TEST_CASE( "ipv6::network_type", "[ipv6]" )
                 //
                 a.set_ipv6(in6);
 
+                REQUIRE(a.is_default());
                 REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
                 REQUIRE(a.get_network_type_string() == "Any");
             }

@@ -47,6 +47,7 @@ add_library(addr SHARED
     addr.cpp
     addr_parser.cpp
     addr_range.cpp
+    iface.cpp
     version.cpp
 )
 

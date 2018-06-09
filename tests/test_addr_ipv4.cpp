@@ -45,6 +45,11 @@
 //
 #include "test_addr_main.h"
 
+// addr lib
+//
+#include "libaddr/iface.h"
+
+
 
 /** \brief Details used by the addr class implementation.
  *
@@ -418,6 +423,7 @@ TEST_CASE( "ipv4::addr", "[ipv4]" )
 
         SECTION("default network type (0.0.0.0)")
         {
+            REQUIRE(a.is_default());
             REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
             REQUIRE(a.get_network_type_string() == "Any");
         }
@@ -450,8 +456,7 @@ TEST_CASE( "ipv4::addr", "[ipv4]" )
 
         SECTION("interface determination")
         {
-            REQUIRE(a.is_computer_interface_address() == addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_FALSE);
-            REQUIRE(a.get_iface_name() == std::string());
+            REQUIRE(addr::find_addr_interface(a, false) == nullptr);
         }
 
         SECTION("default name/service/port/protocol")
@@ -625,8 +630,11 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
             hostname[HOST_NAME_MAX] = '\0';
             REQUIRE(gethostname(hostname, sizeof(hostname)) == 0);
             REQUIRE(hostname[0] != '\0');
-            REQUIRE(a.get_name() == hostname);
-            REQUIRE(a.is_computer_interface_address() == addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE);
+            std::string localhost(a.get_name());
+            bool const localhost_flag(localhost == hostname || localhost == "localhost");
+            REQUIRE(localhost_flag);
+
+            REQUIRE(addr::find_addr_interface(a, false) != nullptr);
         }
     }
 
@@ -1849,7 +1857,7 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
 
                 // make sure no interface uses that IP
                 //
-                REQUIRE(a.is_computer_interface_address() == addr::addr::computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_FALSE);
+                REQUIRE(addr::find_addr_interface(a, false) == nullptr);
             }
         }
 

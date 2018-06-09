@@ -1,3 +1,16 @@
+libaddr (1.0.11.0~xenial) xenial; urgency=high
+
+  * Finally broke the class in two: addr and iface.
+  * Replaced the is_computer_interface_address() with using the new and
+    improved find_addr_interface() so we have additional info, not just
+    true/false.
+  * Added an is_default() function since that's is true when we setup
+    an addr object. That way you can detect an uninitialized addr.
+  * Updated the tests accordingly. They still need to to be enhanced to
+    cover 100% of the code.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Thu, 31 Mar 2018 00:02:02 -0700
+
 libaddr (1.0.10.0~xenial) xenial; urgency=high
 
   * Added a function to convert a string to an IP address.
