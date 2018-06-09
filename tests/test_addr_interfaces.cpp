@@ -83,6 +83,18 @@ std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().ge
 
                 REQUIRE(i.has_broadcast_address() == ((i.get_flags() & IFF_BROADCAST) != 0));
                 REQUIRE(i.has_destination_address() == ((i.get_flags() & IFF_POINTOPOINT) != 0));
+
+                addr::addr const & b(i.get_broadcast_address());
+                if(!i.has_broadcast_address())
+                {
+                    REQUIRE(b.is_default());
+                }
+
+                addr::addr const & d(i.get_destination_address());
+                if(!i.has_destination_address())
+                {
+                    REQUIRE(d.is_default());
+                }
             }
         }
     }

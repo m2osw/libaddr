@@ -140,13 +140,15 @@ iface::vector_t iface::get_local_addresses()
         case AF_INET:
             the_interface.f_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)));
 
-            if((ifa->ifa_flags & IFF_BROADCAST) != 0)
+            if((ifa->ifa_flags & IFF_BROADCAST) != 0
+            && ifa->ifa_broadaddr != nullptr)
             {
                 the_interface.f_broadcast_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_broadaddr)));
             }
-            if((ifa->ifa_flags & IFF_POINTOPOINT) != 0)
+            if((ifa->ifa_flags & IFF_POINTOPOINT) != 0
+            && ifa->ifa_dstaddr != nullptr)  // LCOV_EXCL_LINE
             {
-                the_interface.f_destination_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_dstaddr)));
+                the_interface.f_destination_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
             }
 
             // if present, add the mask as well
@@ -171,12 +173,12 @@ iface::vector_t iface::get_local_addresses()
             if((ifa->ifa_flags & IFF_BROADCAST) != 0
             && ifa->ifa_broadaddr != nullptr)
             {
-                the_interface.f_broadcast_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_broadaddr)));
+                the_interface.f_broadcast_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_broadaddr)));  // LCOV_EXCL_LINE
             }
             if((ifa->ifa_flags & IFF_POINTOPOINT) != 0
-            && ifa->ifa_dstaddr != nullptr)
+            && ifa->ifa_dstaddr != nullptr)  // LCOV_EXCL_LINE
             {
-                the_interface.f_destination_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_dstaddr)));
+                the_interface.f_destination_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
             }
 
             // if present, add the mask as well
@@ -376,7 +378,7 @@ iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destinat
         if(allow_default_destination
         && i.get_destination_address().is_default())
         {
-            default_iface.reset(new iface(i));
+            default_iface.reset(new iface(i));  // LCOV_EXCL_LINE
         }
     }
 
