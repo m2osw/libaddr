@@ -159,10 +159,10 @@ iface::vector_t iface::get_local_addresses()
                 // way as to make it IPv6 compatible
                 //
                 memset(mask, 255, 12);
-                mask[12] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 24;
-                mask[13] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 16;
-                mask[14] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  8;
-                mask[15] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  0;
+                mask[12] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  0;
+                mask[13] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  8;
+                mask[14] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 16;
+                mask[15] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 24;
                 the_interface.f_address.set_mask(mask);
             }
             break;
@@ -354,8 +354,9 @@ bool iface::has_destination_address() const
  * set to false, then you've got the same result plus you have access to all
  * the available information from that interface.
  *
- * \param[in] allow_default_destination  If true and this address doesn't
- *            match any of the interfaces, use the one interface with its
+ * \param[in] a  The address used to search for an interface.
+ * \param[in] allow_default_destination  If true and \p a doesn't match
+ *            any of the interfaces, use the one interface with its
  *            destination set to 0.0.0.0 or equivalent.
  *
  * \return A pointer to an interface IP address.

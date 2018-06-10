@@ -1,3 +1,10 @@
+libaddr (1.0.12.0~xenial) xenial; urgency=high
+
+  * Fixed the IPv4 mask bytes order.
+  * Fixed the find_addr_interface() default, it was supposed to be `true`.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat,  9 Jun 2018 00:02:02 -0700
+
 libaddr (1.0.11.0~xenial) xenial; urgency=high
 
   * Finally broke the class in two: addr and iface.

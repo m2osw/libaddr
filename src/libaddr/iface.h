@@ -69,7 +69,7 @@ private:
 
 
 
-iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destination = false);
+iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destination = true);
 
 
 
