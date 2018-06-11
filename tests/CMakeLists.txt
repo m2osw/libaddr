@@ -55,6 +55,7 @@ add_executable(${PROJECT_NAME}
     test_addr_ipv4.cpp
     test_addr_ipv6.cpp
     test_addr_range.cpp
+    test_addr_routes.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

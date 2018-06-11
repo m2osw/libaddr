@@ -48,6 +48,7 @@ add_library(addr SHARED
     addr_parser.cpp
     addr_range.cpp
     iface.cpp
+    route.cpp
     version.cpp
 )
 
@@ -98,6 +99,32 @@ include_directories(
 
 add_executable(${PROJECT_NAME}
     validate_ip.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    addr
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+    RUNTIME DESTINATION
+        bin
+)
+
+##
+## Route command line tool
+##
+project(ipv4_routes)
+
+include_directories(
+    ${addr_library_BINARY_DIR}/src
+    ${addr_library_SOURCE_DIR}/src
+    ${LIBEXCEPT_INCLUDE_DIRS}
+)
+
+add_executable(${PROJECT_NAME}
+    ipv4_routes.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

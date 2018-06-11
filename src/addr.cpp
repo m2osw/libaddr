@@ -465,7 +465,7 @@ void addr::apply_mask()
  *
  * \param[out] mask  The buffer where the mask gets copied.
  */
-void addr::get_mask(uint8_t * mask)
+void addr::get_mask(uint8_t * mask) const
 {
     memcpy(mask, f_mask, sizeof(f_mask));
 }
@@ -487,9 +487,12 @@ void addr::get_mask(uint8_t * mask)
  */
 bool addr::is_default() const
 {
+    // this is for IPv4 or IPv6
+    //
     return f_address.sin6_addr.s6_addr32[0] == 0
         && f_address.sin6_addr.s6_addr32[1] == 0
-        && f_address.sin6_addr.s6_addr32[2] == 0
+        && f_address.sin6_addr.s6_addr16[4] == 0
+        && (f_address.sin6_addr.s6_addr16[5] == 0 || f_address.sin6_addr.s6_addr16[5] == 0xFFFF)
         && f_address.sin6_addr.s6_addr32[3] == 0;
 }
 

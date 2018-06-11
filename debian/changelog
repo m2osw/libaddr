@@ -1,3 +1,14 @@
+libaddr (1.0.13.0~xenial) xenial; urgency=high
+
+  * Added a class to read the Linux routes (from /proc/net/route).
+  * Added a tool to show what routes were read to make sure it worked.
+  * Fixed the get_mask(), it should have been const all along.
+  * Fixed the is_default() function, it now works with IPv4 as well.
+  * Fixed the find_addr_interface() function so the correct default is returned.
+  * Updated the tests to check the route class.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 10 Jun 2018 17:20:24 -0700
+
 libaddr (1.0.12.0~xenial) xenial; urgency=high
 
   * Fixed the IPv4 mask bytes order.

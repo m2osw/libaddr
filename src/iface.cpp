@@ -34,8 +34,13 @@
 //
 #include "libaddr/iface.h"
 
+// addr library
+//
+#include "libaddr/route.h"
+
 // C++ library
 //
+#include <algorithm>
 #include <iostream>
 
 // C library
@@ -354,6 +359,11 @@ bool iface::has_destination_address() const
  * set to false, then you've got the same result plus you have access to all
  * the available information from that interface.
  *
+ * \warning
+ * If you allow for the default destination, this function calls the
+ * route::get_ipv4_routes() function which can be costly. Try to avoid
+ * doing that in a loop.
+ *
  * \param[in] a  The address used to search for an interface.
  * \param[in] allow_default_destination  If true and \p a doesn't match
  *            any of the interfaces, use the one interface with its
@@ -365,25 +375,48 @@ iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destinat
 {
     iface::vector_t interfaces(iface::get_local_addresses());
 
-    iface::pointer_t default_iface;
     for(auto i : interfaces)
     {
         if(i.get_address().match(a))
         {
             return iface::pointer_t(new iface(i));
         }
-        // if there is a default, keep a copy in case we do not find a
-        // local address while looking (and only if the user requested
-        // such, which is the default)
-        //
-        if(allow_default_destination
-        && i.get_destination_address().is_default())
-        {
-            default_iface.reset(new iface(i));  // LCOV_EXCL_LINE
-        }
     }
 
-    return default_iface;
+    // if there is a default, keep a copy in case we do not find a
+    // local address while looking (and only if the user requested
+    // such, which is the default)
+    //
+    if(!allow_default_destination)
+    {
+        return iface::pointer_t();
+    }
+
+    // to determine the default interface, we need the list of routes
+    // so we first gather that information and then search for the
+    // interface that has that name
+    //
+    route::vector_t routes(route::get_ipv4_routes());
+    route::pointer_t default_route(find_default_route(routes));
+    if(default_route == nullptr)
+    {
+        return iface::pointer_t(); // LCOV_EXCL_LINE
+    }
+
+    std::string const & default_iface(default_route->get_interface_name());
+    auto it(std::find_if(
+              interfaces.cbegin()
+            , interfaces.cend()
+            , [default_iface](auto & i)
+            {
+                return i.get_name() == default_iface;
+            }));
+    if(it == interfaces.cend())
+    {
+        return iface::pointer_t(); // LCOV_EXCL_LINE
+    }
+
+    return iface::pointer_t(new iface(*it));
 }
 
 

@@ -457,6 +457,7 @@ TEST_CASE( "ipv4::addr", "[ipv4]" )
         SECTION("interface determination")
         {
             REQUIRE(addr::find_addr_interface(a, false) == nullptr);
+            REQUIRE(addr::find_addr_interface(a, true) != nullptr);
         }
 
         SECTION("default name/service/port/protocol")

@@ -129,7 +129,7 @@ public:
     std::string                     get_service() const;
     int                             get_port() const;
     int                             get_protocol() const;
-    void                            get_mask(uint8_t * mask);
+    void                            get_mask(uint8_t * mask) const;
 
     bool                            match(addr const & ip) const;
     bool                            operator == (addr const & rhs) const;
