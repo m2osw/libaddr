@@ -1,3 +1,9 @@
+libaddr (1.0.14.0~xenial) xenial; urgency=high
+
+  * Made code -Weffc++ compatible.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Wed, 25 Jul 2018 18:40:25 -0800
+
 libaddr (1.0.13.2~xenial) xenial; urgency=high
 
   * Bump version to recompile without the -fsanitizer flags.

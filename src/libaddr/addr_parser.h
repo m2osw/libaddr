@@ -100,13 +100,13 @@ private:
     void                    parse_mask(std::string const & mask, addr & cidr);
 
     bool                    f_flags[static_cast<int>(flag_t::FLAG_max)] = { true, false, true, false, false, false, false, false, false, false, false, false };
-    std::string             f_default_address4;
-    std::string             f_default_address6;
-    std::string             f_default_mask4;
-    std::string             f_default_mask6;
+    std::string             f_default_address4 = std::string();
+    std::string             f_default_address6 = std::string();
+    std::string             f_default_mask4 = std::string();
+    std::string             f_default_mask6 = std::string();
     int                     f_protocol = -1;
     int                     f_default_port = -1;
-    std::string             f_error;
+    std::string             f_error = std::string();
     int                     f_error_count = 0;
 };
 

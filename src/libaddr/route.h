@@ -63,16 +63,16 @@ public:
     int                             get_irtt() const;
 
 private:
-    std::string                     f_interface_name;
-    addr                            f_destination_address;  // Destination + Mask
-    addr                            f_gateway_address;
-    int                             f_flags;
-    int                             f_reference_count;
-    int                             f_use;
-    int                             f_metric;
-    int                             f_mtu;
-    int                             f_window;
-    int                             f_irtt;
+    std::string                     f_interface_name = std::string();
+    addr                            f_destination_address = addr();  // Destination + Mask
+    addr                            f_gateway_address = addr();
+    int                             f_flags = 0;
+    int                             f_reference_count = 0;
+    int                             f_use = 0;
+    int                             f_metric = 0;
+    int                             f_mtu = 0;
+    int                             f_window = 0;
+    int                             f_irtt = 0;
 };
 
 

@@ -72,8 +72,8 @@ public:
 private:
     bool                            f_has_from = false;
     bool                            f_has_to = false;
-    addr                            f_from;
-    addr                            f_to;
+    addr                            f_from = addr();
+    addr                            f_to = addr();
 };
 
 

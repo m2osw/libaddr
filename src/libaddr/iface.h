@@ -60,11 +60,11 @@ public:
     bool                            has_destination_address() const;
 
 private:
-    std::string                     f_name;
+    std::string                     f_name = std::string();
     unsigned int                    f_flags = 0;
-    addr                            f_address;
-    addr                            f_broadcast_address;
-    addr                            f_destination_address;
+    addr                            f_address = addr();
+    addr                            f_broadcast_address = addr();
+    addr                            f_destination_address = addr();
 };
 
 
