@@ -1,3 +1,9 @@
+libaddr (1.0.14.1~xenial) xenial; urgency=high
+
+  * Bump version to get a recompile on launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 27 Jul 2018 00:45:54 -0800
+
 libaddr (1.0.14.0~xenial) xenial; urgency=high
 
   * Made code -Weffc++ compatible.
