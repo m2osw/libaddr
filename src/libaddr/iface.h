@@ -41,12 +41,29 @@ namespace addr
 {
 
 
+class iface_index_name
+{
+public:
+    typedef std::vector<iface_index_name>   vector_t;
+
+                                    iface_index_name(int index, std::string const & name);
+
+    int                             get_index() const;
+    std::string const &             get_name() const;
+
+private:
+    int                             f_index;
+    std::string                     f_name;
+};
+
+iface_index_name::vector_t          get_interface_name_index();
+
 
 class iface
 {
 public:
-    typedef std::shared_ptr<iface>   pointer_t;
-    typedef std::vector<iface>       vector_t;
+    typedef std::shared_ptr<iface>  pointer_t;
+    typedef std::vector<iface>      vector_t;
 
     static iface::vector_t          get_local_addresses();
 

@@ -83,6 +83,109 @@ void ifaddrs_deleter(struct ifaddrs * ia)
 
 
 
+
+
+/** \brief Initializes an interface name/index pair.
+ *
+ * This function creates an interface name/index object.
+ *
+ * In some circumstances (NETLINK) you need to specify the index of an
+ * interface. The kernel keeps a list of interface by index starting at 1
+ * and each have a name such as "eth0". This function initializes
+ * one of those pairs.
+ *
+ * \param[in] index  The index of the interface.
+ * \param[in] name  The name of the interface.
+ */
+iface_index_name::iface_index_name(int index, std::string const & name)
+    : f_index(index)
+    , f_name(name)
+{
+}
+
+
+/** \brief Get the index of this interface.
+ *
+ * This function is used to retrieve the index of a name/index pair.
+ *
+ * \return The index of the name/index pair.
+ */
+int iface_index_name::get_index() const
+{
+    return f_index;
+}
+
+
+/** \brief Get the name of this interface.
+ *
+ * This function is used to retrieve the name of a name/index pair.
+ *
+ * \return The name of the name/index pair.
+ */
+std::string const & iface_index_name::get_name() const
+{
+    return f_name;
+}
+
+
+
+/** \brief Get the list of existing interfaces.
+ *
+ * This function gathers the complete list of interfaces by index and
+ * name pairs. The result is a vector of iface_index_name objects.
+ *
+ * Note that over time the index of an interface can change since interfaces
+ * can be added and removed from your network configuration. It is a good
+ * idea to not cache that information.
+ *
+ * \return A vector of index/name pair objects.
+ */
+iface_index_name::vector_t get_interface_name_index()
+{
+    iface_index_name::vector_t result;
+
+    // the index starts at 1
+    //
+    for(int index(1);; ++index)
+    {
+        // get the next interface name by index
+        //
+        char name[IF_NAMESIZE + 1];
+        if(if_indextoname(index, name) == nullptr)
+        {
+            return result;
+        }
+
+        // make sure the name is null terminated
+        //
+        name[IF_NAMESIZE] = '\0';
+
+        iface_index_name const in(index, name);
+        result.push_back(in);
+    }
+    // NOT REACHED, the loop is broken by a "return"
+}
+
+
+/** \brief Get the index of an interface from its name.
+ *
+ * If you are given the name of an interface, you can retrieve its index
+ * by calling this function. The resulting value is the index from 1 to n.
+ *
+ * If the named interface is not found, then the function returns 0.
+ *
+ * \return The interface index or 0 on error.
+ */
+unsigned int get_interface_index_by_name(std::string const & name)
+{
+    return if_nametoindex(name.c_str());
+}
+
+
+
+
+
+
 /** \brief Return a list of local addresses on this machine.
  *
  * Peruse the list of available interfaces, and return any detected
