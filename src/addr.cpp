@@ -307,7 +307,7 @@ void addr::set_ipv4(struct sockaddr_in const & in)
     // then transform the IPv4 to an IPv6
     //
     // Note: this is not an IPv6 per se, it is an IPv4 mapped within an
-    //       IPv6 and your network anwway stack needs to support IPv4
+    //       IPv6 and your network stack needs to support IPv4 anyway
     //       in order to use that IP...
     //
     f_address.sin6_family = AF_INET6;
