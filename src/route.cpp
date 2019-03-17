@@ -1,5 +1,5 @@
 // Network Address -- route class functions
-// Copyright (c) 2018  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2018-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/libaddr
 //

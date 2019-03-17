@@ -1,5 +1,5 @@
 // Network Address -- get addresses on the command line and validate them
-// Copyright (c) 2012-2018  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/libaddr
 //
