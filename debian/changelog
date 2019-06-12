@@ -1,3 +1,10 @@
+libaddr (1.0.16.0~xenial) xenial; urgency=high
+
+  * Added a PROJECT_BRIEF to the documentation.
+  * Added in=C++ to the MAPPING_EXTENSION.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Tue, 11 Jun 2019 23:41:17 -0800
+
 libaddr (1.0.15.1~xenial) xenial; urgency=high
 
   * Bump version to get a recompile on launchpad.
