@@ -26,55 +26,54 @@
 # THE SOFTWARE.
 #
 
-# Setup Catch
-#
-find_package( Catch )
-if( ${CATCH_INCLUDE_DIR} STREQUAL "CATCH_INCLUDE_DIR-NOTFOUND" )
-    message( FATAL_ERROR "catch.hpp not found! Please run 'apt install catch'." )
-endif()
-include_directories(
-    ${CATCH_INCLUDE_DIR}
-)
-
 ##
 ## libaddr tests
 ##
 project(addr_test)
 
-# The reference to the src folder is required by the internal test
-include_directories(
-    ${addr_library_BINARY_DIR}/src
-    ${addr_library_SOURCE_DIR}/src
-    ${LIBEXCEPT_INCLUDE_DIRS}
-)
+find_package(Catch)
+if(CATCH_FOUND)
 
-add_executable(${PROJECT_NAME}
-    test_addr_main.cpp
-    test_addr_global.cpp
-    test_addr_interfaces.cpp
-    test_addr_ipv4.cpp
-    test_addr_ipv6.cpp
-    test_addr_range.cpp
-    test_addr_routes.cpp
-)
+    add_definitions(
+        -DCATCH_CONFIG_PREFIX_ALL
+    )
 
-target_link_libraries(${PROJECT_NAME}
-    addr
-)
+    # The reference to the src folder is required by the internal test
+    include_directories(
+        ${addr_library_BINARY_DIR}/src
+        ${addr_library_SOURCE_DIR}/src
+        ${CATCH_INCLUDE_DIR}
+        ${LIBEXCEPT_INCLUDE_DIRS}
+    )
 
+    add_executable(${PROJECT_NAME}
+        test_addr_main.cpp
+        test_addr_global.cpp
+        test_addr_interfaces.cpp
+        test_addr_ipv4.cpp
+        test_addr_ipv6.cpp
+        test_addr_range.cpp
+        test_addr_routes.cpp
+    )
 
-##
-## Run all the tests
-##
-project(run_libaddr_tests)
+    target_link_libraries(${PROJECT_NAME}
+        addr
+    )
 
-add_custom_target(run_libaddr_tests
-    COMMAND
-        addr_test
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS
-        addr_test
-)
+    # if running a service for test purposes, we can add:
+    #          --tcp-port <number>
+    # on the command line...
+    #
+    add_test(
+        NAME
+            unittest
+
+        COMMAND
+            ${PROJECT_NAME}
+
+        WORKING_DIRECTORY
+            ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+endif()
 
 # vim: ts=4 sw=4 et

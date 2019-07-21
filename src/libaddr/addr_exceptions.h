@@ -39,25 +39,32 @@ namespace addr
 {
 
 
-class addr_invalid_argument_exception : public libexcept::exception_t
+class addr_exception : public libexcept::exception_t
 {
 public:
-    addr_invalid_argument_exception(char const *        what_msg) : exception_t(what_msg) {}
-    addr_invalid_argument_exception(std::string const & what_msg) : exception_t(what_msg) {}
+    addr_exception(char const *        what_msg) : exception_t(std::string("addr: ") + what_msg) {}
+    addr_exception(std::string const & what_msg) : exception_t("addr: " + what_msg) {}
 };
 
-class addr_invalid_state_exception : public libexcept::exception_t
+class addr_invalid_argument_exception : public addr_exception
 {
 public:
-    addr_invalid_state_exception(char const *        what_msg) : exception_t(what_msg) {}
-    addr_invalid_state_exception(std::string const & what_msg) : exception_t(what_msg) {}
+    addr_invalid_argument_exception(char const *        what_msg) : addr_exception(what_msg) {}
+    addr_invalid_argument_exception(std::string const & what_msg) : addr_exception(what_msg) {}
 };
 
-class addr_io_exception : public libexcept::exception_t
+class addr_invalid_state_exception : public addr_exception
 {
 public:
-    addr_io_exception(char const *        what_msg) : exception_t(what_msg) {}
-    addr_io_exception(std::string const & what_msg) : exception_t(what_msg) {}
+    addr_invalid_state_exception(char const *        what_msg) : addr_exception(what_msg) {}
+    addr_invalid_state_exception(std::string const & what_msg) : addr_exception(what_msg) {}
+};
+
+class addr_io_exception : public addr_exception
+{
+public:
+    addr_io_exception(char const *        what_msg) : addr_exception(what_msg) {}
+    addr_io_exception(std::string const & what_msg) : addr_exception(what_msg) {}
 };
 
 class addr_invalid_structure_exception : public libexcept::logic_exception_t

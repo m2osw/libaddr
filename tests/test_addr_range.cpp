@@ -43,20 +43,20 @@
 
 
 
-TEST_CASE( "ipv4::range", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
 {
-    GIVEN("addr_range()")
+    CATCH_GIVEN("addr_range()")
     {
         addr::addr_range range;
 
-        SECTION("verify defaults")
+        CATCH_SECTION("verify defaults")
         {
             addr::addr a;
 
-            REQUIRE_FALSE(range.has_from());
-            REQUIRE_FALSE(range.has_to());
-            REQUIRE_FALSE(range.is_range());
-            REQUIRE_FALSE(range.is_empty());
+            CATCH_REQUIRE_FALSE(range.has_from());
+            CATCH_REQUIRE_FALSE(range.has_to());
+            CATCH_REQUIRE_FALSE(range.is_range());
+            CATCH_REQUIRE_FALSE(range.is_empty());
 //std::cerr << "++++++++++++++++++ " << a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT) << "\n";
 //std::cerr << "++++++++++++++++++ " << range.get_from().to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT) << "\n";
 //
@@ -73,22 +73,22 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
 //for(size_t idx(0); idx < sizeof(in6_b); ++idx)
 //    std::cerr << " " << static_cast<int>(reinterpret_cast<char *>(&in6_b)[idx]);
 //std::cerr << "\n";
-            REQUIRE(range.get_from() == a);
-            REQUIRE(range.get_to() == a);
+            CATCH_REQUIRE(range.get_from() == a);
+            CATCH_REQUIRE(range.get_to() == a);
 
             // to use the const version of the get_from/to() functions
             // we have to define a const refence to range
             //
             auto const & r(range);
-            REQUIRE(r.get_from() == a);
-            REQUIRE(r.get_to() == a);
+            CATCH_REQUIRE(r.get_from() == a);
+            CATCH_REQUIRE(r.get_to() == a);
 
             addr::addr other;
-            REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(r.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(r.is_in(other), addr::addr_invalid_state_exception);
         }
 
-        SECTION("test normal range (from <= to)")
+        CATCH_SECTION("test normal range (from <= to)")
         {
             addr::addr a;
             addr::addr other;
@@ -119,56 +119,56 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
 
             // test defaults first
             //
-            REQUIRE_FALSE(range.has_from());
-            REQUIRE_FALSE(range.has_to());
-            REQUIRE_FALSE(range.is_range());
-            REQUIRE_FALSE(range.is_empty());
-            REQUIRE(range.get_from() == a);
-            REQUIRE(range.get_to() == a);
+            CATCH_REQUIRE_FALSE(range.has_from());
+            CATCH_REQUIRE_FALSE(range.has_to());
+            CATCH_REQUIRE_FALSE(range.is_range());
+            CATCH_REQUIRE_FALSE(range.is_empty());
+            CATCH_REQUIRE(range.get_from() == a);
+            CATCH_REQUIRE(range.get_to() == a);
             auto const & r1(range);
-            REQUIRE(r1.get_from() == a);
-            REQUIRE(r1.get_to() == a);
-            REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(r1.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE(range.match(a));
-            REQUIRE_FALSE(range.match(f));
-            REQUIRE_FALSE(range.match(t));
+            CATCH_REQUIRE(r1.get_from() == a);
+            CATCH_REQUIRE(r1.get_to() == a);
+            CATCH_REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(r1.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE(range.match(a));
+            CATCH_REQUIRE_FALSE(range.match(f));
+            CATCH_REQUIRE_FALSE(range.match(t));
 
             range.set_from(f);
 
             // defined "from", test the results
             //
-            REQUIRE(range.has_from());
-            REQUIRE_FALSE(range.has_to());
-            REQUIRE_FALSE(range.is_range());
-            REQUIRE_FALSE(range.is_empty());
-            REQUIRE(range.get_from() == f);
-            REQUIRE(range.get_to() == a);
+            CATCH_REQUIRE(range.has_from());
+            CATCH_REQUIRE_FALSE(range.has_to());
+            CATCH_REQUIRE_FALSE(range.is_range());
+            CATCH_REQUIRE_FALSE(range.is_empty());
+            CATCH_REQUIRE(range.get_from() == f);
+            CATCH_REQUIRE(range.get_to() == a);
             auto const & r2(range);
-            REQUIRE(r2.get_from() == f);
-            REQUIRE(r2.get_to() == a);
-            REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(r2.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_FALSE(range.match(a));
-            REQUIRE(range.match(f));
-            REQUIRE_FALSE(range.match(t));
+            CATCH_REQUIRE(r2.get_from() == f);
+            CATCH_REQUIRE(r2.get_to() == a);
+            CATCH_REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(r2.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_FALSE(range.match(a));
+            CATCH_REQUIRE(range.match(f));
+            CATCH_REQUIRE_FALSE(range.match(t));
 
             range.set_to(t);
 
             // defined "to", test the results
             //
-            REQUIRE(range.has_from());
-            REQUIRE(range.has_to());
-            REQUIRE(range.is_range());
-            REQUIRE_FALSE(range.is_empty());
-            REQUIRE(range.get_from() == f);
-            REQUIRE(range.get_to() == t);
+            CATCH_REQUIRE(range.has_from());
+            CATCH_REQUIRE(range.has_to());
+            CATCH_REQUIRE(range.is_range());
+            CATCH_REQUIRE_FALSE(range.is_empty());
+            CATCH_REQUIRE(range.get_from() == f);
+            CATCH_REQUIRE(range.get_to() == t);
             auto const & r3(range);
-            REQUIRE(r3.get_from() == f);
-            REQUIRE(r3.get_to() == t);
-            REQUIRE_FALSE(range.match(a));
-            REQUIRE(range.match(f));
-            REQUIRE(range.match(t));
+            CATCH_REQUIRE(r3.get_from() == f);
+            CATCH_REQUIRE(r3.get_to() == t);
+            CATCH_REQUIRE_FALSE(range.match(a));
+            CATCH_REQUIRE(range.match(f));
+            CATCH_REQUIRE(range.match(t));
 
             // IP before range
             {
@@ -183,7 +183,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr b;
                 b.set_ipv4(bin);
 
-                REQUIRE_FALSE(range.is_in(b));
+                CATCH_REQUIRE_FALSE(range.is_in(b));
             }
 
             for(int idx(0); idx < 10; ++idx)
@@ -199,7 +199,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr b;
                 b.set_ipv4(bin);
 
-                REQUIRE_FALSE(range.is_in(b));
+                CATCH_REQUIRE_FALSE(range.is_in(b));
             }
 
             // IP after range
@@ -215,7 +215,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr after;
                 after.set_ipv4(ain);
 
-                REQUIRE_FALSE(range.is_in(after));
+                CATCH_REQUIRE_FALSE(range.is_in(after));
             }
 
             for(int idx(0); idx < 10; ++idx)
@@ -231,7 +231,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr after;
                 after.set_ipv4(ain);
 
-                REQUIRE_FALSE(range.is_in(after));
+                CATCH_REQUIRE_FALSE(range.is_in(after));
             }
 
             // IP in range
@@ -249,11 +249,11 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr i;
                 i.set_ipv4(iin);
 
-                REQUIRE(range.is_in(i));
+                CATCH_REQUIRE(range.is_in(i));
             }
         }
 
-        SECTION("test empty range (from > to)")
+        CATCH_SECTION("test empty range (from > to)")
         {
             addr::addr a;
             addr::addr other;
@@ -284,56 +284,56 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
 
             // test defaults first
             //
-            REQUIRE_FALSE(range.has_from());
-            REQUIRE_FALSE(range.has_to());
-            REQUIRE_FALSE(range.is_range());
-            REQUIRE_FALSE(range.is_empty());
-            REQUIRE(range.get_from() == a);
-            REQUIRE(range.get_to() == a);
+            CATCH_REQUIRE_FALSE(range.has_from());
+            CATCH_REQUIRE_FALSE(range.has_to());
+            CATCH_REQUIRE_FALSE(range.is_range());
+            CATCH_REQUIRE_FALSE(range.is_empty());
+            CATCH_REQUIRE(range.get_from() == a);
+            CATCH_REQUIRE(range.get_to() == a);
             auto const & r1(range);
-            REQUIRE(r1.get_from() == a);
-            REQUIRE(r1.get_to() == a);
-            REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(r1.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE(range.match(a));
-            REQUIRE_FALSE(range.match(f));
-            REQUIRE_FALSE(range.match(t));
+            CATCH_REQUIRE(r1.get_from() == a);
+            CATCH_REQUIRE(r1.get_to() == a);
+            CATCH_REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(r1.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE(range.match(a));
+            CATCH_REQUIRE_FALSE(range.match(f));
+            CATCH_REQUIRE_FALSE(range.match(t));
 
             range.set_from(f);
 
             // defined "from", test the results
             //
-            REQUIRE(range.has_from());
-            REQUIRE_FALSE(range.has_to());
-            REQUIRE_FALSE(range.is_range());
-            REQUIRE_FALSE(range.is_empty());
-            REQUIRE(range.get_from() == f);
-            REQUIRE(range.get_to() == a);
+            CATCH_REQUIRE(range.has_from());
+            CATCH_REQUIRE_FALSE(range.has_to());
+            CATCH_REQUIRE_FALSE(range.is_range());
+            CATCH_REQUIRE_FALSE(range.is_empty());
+            CATCH_REQUIRE(range.get_from() == f);
+            CATCH_REQUIRE(range.get_to() == a);
             auto const & r2(range);
-            REQUIRE(r2.get_from() == f);
-            REQUIRE(r2.get_to() == a);
-            REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(r2.is_in(other), addr::addr_invalid_state_exception);
-            REQUIRE_FALSE(range.match(a));
-            REQUIRE(range.match(f));
-            REQUIRE_FALSE(range.match(t));
+            CATCH_REQUIRE(r2.get_from() == f);
+            CATCH_REQUIRE(r2.get_to() == a);
+            CATCH_REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(r2.is_in(other), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_FALSE(range.match(a));
+            CATCH_REQUIRE(range.match(f));
+            CATCH_REQUIRE_FALSE(range.match(t));
 
             range.set_to(t);
 
             // defined "to", test the results
             //
-            REQUIRE(range.has_from());
-            REQUIRE(range.has_to());
-            REQUIRE(range.is_range());
-            REQUIRE(range.is_empty());
-            REQUIRE(range.get_from() == f);
-            REQUIRE(range.get_to() == t);
+            CATCH_REQUIRE(range.has_from());
+            CATCH_REQUIRE(range.has_to());
+            CATCH_REQUIRE(range.is_range());
+            CATCH_REQUIRE(range.is_empty());
+            CATCH_REQUIRE(range.get_from() == f);
+            CATCH_REQUIRE(range.get_to() == t);
             auto const & r3(range);
-            REQUIRE(r3.get_from() == f);
-            REQUIRE(r3.get_to() == t);
-            REQUIRE_FALSE(range.match(a));
-            REQUIRE_FALSE(range.match(f));
-            REQUIRE_FALSE(range.match(t));
+            CATCH_REQUIRE(r3.get_from() == f);
+            CATCH_REQUIRE(r3.get_to() == t);
+            CATCH_REQUIRE_FALSE(range.match(a));
+            CATCH_REQUIRE_FALSE(range.match(f));
+            CATCH_REQUIRE_FALSE(range.match(t));
 
             // IP before range
             {
@@ -348,7 +348,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr b;
                 b.set_ipv4(bin);
 
-                REQUIRE_FALSE(range.is_in(b));
+                CATCH_REQUIRE_FALSE(range.is_in(b));
             }
 
             for(int idx(0); idx < 10; ++idx)
@@ -364,7 +364,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr b;
                 b.set_ipv4(bin);
 
-                REQUIRE_FALSE(range.is_in(b));
+                CATCH_REQUIRE_FALSE(range.is_in(b));
             }
 
             // IP after range
@@ -380,7 +380,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr after;
                 after.set_ipv4(ain);
 
-                REQUIRE_FALSE(range.is_in(after));
+                CATCH_REQUIRE_FALSE(range.is_in(after));
             }
 
             for(int idx(0); idx < 10; ++idx)
@@ -396,7 +396,7 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr after;
                 after.set_ipv4(ain);
 
-                REQUIRE_FALSE(range.is_in(after));
+                CATCH_REQUIRE_FALSE(range.is_in(after));
             }
 
             // IP in range
@@ -414,14 +414,14 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
                 addr::addr i;
                 i.set_ipv4(iin);
 
-                REQUIRE_FALSE(range.is_in(i));
+                CATCH_REQUIRE_FALSE(range.is_in(i));
             }
         }
     }
 
-    GIVEN("compute intersection of two ranges")
+    CATCH_GIVEN("compute intersection of two ranges")
     {
-        SECTION("two ranges that overlap")
+        CATCH_SECTION("two ranges that overlap")
         {
             // from is set to 10.1.0.0
             struct sockaddr_in f1in = sockaddr_in();
@@ -479,21 +479,21 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
             range2.set_from(f2);
             range2.set_to(t2);
 
-            REQUIRE(range1.is_range());
-            REQUIRE_FALSE(range1.is_empty());
-            REQUIRE(range2.is_range());
-            REQUIRE_FALSE(range2.is_empty());
+            CATCH_REQUIRE(range1.is_range());
+            CATCH_REQUIRE_FALSE(range1.is_empty());
+            CATCH_REQUIRE(range2.is_range());
+            CATCH_REQUIRE_FALSE(range2.is_empty());
 
             addr::addr_range range3(range1.intersection(range2));
 
-            REQUIRE(range3.is_range());
-            REQUIRE_FALSE(range3.is_empty());
+            CATCH_REQUIRE(range3.is_range());
+            CATCH_REQUIRE_FALSE(range3.is_empty());
 
-            REQUIRE(range3.get_from().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.2.0.0");
-            REQUIRE(range3.get_to().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
+            CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.2.0.0");
+            CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
         }
 
-        SECTION("two ranges that do not overlap")
+        CATCH_SECTION("two ranges that do not overlap")
         {
             // from is set to 10.1.0.0
             struct sockaddr_in f1in = sockaddr_in();
@@ -551,28 +551,28 @@ TEST_CASE( "ipv4::range", "[ipv4]" )
             range2.set_from(f2);
             range2.set_to(t2);
 
-            REQUIRE(range1.is_range());
-            REQUIRE_FALSE(range1.is_empty());
-            REQUIRE(range2.is_range());
-            REQUIRE_FALSE(range2.is_empty());
+            CATCH_REQUIRE(range1.is_range());
+            CATCH_REQUIRE_FALSE(range1.is_empty());
+            CATCH_REQUIRE(range2.is_range());
+            CATCH_REQUIRE_FALSE(range2.is_empty());
 
             addr::addr_range range3(range1.intersection(range2));
 
-            REQUIRE(range3.is_range());
-            REQUIRE(range3.is_empty());
+            CATCH_REQUIRE(range3.is_range());
+            CATCH_REQUIRE(range3.is_empty());
 
             // although it is "empty" we know the IPs and can test them
             //
-            REQUIRE(range3.get_from().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.10.0.0");
-            REQUIRE(range3.get_to().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
+            CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.10.0.0");
+            CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
 
             addr::addr_range::vector_t rlist;
             rlist.push_back(range1);
             rlist.push_back(range2);
-            REQUIRE(addr::address_match_ranges(rlist, f1));
-            REQUIRE(addr::address_match_ranges(rlist, f2));
-            REQUIRE(addr::address_match_ranges(rlist, t1));
-            REQUIRE(addr::address_match_ranges(rlist, t2));
+            CATCH_REQUIRE(addr::address_match_ranges(rlist, f1));
+            CATCH_REQUIRE(addr::address_match_ranges(rlist, f2));
+            CATCH_REQUIRE(addr::address_match_ranges(rlist, t1));
+            CATCH_REQUIRE(addr::address_match_ranges(rlist, t2));
         }
     }
 }

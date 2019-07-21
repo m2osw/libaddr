@@ -50,21 +50,21 @@
 #include <net/if.h>
 
 
-TEST_CASE( "ipv4::interfaces", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
 {
-    GIVEN("iface::get_local_addresses()")
+    CATCH_GIVEN("iface::get_local_addresses()")
     {
         addr::iface::vector_t list(addr::iface::get_local_addresses());
 
-        SECTION("verify list")
+        CATCH_SECTION("verify list")
         {
-            REQUIRE_FALSE(list.empty()); // at least "lo"
+            CATCH_REQUIRE_FALSE(list.empty()); // at least "lo"
 
             // add stuff like verify there is an "lo" entry?
             for(auto i : list)
             {
-                REQUIRE_FALSE(i.get_name().empty());
-                REQUIRE(i.get_flags() != 0);
+                CATCH_REQUIRE_FALSE(i.get_name().empty());
+                CATCH_REQUIRE(i.get_flags() != 0);
 
                 switch(i.get_address().get_network_type())
                 {
@@ -76,24 +76,24 @@ TEST_CASE( "ipv4::interfaces", "[ipv4]" )
 
                 default:
 std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().get_network_type()) << "\n";
-                    REQUIRE_FALSE("unexpected network type for interface");
+                    CATCH_REQUIRE_FALSE("unexpected network type for interface");
                     break;
 
                 }
 
-                REQUIRE(i.has_broadcast_address() == ((i.get_flags() & IFF_BROADCAST) != 0));
-                REQUIRE(i.has_destination_address() == ((i.get_flags() & IFF_POINTOPOINT) != 0));
+                CATCH_REQUIRE(i.has_broadcast_address() == ((i.get_flags() & IFF_BROADCAST) != 0));
+                CATCH_REQUIRE(i.has_destination_address() == ((i.get_flags() & IFF_POINTOPOINT) != 0));
 
                 addr::addr const & b(i.get_broadcast_address());
                 if(!i.has_broadcast_address())
                 {
-                    REQUIRE(b.is_default());
+                    CATCH_REQUIRE(b.is_default());
                 }
 
                 addr::addr const & d(i.get_destination_address());
                 if(!i.has_destination_address())
                 {
-                    REQUIRE(d.is_default());
+                    CATCH_REQUIRE(d.is_default());
                 }
             }
         }

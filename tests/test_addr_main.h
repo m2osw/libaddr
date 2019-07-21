@@ -43,6 +43,10 @@
 #include "libaddr/addr_exceptions.h"
 #include "libaddr/version.h"
 
+// catch
+//
+#include <catch2/snapcatch2.hpp>
+
 // C++ library
 //
 #include <string>
@@ -56,20 +60,11 @@
 #include <limits.h>
 #include <netdb.h>
 
-// catch
-//
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#pragma GCC diagnostic ignored "-Woverloaded-virtual"
-#include <catch.hpp>
-#pragma GCC diagnostic pop
 
 
 
 
-
-namespace unittest
+namespace SNAP_CATCH2_NAMESPACE
 {
 
 // Place globals defined by main() from the command line and used
@@ -80,5 +75,5 @@ extern int          g_tcp_port;
 
 
 }
-// namespace unittest
+// namespace SNAP_CATCH2_NAMESPACE
 // vim: ts=4 sw=4 et

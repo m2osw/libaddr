@@ -1,12 +1,12 @@
 Source: libaddr
 Priority: optional
 Maintainer: Alexis Wilke <alexis@m2osw.com>
-Build-Depends: catch,
-    cmake,
+Build-Depends: cmake,
     debhelper,
     doxygen,
     graphviz,
     libexcept-dev (>= 1.0.2.250~xenial),
+    snapcatch2 (>= 2.9.1.0~xenial),
     snapcmakemodules (>= 1.0.35.3~xenial)
 Standards-Version: 3.9.4
 Section: libs

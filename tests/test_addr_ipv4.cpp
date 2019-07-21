@@ -80,13 +80,13 @@ void socket_deleter(int * s)
 
 
 
-TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
 {
-    GIVEN("addr()")
+    CATCH_GIVEN("addr()")
     {
         addr::addr a;
 
-        SECTION("set IPv4 with an invalid family")
+        CATCH_SECTION("set IPv4 with an invalid family")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -98,17 +98,17 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 while(in.sin_family == AF_INET);
                 in.sin_port = htons(rand());
                 in.sin_addr.s_addr = htonl(rand() ^ (rand() << 16));
-                REQUIRE_THROWS_AS(a.set_ipv4(in), addr::addr_invalid_argument_exception);
-                REQUIRE_THROWS_AS(addr::addr b(in), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_ipv4(in), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(addr::addr(in), addr::addr_invalid_argument_exception);
             }
         }
     }
 
-    GIVEN("addr_parser() with IPv4 settings")
+    CATCH_GIVEN("addr_parser() with IPv4 settings")
     {
         addr::addr_parser a;
 
-        SECTION("invalid allow flags (too small)")
+        CATCH_SECTION("invalid allow flags (too small)")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -129,13 +129,13 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 }
                 addr::addr_parser::flag_t const flag(static_cast<addr::addr_parser::flag_t>(n));
 
-                REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument_exception);
-                REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument_exception);
-                REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument_exception);
             }
         }
 
-        SECTION("invalid allow flags (too large)")
+        CATCH_SECTION("invalid allow flags (too large)")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -153,47 +153,47 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 while(n < static_cast<int>(addr::addr_parser::flag_t::FLAG_max));
                 addr::addr_parser::flag_t const flag(static_cast<addr::addr_parser::flag_t>(n));
 
-                REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument_exception);
-                REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument_exception);
-                REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument_exception);
             }
         }
     }
 
-    GIVEN("addr_parser() with IPv4 addresses")
+    CATCH_GIVEN("addr_parser() with IPv4 addresses")
     {
-        SECTION("bad address")
+        CATCH_SECTION("bad address")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("{bad-ip}"));
-            REQUIRE(p.has_errors());
-            REQUIRE(p.error_count() == 1);
-            REQUIRE(p.error_messages() == "Invalid address in \"{bad-ip}\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
-            REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Invalid address in \"{bad-ip}\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
+            CATCH_REQUIRE(p.has_errors());
             p.clear_errors();
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 0);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 0);
         }
 
-        SECTION("required address")
+        CATCH_SECTION("required address")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
             p.set_allow(addr::addr_parser::flag_t::REQUIRED_ADDRESS, true);
             addr::addr_range::vector_t ips(p.parse(""));
-            REQUIRE(p.has_errors());
-            REQUIRE(p.error_count() == 1);
-            REQUIRE(p.error_messages() == "Required address is missing.\n");
-            REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Required address is missing.\n");
+            CATCH_REQUIRE(p.has_errors());
             p.clear_errors();
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 0);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 0);
         }
     }
 
-    GIVEN("addr_parser() with IPv4 ports")
+    CATCH_GIVEN("addr_parser() with IPv4 ports")
     {
-        SECTION("required port")
+        CATCH_SECTION("required port")
         {
             // optional + required -> required
             {
@@ -201,13 +201,13 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 p.set_protocol(IPPROTO_TCP);
                 p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
                 addr::addr_range::vector_t ips(p.parse("1.2.3.4"));
-                REQUIRE(p.has_errors());
-                REQUIRE(p.error_count() == 1);
-                REQUIRE(p.error_messages() == "Required port is missing.\n");
-                REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.error_count() == 1);
+                CATCH_REQUIRE(p.error_messages() == "Required port is missing.\n");
+                CATCH_REQUIRE(p.has_errors());
                 p.clear_errors();
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 0);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 0);
             }
 
             // only required -> required just the same
@@ -217,33 +217,33 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 p.set_allow(addr::addr_parser::flag_t::PORT, false);
                 p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
                 addr::addr_range::vector_t ips(p.parse("1.2.3.4"));
-                REQUIRE(p.has_errors());
-                REQUIRE(p.error_count() == 1);
-                REQUIRE(p.error_messages() == "Required port is missing.\n");
-                REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.error_count() == 1);
+                CATCH_REQUIRE(p.error_messages() == "Required port is missing.\n");
+                CATCH_REQUIRE(p.has_errors());
                 p.clear_errors();
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 0);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 0);
             }
         }
 
-        SECTION("port not allowed")
+        CATCH_SECTION("port not allowed")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
             p.set_allow(addr::addr_parser::flag_t::PORT, false);
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::REQUIRED_PORT));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::REQUIRED_PORT));
             addr::addr_range::vector_t ips(p.parse("1.2.3.4:123"));
-            REQUIRE(p.has_errors());
-            REQUIRE(p.error_count() == 1);
-            REQUIRE(p.error_messages() == "Port not allowed (1.2.3.4:123).\n");
-            REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Port not allowed (1.2.3.4:123).\n");
+            CATCH_REQUIRE(p.has_errors());
             p.clear_errors();
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 0);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 0);
         }
 
-        SECTION("invalid port")
+        CATCH_SECTION("invalid port")
         {
             addr::addr_parser p;
 
@@ -260,18 +260,18 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                     port = rand() ^ (rand() << 16);
                 }
                 while(port >= -1 && port <= 65535); // -1 is valid here, it represents "no default port defined"
-                REQUIRE_THROWS_AS(p.set_default_port(port), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(p.set_default_port(port), addr::addr_invalid_argument_exception);
 
                 // verify port unchanged
                 //
-                REQUIRE(p.get_default_port() == default_port);
+                CATCH_REQUIRE(p.get_default_port() == default_port);
             }
         }
     }
 
-    GIVEN("addr_parser() with invalid masks")
+    CATCH_GIVEN("addr_parser() with invalid masks")
     {
-        SECTION("really large numbers (over 1000)")
+        CATCH_SECTION("really large numbers (over 1000)")
         {
             for(int idx(0); idx < 5; ++idx)
             {
@@ -282,14 +282,14 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 p.set_protocol(proto);
                 p.set_allow(p.flag_t::MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/" + std::to_string(mask)));
-                REQUIRE(p.has_errors());
-                REQUIRE(p.error_count() == 1);
-                REQUIRE(p.error_messages() == "Mask number too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
-                REQUIRE(ips.size() == 0);
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.error_count() == 1);
+                CATCH_REQUIRE(p.error_messages() == "Mask number too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
+                CATCH_REQUIRE(ips.size() == 0);
             }
         }
 
-        SECTION("ipv4 mask is limited between 0 and 32")
+        CATCH_SECTION("ipv4 mask is limited between 0 and 32")
         {
             for(int idx(0); idx < 5; ++idx)
             {
@@ -300,14 +300,14 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 p.set_protocol(proto);
                 p.set_allow(p.flag_t::MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/" + std::to_string(mask)));
-                REQUIRE(p.has_errors());
-                REQUIRE(p.error_count() == 1);
-                REQUIRE(p.error_messages() == "Unsupported mask size (" + std::to_string(mask) + ", expected 32 at the most for an IPv4).\n");
-                REQUIRE(ips.size() == 0);
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.error_count() == 1);
+                CATCH_REQUIRE(p.error_messages() == "Unsupported mask size (" + std::to_string(mask) + ", expected 32 at the most for an IPv4).\n");
+                CATCH_REQUIRE(ips.size() == 0);
             }
         }
 
-        SECTION("ipv4 mask cannot use name")
+        CATCH_SECTION("ipv4 mask cannot use name")
         {
             for(int idx(0); idx < 5; ++idx)
             {
@@ -317,14 +317,14 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 p.set_protocol(proto);
                 p.set_allow(addr::addr_parser::flag_t::MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/localhost"));
-                REQUIRE(p.has_errors());
-                REQUIRE(p.error_count() == 1);
-                REQUIRE(p.error_messages() == "Invalid mask in \"/localhost\", error -2 -- Name or service not known (errno: 0 -- Success).\n");
-                REQUIRE(ips.size() == 0);
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(p.error_count() == 1);
+                CATCH_REQUIRE(p.error_messages() == "Invalid mask in \"/localhost\", error -2 -- Name or service not known (errno: 0 -- Success).\n");
+                CATCH_REQUIRE(ips.size() == 0);
             }
         }
 
-        SECTION("ipv4 mask mismatch (mask uses ipv6)")
+        CATCH_SECTION("ipv4 mask mismatch (mask uses ipv6)")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -332,13 +332,13 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             p.set_protocol(proto);
             p.set_allow(addr::addr_parser::flag_t::MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/[1:2:3:4:5:6:7:8]"));
-            REQUIRE(p.has_errors());
-            REQUIRE(p.error_count() == 1);
-            REQUIRE(p.error_messages() == "The address uses the IPv4 syntax, the mask cannot use IPv6.\n");
-            REQUIRE(ips.size() == 0);
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "The address uses the IPv4 syntax, the mask cannot use IPv6.\n");
+            CATCH_REQUIRE(ips.size() == 0);
         }
 
-        SECTION("ipv4 mask mismatch (mask uses ipv6 without [...])")
+        CATCH_SECTION("ipv4 mask mismatch (mask uses ipv6 without [...])")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -346,33 +346,33 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             p.set_protocol(proto);
             p.set_allow(addr::addr_parser::flag_t::MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/1:2:3:4:5:6:7:8"));
-            REQUIRE(p.has_errors());
-            REQUIRE(p.error_count() == 1);
-            REQUIRE(p.error_messages() == "Incompatible address between the address and mask address (first was an IPv4 second an IPv6).\n");
-            REQUIRE(ips.size() == 0);
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Incompatible address between the address and mask address (first was an IPv4 second an IPv6).\n");
+            CATCH_REQUIRE(ips.size() == 0);
         }
     }
 
-    GIVEN("addr_parser() with invalid protocols")
+    CATCH_GIVEN("addr_parser() with invalid protocols")
     {
-        SECTION("invalid names")
+        CATCH_SECTION("invalid names")
         {
             addr::addr_parser p;
 
             // not changing default protocol
             //
-            REQUIRE(p.get_protocol() == -1);
-            REQUIRE_THROWS_AS(p.set_protocol("igmp"), addr::addr_invalid_argument_exception);
-            REQUIRE(p.get_protocol() == -1);
+            CATCH_REQUIRE(p.get_protocol() == -1);
+            CATCH_REQUIRE_THROWS_AS(p.set_protocol("igmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE(p.get_protocol() == -1);
 
             // change protocol to another valid value first
             //
             p.set_protocol("tcp");
-            REQUIRE_THROWS_AS(p.set_protocol("icmp"), addr::addr_invalid_argument_exception);
-            REQUIRE(p.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE_THROWS_AS(p.set_protocol("icmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
         }
 
-        SECTION("invalid numbers")
+        CATCH_SECTION("invalid numbers")
         {
             for(int idx(0); idx < 100; ++idx)
             {
@@ -387,108 +387,108 @@ TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
 
                 addr::addr_parser p;
 
-                REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument_exception);
-                REQUIRE(p.get_protocol() == -1);
+                CATCH_REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE(p.get_protocol() == -1);
 
                 // change protocol to another valid value first
                 //
                 p.set_protocol("tcp");
-                REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument_exception);
-                REQUIRE(p.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
             }
         }
     }
 }
 
 
-TEST_CASE( "ipv4::addr", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::addr", "[ipv4]" )
 {
-    GIVEN("addr()")
+    CATCH_GIVEN("addr()")
     {
         addr::addr a;
 
-        SECTION("not an IPv4")
+        CATCH_SECTION("not an IPv4")
         {
-            REQUIRE_FALSE(a.is_ipv4());
+            CATCH_REQUIRE_FALSE(a.is_ipv4());
 
             struct sockaddr_in in;
-            REQUIRE_THROWS_AS(a.get_ipv4(in), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY),          addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS),      addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT),          addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK),          addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK), addr::addr_invalid_state_exception);
-            REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL),           addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.get_ipv4(in), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY),          addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS),      addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT),          addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK),          addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL),           addr::addr_invalid_state_exception);
         }
 
-        SECTION("default network type (0.0.0.0)")
+        CATCH_SECTION("default network type (0.0.0.0)")
         {
-            REQUIRE(a.is_default());
-            REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
-            REQUIRE(a.get_network_type_string() == "Any");
+            CATCH_REQUIRE(a.is_default());
+            CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
+            CATCH_REQUIRE(a.get_network_type_string() == "Any");
         }
 
-        SECTION("IPv6 ANY")
+        CATCH_SECTION("IPv6 ANY")
         {
             struct sockaddr_in6 in6;
             a.get_ipv6(in6);
-            REQUIRE(in6.sin6_addr.s6_addr32[0] == 0);
-            REQUIRE(in6.sin6_addr.s6_addr32[1] == 0);
-            REQUIRE(in6.sin6_addr.s6_addr32[2] == 0);
-            REQUIRE(in6.sin6_addr.s6_addr32[3] == 0);
-            REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == "::");
-            REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == "[::]");
-            REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT)          == "[::]:0");
-            REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
-            REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
-            REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
+            CATCH_REQUIRE(in6.sin6_addr.s6_addr32[0] == 0);
+            CATCH_REQUIRE(in6.sin6_addr.s6_addr32[1] == 0);
+            CATCH_REQUIRE(in6.sin6_addr.s6_addr32[2] == 0);
+            CATCH_REQUIRE(in6.sin6_addr.s6_addr32[3] == 0);
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == "::");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == "[::]");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT)          == "[::]:0");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
         }
 
-        SECTION("IPv4 or IPv6 string")
+        CATCH_SECTION("IPv4 or IPv6 string")
         {
-            REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == "::");
-            REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == "[::]");
-            REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT)          == "[::]:0");
-            REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
-            REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
-            REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == "::");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == "[::]");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT)          == "[::]:0");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
         }
 
-        SECTION("interface determination")
+        CATCH_SECTION("interface determination")
         {
-            REQUIRE(addr::find_addr_interface(a, false) == nullptr);
-            REQUIRE(addr::find_addr_interface(a, true) != nullptr);
+            CATCH_REQUIRE(addr::find_addr_interface(a, false) == nullptr);
+            CATCH_REQUIRE(addr::find_addr_interface(a, true) != nullptr);
         }
 
-        SECTION("default name/service/port/protocol")
+        CATCH_SECTION("default name/service/port/protocol")
         {
-            REQUIRE(a.get_name() == std::string());
-            REQUIRE(a.get_service() == std::string());
-            REQUIRE(a.get_port() == 0);
-            REQUIRE(a.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(a.get_name() == std::string());
+            CATCH_REQUIRE(a.get_service() == std::string());
+            CATCH_REQUIRE(a.get_port() == 0);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_TCP);
         }
 
-        SECTION("compare with self")
+        CATCH_SECTION("compare with self")
         {
-            REQUIRE(a == a);
-            REQUIRE_FALSE(a != a);
-            REQUIRE_FALSE(a < a);
-            REQUIRE(a <= a);
-            REQUIRE_FALSE(a > a);
-            REQUIRE(a >= a);
+            CATCH_REQUIRE(a == a);
+            CATCH_REQUIRE_FALSE(a != a);
+            CATCH_REQUIRE_FALSE(a < a);
+            CATCH_REQUIRE(a <= a);
+            CATCH_REQUIRE_FALSE(a > a);
+            CATCH_REQUIRE(a >= a);
         }
 
-        SECTION("compare with another 0.0.0.0")
+        CATCH_SECTION("compare with another 0.0.0.0")
         {
             {
                 addr::addr b;
 
-                REQUIRE(a == b);
-                REQUIRE_FALSE(a != b);
-                REQUIRE_FALSE(a < b);
-                REQUIRE(a <= b);
-                REQUIRE_FALSE(a > b);
-                REQUIRE(a >= b);
+                CATCH_REQUIRE(a == b);
+                CATCH_REQUIRE_FALSE(a != b);
+                CATCH_REQUIRE_FALSE(a < b);
+                CATCH_REQUIRE(a <= b);
+                CATCH_REQUIRE_FALSE(a > b);
+                CATCH_REQUIRE(a >= b);
             }
 
             {
@@ -501,12 +501,12 @@ TEST_CASE( "ipv4::addr", "[ipv4]" )
                 in6.sin6_addr.s6_addr32[3] = htonl(0);
                 addr::addr b(in6);
 
-                REQUIRE(a == b);
-                REQUIRE_FALSE(a != b);
-                REQUIRE_FALSE(a < b);
-                REQUIRE(a <= b);
-                REQUIRE_FALSE(a > b);
-                REQUIRE(a >= b);
+                CATCH_REQUIRE(a == b);
+                CATCH_REQUIRE_FALSE(a != b);
+                CATCH_REQUIRE_FALSE(a < b);
+                CATCH_REQUIRE(a <= b);
+                CATCH_REQUIRE_FALSE(a > b);
+                CATCH_REQUIRE(a >= b);
             }
 
             // ANY in IPv4 != ANY in IPv6...
@@ -518,16 +518,16 @@ TEST_CASE( "ipv4::addr", "[ipv4]" )
                 in.sin_addr.s_addr = htonl(0);
                 addr::addr b(in);
 
-                REQUIRE_FALSE(a == b);
-                REQUIRE(a != b);
-                REQUIRE(a < b);
-                REQUIRE(a <= b);
-                REQUIRE_FALSE(a > b);
-                REQUIRE_FALSE(a >= b);
+                CATCH_REQUIRE_FALSE(a == b);
+                CATCH_REQUIRE(a != b);
+                CATCH_REQUIRE(a < b);
+                CATCH_REQUIRE(a <= b);
+                CATCH_REQUIRE_FALSE(a > b);
+                CATCH_REQUIRE_FALSE(a >= b);
             }
         }
 
-        SECTION("compare with IPv4 127.0.0.1")
+        CATCH_SECTION("compare with IPv4 127.0.0.1")
         {
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -535,24 +535,24 @@ TEST_CASE( "ipv4::addr", "[ipv4]" )
             in.sin_addr.s_addr = htonl((127 << 24) | 1);
             addr::addr b(in);
 
-            REQUIRE_FALSE(a == b);
-            REQUIRE(a != b);
-            REQUIRE(a < b);
-            REQUIRE(a <= b);
-            REQUIRE_FALSE(a > b);
-            REQUIRE_FALSE(a >= b);
+            CATCH_REQUIRE_FALSE(a == b);
+            CATCH_REQUIRE(a != b);
+            CATCH_REQUIRE(a < b);
+            CATCH_REQUIRE(a <= b);
+            CATCH_REQUIRE_FALSE(a > b);
+            CATCH_REQUIRE_FALSE(a >= b);
         }
     }
 }
 
 
-TEST_CASE( "ipv4::address", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
 {
-    GIVEN("addr() with an IPv4")
+    CATCH_GIVEN("addr() with an IPv4")
     {
         addr::addr a;
 
-        SECTION("set_ipv4() / get_ipv4()")
+        CATCH_SECTION("set_ipv4() / get_ipv4()")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -566,17 +566,17 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
                 addr::addr b(in);
                 struct sockaddr_in out;
                 b.get_ipv4(out);
-                REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+                CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
                 // test set
                 //
                 a.set_ipv4(in);
                 a.get_ipv4(out);
-                REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+                CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
             }
         }
 
-        SECTION("set_ipv4() / to_ipv4_string()")
+        CATCH_SECTION("set_ipv4() / to_ipv4_string()")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -601,16 +601,16 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
                 // check IPv4 as a string
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == ip);
-                REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == ip);
-                REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT)          == ip + ":" + port_str);
-                REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK)          == ip + "/255.255.255.255"); // will change to 32 at some point
-                REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == ip + "/255.255.255.255");
-                REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL)           == ip + ":" + port_str + "/255.255.255.255");
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == ip);
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == ip);
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT)          == ip + ":" + port_str);
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK)          == ip + "/255.255.255.255"); // will change to 32 at some point
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == ip + "/255.255.255.255");
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL)           == ip + ":" + port_str + "/255.255.255.255");
             }
         }
 
-        SECTION("name of various IPs")
+        CATCH_SECTION("name of various IPs")
         {
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -620,104 +620,104 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
             // verify network type
             //
             a.set_ipv4(in);
-            REQUIRE(a.get_name() == std::string()); // no name for "any" (TCP)
+            CATCH_REQUIRE(a.get_name() == std::string()); // no name for "any" (TCP)
 
             a.set_protocol(IPPROTO_UDP);
-            REQUIRE(a.get_name() == std::string()); // no name for "any" (UDP)
+            CATCH_REQUIRE(a.get_name() == std::string()); // no name for "any" (UDP)
 
             in.sin_addr.s_addr = htonl(0x7f000001);
             a.set_ipv4(in);
             char hostname[HOST_NAME_MAX + 1];
             hostname[HOST_NAME_MAX] = '\0';
-            REQUIRE(gethostname(hostname, sizeof(hostname)) == 0);
-            REQUIRE(hostname[0] != '\0');
+            CATCH_REQUIRE(gethostname(hostname, sizeof(hostname)) == 0);
+            CATCH_REQUIRE(hostname[0] != '\0');
             std::string localhost(a.get_name());
             bool const localhost_flag(localhost == hostname || localhost == "localhost");
-            REQUIRE(localhost_flag);
+            CATCH_REQUIRE(localhost_flag);
 
-            REQUIRE(addr::find_addr_interface(a, false) != nullptr);
+            CATCH_REQUIRE(addr::find_addr_interface(a, false) != nullptr);
         }
     }
 
-    GIVEN("addr_parser() with IPv4 addresses")
+    CATCH_GIVEN("addr_parser() with IPv4 addresses")
     {
-        SECTION("verify basics")
+        CATCH_SECTION("verify basics")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            REQUIRE(p.get_default_address4() == "");
-            REQUIRE(p.get_default_address6() == "");
-            REQUIRE(p.get_default_port() == -1);
-            REQUIRE(p.get_default_mask4() == "");
-            REQUIRE(p.get_default_mask6() == "");
+            CATCH_REQUIRE(p.get_default_address4() == "");
+            CATCH_REQUIRE(p.get_default_address6() == "");
+            CATCH_REQUIRE(p.get_default_port() == -1);
+            CATCH_REQUIRE(p.get_default_mask4() == "");
+            CATCH_REQUIRE(p.get_default_mask6() == "");
             addr::addr_range::vector_t ips(p.parse("1.2.3.4"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 1);
             addr::addr_range const & r(ips[0]);
-            REQUIRE(r.has_from());
-            REQUIRE_FALSE(r.has_to());
-            REQUIRE_FALSE(r.is_range());
-            REQUIRE_FALSE(r.is_empty());
+            CATCH_REQUIRE(r.has_from());
+            CATCH_REQUIRE_FALSE(r.has_to());
+            CATCH_REQUIRE_FALSE(r.is_range());
+            CATCH_REQUIRE_FALSE(r.is_empty());
             addr::addr f(r.get_from());
-            REQUIRE(f.is_ipv4());
-            REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-            REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-            REQUIRE(f.get_port() == 0);
-            REQUIRE(f.get_protocol() == IPPROTO_TCP);
-            REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE(f.is_ipv4());
+            CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+            CATCH_REQUIRE(f.get_port() == 0);
+            CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
             uint8_t mask[16] = {};
             f.get_mask(mask);
             for(int idx(0); idx < 16; ++idx)
             {
-                REQUIRE(mask[idx] == 255);
+                CATCH_REQUIRE(mask[idx] == 255);
             }
         }
 
-        SECTION("verify default address")
+        CATCH_SECTION("verify default address")
         {
             addr::addr_parser p;
 
             p.set_default_address("1.5.19.200");
-            REQUIRE(p.get_default_address4() == "1.5.19.200");
-            REQUIRE(p.get_default_address6() == "");
+            CATCH_REQUIRE(p.get_default_address4() == "1.5.19.200");
+            CATCH_REQUIRE(p.get_default_address6() == "");
             p.set_default_address("");
-            REQUIRE(p.get_default_address4() == "");
-            REQUIRE(p.get_default_address6() == "");
+            CATCH_REQUIRE(p.get_default_address4() == "");
+            CATCH_REQUIRE(p.get_default_address6() == "");
 
             p.set_default_address("1.5.19.200");
-            REQUIRE(p.get_default_address4() == "1.5.19.200");
-            REQUIRE(p.get_default_address6() == "");
+            CATCH_REQUIRE(p.get_default_address4() == "1.5.19.200");
+            CATCH_REQUIRE(p.get_default_address6() == "");
             p.set_default_address("[4:5:4:5:7:8:7:8]");
-            REQUIRE(p.get_default_address4() == "1.5.19.200");
-            REQUIRE(p.get_default_address6() == "4:5:4:5:7:8:7:8");
+            CATCH_REQUIRE(p.get_default_address4() == "1.5.19.200");
+            CATCH_REQUIRE(p.get_default_address6() == "4:5:4:5:7:8:7:8");
             p.set_default_address("");
-            REQUIRE(p.get_default_address4() == "");
-            REQUIRE(p.get_default_address6() == "");
+            CATCH_REQUIRE(p.get_default_address4() == "");
+            CATCH_REQUIRE(p.get_default_address6() == "");
         }
 
-        SECTION("verify default mask")
+        CATCH_SECTION("verify default mask")
         {
             addr::addr_parser p;
 
             p.set_default_mask("1.5.19.200");
-            REQUIRE(p.get_default_mask4() == "1.5.19.200");
-            REQUIRE(p.get_default_mask6() == "");
+            CATCH_REQUIRE(p.get_default_mask4() == "1.5.19.200");
+            CATCH_REQUIRE(p.get_default_mask6() == "");
             p.set_default_mask("");
-            REQUIRE(p.get_default_mask4() == "");
-            REQUIRE(p.get_default_mask6() == "");
+            CATCH_REQUIRE(p.get_default_mask4() == "");
+            CATCH_REQUIRE(p.get_default_mask6() == "");
 
             p.set_default_mask("1.5.19.200");
-            REQUIRE(p.get_default_mask4() == "1.5.19.200");
-            REQUIRE(p.get_default_mask6() == "");
+            CATCH_REQUIRE(p.get_default_mask4() == "1.5.19.200");
+            CATCH_REQUIRE(p.get_default_mask6() == "");
             p.set_default_mask("[4:5:4:5:7:8:7:8]");
-            REQUIRE(p.get_default_mask4() == "1.5.19.200");
-            REQUIRE(p.get_default_mask6() == "4:5:4:5:7:8:7:8");
+            CATCH_REQUIRE(p.get_default_mask4() == "1.5.19.200");
+            CATCH_REQUIRE(p.get_default_mask6() == "4:5:4:5:7:8:7:8");
             p.set_default_mask("");
-            REQUIRE(p.get_default_mask4() == "");
-            REQUIRE(p.get_default_mask6() == "");
+            CATCH_REQUIRE(p.get_default_mask4() == "");
+            CATCH_REQUIRE(p.get_default_mask6() == "");
         }
 
-        SECTION("verify default allow flags")
+        CATCH_SECTION("verify default allow flags")
         {
             addr::addr_parser p;
 
@@ -729,101 +729,101 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
                 case addr::addr_parser::flag_t::PORT:
                     // only the ADDRESS and PORT are true by default
                     //
-                    REQUIRE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
+                    CATCH_REQUIRE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
                     break;
 
                 default:
-                    REQUIRE_FALSE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
+                    CATCH_REQUIRE_FALSE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
                     break;
 
                 }
             }
         }
 
-        SECTION("verify contradictory flags")
+        CATCH_SECTION("verify contradictory flags")
         {
             addr::addr_parser p;
 
             // by default we start with false
             //
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // check setting MULTI_ADDRESSES_COMMAS to true
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS_AND_SPACES
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_PORTS_COMMAS
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS, true);
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS_AND_SPACES only
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS second, order should not affect anything
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // back to MULTI_PORTS_COMMAS
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS, true);
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS first now
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
         }
 
-        SECTION("default address")
+        CATCH_SECTION("default address")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
             p.set_default_address("5.5.5.5");
-            REQUIRE(p.get_default_address4() == "5.5.5.5");
-            REQUIRE(p.get_default_address6() == "");
+            CATCH_REQUIRE(p.get_default_address4() == "5.5.5.5");
+            CATCH_REQUIRE(p.get_default_address6() == "");
             addr::addr_range::vector_t ips(p.parse(""));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 1);
             addr::addr_range const & r(ips[0]);
-            REQUIRE(r.has_from());
-            REQUIRE_FALSE(r.has_to());
-            REQUIRE_FALSE(r.is_range());
-            REQUIRE_FALSE(r.is_empty());
+            CATCH_REQUIRE(r.has_from());
+            CATCH_REQUIRE_FALSE(r.has_to());
+            CATCH_REQUIRE_FALSE(r.is_range());
+            CATCH_REQUIRE_FALSE(r.is_empty());
             addr::addr f(r.get_from());
-            REQUIRE(f.is_ipv4());
-            REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.5.5.5");
-            REQUIRE(f.get_port() == 0);
-            REQUIRE(f.get_protocol() == IPPROTO_TCP);
-            REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE(f.is_ipv4());
+            CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.5.5.5");
+            CATCH_REQUIRE(f.get_port() == 0);
+            CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
         }
 
-        SECTION("address, not port allowed")
+        CATCH_SECTION("address, not port allowed")
         {
             // specific address with a default
             {
@@ -831,22 +831,22 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
                 p.set_allow(addr::addr_parser::flag_t::PORT, false);
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("5.5.5.5");
-                REQUIRE(p.get_default_address4() == "5.5.5.5");
-                REQUIRE(p.get_default_address6() == "");
+                CATCH_REQUIRE(p.get_default_address4() == "5.5.5.5");
+                CATCH_REQUIRE(p.get_default_address6() == "");
                 addr::addr_range::vector_t ips(p.parse("9.9.9.9"));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "9.9.9.9");
-                REQUIRE(f.get_port() == 0);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "9.9.9.9");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
             }
 
             // only a default address
@@ -855,249 +855,249 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
                 p.set_allow(addr::addr_parser::flag_t::PORT, false);
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("5.5.5.5");
-                REQUIRE(p.get_default_address4() == "5.5.5.5");
-                REQUIRE(p.get_default_address6() == "");
+                CATCH_REQUIRE(p.get_default_address4() == "5.5.5.5");
+                CATCH_REQUIRE(p.get_default_address6() == "");
                 addr::addr_range::vector_t ips(p.parse(""));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.5.5.5");
-                REQUIRE(f.get_port() == 0);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.5.5.5");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
             }
         }
     }
 
-    GIVEN("addr_parser() with multiple IPv4 addresses in one string")
+    CATCH_GIVEN("addr_parser() with multiple IPv4 addresses in one string")
     {
-        SECTION("3 IPs separated by commas")
+        CATCH_SECTION("3 IPs separated by commas")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
             addr::addr_range::vector_t ips(p.parse("1.2.3.4:55,5.6.7.8,,,,10.11.12.99:77"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 3);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 3);
 
             uint8_t mask[16] = {};
 
             // 1.2.3.4:55
             {
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-                REQUIRE(f.get_port() == 55);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+                CATCH_REQUIRE(f.get_port() == 55);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
 
             // 5.6.7.8
             {
                 addr::addr_range const & r(ips[1]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
-                REQUIRE(f.get_port() == 0);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
 
             // 10.11.12.99:77
             {
                 addr::addr_range const & r(ips[2]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
-                REQUIRE(f.get_port() == 77);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
+                CATCH_REQUIRE(f.get_port() == 77);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
         }
 
-        SECTION("3 IPs separated by spaces")
+        CATCH_SECTION("3 IPs separated by spaces")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
             addr::addr_range::vector_t ips(p.parse("1.2.3.4:55 5.6.7.8   10.11.12.99:77"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 3);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 3);
 
             uint8_t mask[16] = {};
 
             // 1.2.3.4:55
             {
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-                REQUIRE(f.get_port() == 55);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+                CATCH_REQUIRE(f.get_port() == 55);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
 
             // 5.6.7.8
             {
                 addr::addr_range const & r(ips[1]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
-                REQUIRE(f.get_port() == 0);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
 
             // 10.11.12.99:77
             {
                 addr::addr_range const & r(ips[2]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
-                REQUIRE(f.get_port() == 77);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
+                CATCH_REQUIRE(f.get_port() == 77);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
         }
 
-        SECTION("3 IPs separated by commas and/or spaces")
+        CATCH_SECTION("3 IPs separated by commas and/or spaces")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
             addr::addr_range::vector_t ips(p.parse(" 1.2.3.4:55,, 5.6.7.8 , 10.11.12.99:77 "));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 3);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 3);
 
             uint8_t mask[16] = {};
 
             // 1.2.3.4:55
             {
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
-                REQUIRE(f.get_port() == 55);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "1.2.3.4");
+                CATCH_REQUIRE(f.get_port() == 55);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
 
             // 5.6.7.8
             {
                 addr::addr_range const & r(ips[1]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
-                REQUIRE(f.get_port() == 0);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "5.6.7.8");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
 
             // 10.11.12.99:77
             {
                 addr::addr_range const & r(ips[2]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
-                REQUIRE(f.get_port() == 77);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.11.12.99");
+                CATCH_REQUIRE(f.get_port() == 77);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
-                    REQUIRE(mask[idx] == 255);
+                    CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
         }
@@ -1105,11 +1105,11 @@ TEST_CASE( "ipv4::address", "[ipv4]" )
 }
 
 
-TEST_CASE( "ipv4::ports", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::ports", "[ipv4]" )
 {
-    GIVEN("addr_parser() with IPv4 addresses and port")
+    CATCH_GIVEN("addr_parser() with IPv4 addresses and port")
     {
-        SECTION("verify port")
+        CATCH_SECTION("verify port")
         {
             for(int port(0); port < 65536; ++port)
             {
@@ -1117,20 +1117,20 @@ TEST_CASE( "ipv4::ports", "[ipv4]" )
                 addr::addr_parser p;
                 p.set_protocol(proto);
                 addr::addr_range::vector_t ips(p.parse("192.168.12.199:" + std::to_string(port)));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "192.168.12.199");
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "192.168.12.199");
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == proto);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "192.168.12.199");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "192.168.12.199");
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == proto);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
             }
         }
 
-        SECTION("default address with various port")
+        CATCH_SECTION("default address with various port")
         {
             for(int idx(0); idx < 100; ++idx)
             {
@@ -1138,27 +1138,27 @@ TEST_CASE( "ipv4::ports", "[ipv4]" )
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("5.5.5.5");
-                REQUIRE(p.get_default_address4() == "5.5.5.5");
-                REQUIRE(p.get_default_address6() == "");
+                CATCH_REQUIRE(p.get_default_address4() == "5.5.5.5");
+                CATCH_REQUIRE(p.get_default_address6() == "");
                 addr::addr_range::vector_t ips(p.parse(":" + std::to_string(static_cast<int>(port))));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
             }
         }
 
-        SECTION("address with default port")
+        CATCH_SECTION("address with default port")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -1166,22 +1166,22 @@ TEST_CASE( "ipv4::ports", "[ipv4]" )
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_port(port);
-                REQUIRE(p.get_default_port() == port);
+                CATCH_REQUIRE(p.get_default_port() == port);
                 addr::addr_range::vector_t ips(p.parse("5.5.5.5"));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
             }
 
             for(int idx(0); idx < 25; ++idx)
@@ -1190,33 +1190,33 @@ TEST_CASE( "ipv4::ports", "[ipv4]" )
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_port(port);
-                REQUIRE(p.get_default_port() == port);
+                CATCH_REQUIRE(p.get_default_port() == port);
                 addr::addr_range::vector_t ips(p.parse("5.5.5.5:"));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == IPPROTO_TCP);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT) == "5.5.5.5:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
             }
         }
     }
 }
 
 
-TEST_CASE( "ipv4::masks", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
 {
-    GIVEN("addr_parser() of address:port/mask")
+    CATCH_GIVEN("addr_parser() of address:port/mask")
     {
-        SECTION("mask allowed, but no mask")
+        CATCH_SECTION("mask allowed, but no mask")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -1224,20 +1224,20 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
             p.set_protocol(proto);
             p.set_allow(addr::addr_parser::flag_t::MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port)));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 1);
             addr::addr_range const & r(ips[0]);
             addr::addr f(r.get_from());
-            REQUIRE(f.is_ipv4());
+            CATCH_REQUIRE(f.is_ipv4());
             std::string result("172.19.6.91:" + std::to_string(port) + "/255.255.255.255");
-            REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-            REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-            REQUIRE(f.get_port() == port);
-            REQUIRE(f.get_protocol() == proto);
-            REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.get_port() == port);
+            CATCH_REQUIRE(f.get_protocol() == proto);
+            CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
         }
 
-        SECTION("empty mask")
+        CATCH_SECTION("empty mask")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -1245,20 +1245,20 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
             p.set_protocol(proto);
             p.set_allow(addr::addr_parser::flag_t::MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.18.5.91:" + std::to_string(port) + "/"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 1);
             addr::addr_range const & r(ips[0]);
             addr::addr f(r.get_from());
-            REQUIRE(f.is_ipv4());
+            CATCH_REQUIRE(f.is_ipv4());
             std::string result("172.18.5.91:" + std::to_string(port) + "/255.255.255.255");
-            REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-            REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-            REQUIRE(f.get_port() == port);
-            REQUIRE(f.get_protocol() == proto);
-            REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.get_port() == port);
+            CATCH_REQUIRE(f.get_protocol() == proto);
+            CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
         }
 
-        SECTION("one number masks")
+        CATCH_SECTION("one number masks")
         {
             for(int idx(0); idx <= 32; ++idx)
             {
@@ -1268,11 +1268,11 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
                 p.set_protocol(proto);
                 p.set_allow(addr::addr_parser::flag_t::MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port) + "/" + std::to_string(idx)));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.is_ipv4());
                 uint64_t const mask(std::numeric_limits<uint64_t>::max() << (32 - idx));
                 std::string mask_str(
                           std::to_string((mask >> 24) & 255)
@@ -1283,15 +1283,15 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
                         + "."
                         + std::to_string((mask >>  0) & 255));
                 std::string result("172.17.3.91:" + std::to_string(port) + "/" + mask_str);
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == proto);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == proto);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
             }
         }
 
-        SECTION("address like mask")
+        CATCH_SECTION("address like mask")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -1315,21 +1315,21 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
                             + "."
                             + std::to_string(static_cast<int>(mask[3])));
                 addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port) + "/" + mask_str));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.is_ipv4());
                 std::string result("172.17.3.91:" + std::to_string(port) + "/" + mask_str);
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == proto);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == proto);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
             }
         }
 
-        SECTION("address like default mask")
+        CATCH_SECTION("address like default mask")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -1357,31 +1357,31 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
                             + std::to_string(static_cast<int>(mask[3])));
                 p.set_default_mask(mask_str);
                 addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port)));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.is_ipv4());
                 std::string result("172.17.3.91:" + std::to_string(port) + "/" + mask_str);
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == proto);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == proto);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 uint8_t verify_mask[16];
                 f.get_mask(verify_mask);
                 for(int j(0); j < 16 - 4; ++j)
                 {
-                    REQUIRE(verify_mask[j] == 255);
+                    CATCH_REQUIRE(verify_mask[j] == 255);
                 }
                 for(int j(12); j < 16; ++j)
                 {
-                    REQUIRE(verify_mask[j] == mask[j - 12]);
+                    CATCH_REQUIRE(verify_mask[j] == mask[j - 12]);
                 }
             }
         }
 
-        SECTION("address like mask with a default")
+        CATCH_SECTION("address like mask with a default")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -1424,31 +1424,31 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
                 p.set_default_mask(default_mask_str);
 
                 addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port) + "/" + mask_str));
-                REQUIRE_FALSE(p.has_errors());
-                REQUIRE(ips.size() == 1);
+                CATCH_REQUIRE_FALSE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 1);
                 addr::addr_range const & r(ips[0]);
                 addr::addr f(r.get_from());
-                REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.is_ipv4());
                 std::string result("172.17.3.91:" + std::to_string(port) + "/" + mask_str);
-                REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
-                REQUIRE(f.get_port() == port);
-                REQUIRE(f.get_protocol() == proto);
-                REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.get_port() == port);
+                CATCH_REQUIRE(f.get_protocol() == proto);
+                CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 uint8_t verify_mask[16];
                 f.get_mask(verify_mask);
                 for(int j(0); j < 16 - 4; ++j)
                 {
-                    REQUIRE(verify_mask[j] == 255);
+                    CATCH_REQUIRE(verify_mask[j] == 255);
                 }
                 for(int j(12); j < 16; ++j)
                 {
-                    REQUIRE(verify_mask[j] == mask[j - 12]);
+                    CATCH_REQUIRE(verify_mask[j] == mask[j - 12]);
                 }
             }
         }
 
-        SECTION("two addresses and a mask for a match / no match")
+        CATCH_SECTION("two addresses and a mask for a match / no match")
         {
             int const port1(rand() & 0xFFFF);
             addr::addr_parser p;
@@ -1459,16 +1459,16 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
             int proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             p.set_protocol(proto);
             addr::addr_range::vector_t ips1(p.parse("192.168.0.0:" + std::to_string(port1) + "/16"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips1.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips1.size() == 1);
             addr::addr_range const & r1(ips1[0]);
             addr::addr f1(r1.get_from());
-            REQUIRE(f1.is_ipv4());
-            REQUIRE(f1.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/255.255.0.0");
-            REQUIRE(f1.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/255.255.0.0");
-            REQUIRE(f1.get_port() == port1);
-            REQUIRE(f1.get_protocol() == proto);
-            REQUIRE(f1.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f1.is_ipv4());
+            CATCH_REQUIRE(f1.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/255.255.0.0");
+            CATCH_REQUIRE(f1.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/255.255.0.0");
+            CATCH_REQUIRE(f1.get_port() == port1);
+            CATCH_REQUIRE(f1.get_protocol() == proto);
+            CATCH_REQUIRE(f1.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
 
             // reuse parser
             //
@@ -1476,16 +1476,16 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
             p.set_protocol(proto);
             int const port2(rand() & 0xFFFF);
             addr::addr_range::vector_t ips2(p.parse("192.168.5.36:" + std::to_string(port2)));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips2.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips2.size() == 1);
             addr::addr_range const & r2(ips2[0]);
             addr::addr f2(r2.get_from());
-            REQUIRE(f2.is_ipv4());
-            REQUIRE(f2.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/255.255.255.255");
-            REQUIRE(f2.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/255.255.255.255");
-            REQUIRE(f2.get_port() == port2);
-            REQUIRE(f2.get_protocol() == proto);
-            REQUIRE(f2.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f2.is_ipv4());
+            CATCH_REQUIRE(f2.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/255.255.255.255");
+            CATCH_REQUIRE(f2.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/255.255.255.255");
+            CATCH_REQUIRE(f2.get_port() == port2);
+            CATCH_REQUIRE(f2.get_protocol() == proto);
+            CATCH_REQUIRE(f2.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
 
             // 3rd with a mask along the full IP
             //
@@ -1493,65 +1493,65 @@ TEST_CASE( "ipv4::masks", "[ipv4]" )
             p.set_protocol(proto);
             int const port3(rand() & 0xFFFF);
             addr::addr_range::vector_t ips3(p.parse("192.168.5.36:" + std::to_string(port3) + "/16"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(ips3.size() == 1);
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips3.size() == 1);
             addr::addr_range const & r3(ips3[0]);
             addr::addr f3(r3.get_from());
-            REQUIRE(f3.is_ipv4());
-            REQUIRE(f3.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/255.255.0.0");
-            REQUIRE(f3.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/255.255.0.0");
-            REQUIRE(f3.get_port() == port3);
-            REQUIRE(f3.get_protocol() == proto);
-            REQUIRE(f3.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f3.is_ipv4());
+            CATCH_REQUIRE(f3.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/255.255.0.0");
+            CATCH_REQUIRE(f3.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/255.255.0.0");
+            CATCH_REQUIRE(f3.get_port() == port3);
+            CATCH_REQUIRE(f3.get_protocol() == proto);
+            CATCH_REQUIRE(f3.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
 
             // just a side test
             //
-            REQUIRE(f1 != f2);
-            REQUIRE(f1 != f3);
-            REQUIRE(f2 == f3);
+            CATCH_REQUIRE(f1 != f2);
+            CATCH_REQUIRE(f1 != f3);
+            CATCH_REQUIRE(f2 == f3);
 
             // check whether p1 matches p2 and vice versa
             //
-            REQUIRE(f1.match(f2));          // f2 & mask1 == f1
-            REQUIRE(f1.match(f3));          // f3 & mask1 == f1
+            CATCH_REQUIRE(f1.match(f2));          // f2 & mask1 == f1
+            CATCH_REQUIRE(f1.match(f3));          // f3 & mask1 == f1
 
-            REQUIRE_FALSE(f2.match(f1));    // f1 & mask2 != f2
-            REQUIRE(f2.match(f3));          // f3 & mask2 == f2  (because f2 == f3 anyway)
+            CATCH_REQUIRE_FALSE(f2.match(f1));    // f1 & mask2 != f2
+            CATCH_REQUIRE(f2.match(f3));          // f3 & mask2 == f2  (because f2 == f3 anyway)
 
-            REQUIRE(f3.match(f1));          // f1 & mask3 == f3
-            REQUIRE(f3.match(f2));          // f2 & mask3 == f3
+            CATCH_REQUIRE(f3.match(f1));          // f1 & mask3 == f3
+            CATCH_REQUIRE(f3.match(f2));          // f2 & mask3 == f3
 
             f3.apply_mask();
 
-            REQUIRE(f1 != f2);
-            REQUIRE(f1 == f3);
-            REQUIRE(f2 != f3);
+            CATCH_REQUIRE(f1 != f2);
+            CATCH_REQUIRE(f1 == f3);
+            CATCH_REQUIRE(f2 != f3);
 
             // re-run the match() calls with f3 since it changed...
             //
-            REQUIRE(f1.match(f3));          // f3 & mask1 == f1
+            CATCH_REQUIRE(f1.match(f3));          // f3 & mask1 == f1
 
-            REQUIRE_FALSE(f2.match(f3));    // f3 & mask2 == f2  (because f2 != f3 anymore)
+            CATCH_REQUIRE_FALSE(f2.match(f3));    // f3 & mask2 == f2  (because f2 != f3 anymore)
 
-            REQUIRE(f3.match(f1));          // f1 & mask3 == f3
-            REQUIRE(f3.match(f2));          // f2 & mask3 == f3
+            CATCH_REQUIRE(f3.match(f1));          // f1 & mask3 == f3
+            CATCH_REQUIRE(f3.match(f2));          // f2 & mask3 == f3
         }
     }
 }
 
 
-TEST_CASE( "ipv4::protocol", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::protocol", "[ipv4]" )
 {
-    GIVEN("addr()")
+    CATCH_GIVEN("addr()")
     {
         addr::addr a;
 
-        SECTION("default protocol")
+        CATCH_SECTION("default protocol")
         {
-            REQUIRE(a.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_TCP);
         }
 
-        SECTION("set_protocol()")
+        CATCH_SECTION("set_protocol()")
         {
             // setup a random protocol
             //
@@ -1585,125 +1585,125 @@ TEST_CASE( "ipv4::protocol", "[ipv4]" )
                 while(invalid_protocol == IPPROTO_IP
                    || invalid_protocol == IPPROTO_TCP
                    || invalid_protocol == IPPROTO_UDP);
-                REQUIRE_THROWS_AS(a.set_protocol(invalid_protocol), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_protocol(invalid_protocol), addr::addr_invalid_argument_exception);
 
                 // make sure the protocol does not change on errors
-                REQUIRE(a.get_protocol() == start_protocol);
+                CATCH_REQUIRE(a.get_protocol() == start_protocol);
             }
 
             // null string is not allowed
             //
-            REQUIRE_THROWS_AS(a.set_protocol(nullptr), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol(nullptr), addr::addr_invalid_argument_exception);
 
             // other "invalid" (unsupported, really) string protocols
             //
-            REQUIRE_THROWS_AS(a.set_protocol("icmp"), addr::addr_invalid_argument_exception);
-            REQUIRE_THROWS_AS(a.set_protocol("raw"), addr::addr_invalid_argument_exception);
-            REQUIRE_THROWS_AS(a.set_protocol("hmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol("icmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol("raw"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol("hmp"), addr::addr_invalid_argument_exception);
 
             // test all valid protocols (numeric)
             //
             a.set_protocol(IPPROTO_IP);
-            REQUIRE(a.get_protocol() == IPPROTO_IP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_IP);
             a.set_protocol(IPPROTO_TCP);
-            REQUIRE(a.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_TCP);
             a.set_protocol(IPPROTO_UDP);
-            REQUIRE(a.get_protocol() == IPPROTO_UDP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_UDP);
 
             // test all valid protocols (ascii)
             //
             a.set_protocol("ip");
-            REQUIRE(a.get_protocol() == IPPROTO_IP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_IP);
             a.set_protocol("tcp");
-            REQUIRE(a.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_TCP);
             a.set_protocol("udp");
-            REQUIRE(a.get_protocol() == IPPROTO_UDP);
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_UDP);
         }
     }
 
-    GIVEN("addr_parser()")
+    CATCH_GIVEN("addr_parser()")
     {
         addr::addr_parser p;
 
-        SECTION("verify default")
+        CATCH_SECTION("verify default")
         {
-            REQUIRE(p.get_protocol() == -1);
+            CATCH_REQUIRE(p.get_protocol() == -1);
         }
 
-        SECTION("test 3 allowed protocols")
+        CATCH_SECTION("test 3 allowed protocols")
         {
             // by string
             //
             p.set_protocol("ip");
-            REQUIRE(p.get_protocol() == IPPROTO_IP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_IP);
             p.set_protocol("tcp");
-            REQUIRE(p.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
             p.set_protocol("udp");
-            REQUIRE(p.get_protocol() == IPPROTO_UDP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_UDP);
 
             // numerically
             //
             p.set_protocol(IPPROTO_IP);
-            REQUIRE(p.get_protocol() == IPPROTO_IP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_IP);
             p.set_protocol(IPPROTO_TCP);
-            REQUIRE(p.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
             p.set_protocol(IPPROTO_UDP);
-            REQUIRE(p.get_protocol() == IPPROTO_UDP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_UDP);
         }
 
-        SECTION("verify clearing works")
+        CATCH_SECTION("verify clearing works")
         {
             p.set_protocol("ip");
-            REQUIRE(p.get_protocol() == IPPROTO_IP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_IP);
             p.clear_protocol();
-            REQUIRE(p.get_protocol() == -1);
+            CATCH_REQUIRE(p.get_protocol() == -1);
 
             p.set_protocol("tcp");
-            REQUIRE(p.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
             p.clear_protocol();
-            REQUIRE(p.get_protocol() == -1);
+            CATCH_REQUIRE(p.get_protocol() == -1);
 
             p.set_protocol("udp");
-            REQUIRE(p.get_protocol() == IPPROTO_UDP);
+            CATCH_REQUIRE(p.get_protocol() == IPPROTO_UDP);
             p.clear_protocol();
-            REQUIRE(p.get_protocol() == -1);
+            CATCH_REQUIRE(p.get_protocol() == -1);
         }
     }
 
-    GIVEN("addr_parser with any protocol")
+    CATCH_GIVEN("addr_parser with any protocol")
     {
         addr::addr a;
 
-        SECTION("get address with all protocols")
+        CATCH_SECTION("get address with all protocols")
         {
             addr::addr_parser p;
             //p.set_protocol(...); -- by default we'll get all the protocols supported
             addr::addr_range::vector_t ips(p.parse("127.0.0.1"));
-            REQUIRE_FALSE(p.has_errors());
-            REQUIRE(!ips.empty());
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(!ips.empty());
             for(size_t idx(0); idx < ips.size(); ++idx)
             {
                 addr::addr_range const & r(ips[idx]);
-                REQUIRE(r.has_from());
-                REQUIRE_FALSE(r.has_to());
-                REQUIRE_FALSE(r.is_range());
-                REQUIRE_FALSE(r.is_empty());
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
                 addr::addr f(r.get_from());
                 if(f.is_ipv4())
                 {
-                    REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
-                    REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
-                    REQUIRE(f.get_port() == 0);
-                    //REQUIRE(f.get_protocol() == ...); -- may be TCP, UDP, IP
-                    REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                    CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
+                    CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
+                    CATCH_REQUIRE(f.get_port() == 0);
+                    //CATCH_REQUIRE(f.get_protocol() == ...); -- may be TCP, UDP, IP
+                    CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 }
                 else
                 {
-                    REQUIRE(f.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::1");
-                    REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::1");
-                    REQUIRE(f.get_port() == 0);
-                    //REQUIRE(f.get_protocol() == ...); -- may be TCP, UDP, IP
-                    REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                    CATCH_REQUIRE(f.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::1");
+                    CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::1");
+                    CATCH_REQUIRE(f.get_port() == 0);
+                    //CATCH_REQUIRE(f.get_protocol() == ...); -- may be TCP, UDP, IP
+                    CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 }
             }
         }
@@ -1711,13 +1711,13 @@ TEST_CASE( "ipv4::protocol", "[ipv4]" )
 }
 
 
-TEST_CASE( "ipv4::network_type", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::network_type", "[ipv4]" )
 {
-    GIVEN("addr()")
+    CATCH_GIVEN("addr()")
     {
         addr::addr a;
 
-        SECTION("any (0.0.0.0)")
+        CATCH_SECTION("any (0.0.0.0)")
         {
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -1728,11 +1728,11 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
             //
             a.set_ipv4(in);
 
-            REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
-            REQUIRE(a.get_network_type_string() == "Any");
+            CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
+            CATCH_REQUIRE(a.get_network_type_string() == "Any");
         }
 
-        SECTION("private address 10.x.x.x/8")
+        CATCH_SECTION("private address 10.x.x.x/8")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1748,12 +1748,12 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
-                REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(a.get_network_type_string() == "Private");
             }
         }
 
-        SECTION("private address 172.16.x.x/12")
+        CATCH_SECTION("private address 172.16.x.x/12")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1769,12 +1769,12 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
-                REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(a.get_network_type_string() == "Private");
             }
         }
 
-        SECTION("private address 192.168.x.x/16")
+        CATCH_SECTION("private address 192.168.x.x/16")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1790,12 +1790,12 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
-                REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(a.get_network_type_string() == "Private");
             }
         }
 
-        SECTION("private address 100.66.x.x/10")
+        CATCH_SECTION("private address 100.66.x.x/10")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1811,12 +1811,12 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_CARRIER);
-                REQUIRE(a.get_network_type_string() == "Carrier");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_CARRIER);
+                CATCH_REQUIRE(a.get_network_type_string() == "Carrier");
             }
         }
 
-        SECTION("private address 169.254.x.x/16")
+        CATCH_SECTION("private address 169.254.x.x/16")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1832,12 +1832,12 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
-                REQUIRE(a.get_network_type_string() == "Local Link");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
+                CATCH_REQUIRE(a.get_network_type_string() == "Local Link");
             }
         }
 
-        SECTION("private address 224.x.x.x/4")
+        CATCH_SECTION("private address 224.x.x.x/4")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1853,16 +1853,16 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_MULTICAST);
-                REQUIRE(a.get_network_type_string() == "Multicast");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_MULTICAST);
+                CATCH_REQUIRE(a.get_network_type_string() == "Multicast");
 
                 // make sure no interface uses that IP
                 //
-                REQUIRE(addr::find_addr_interface(a, false) == nullptr);
+                CATCH_REQUIRE(addr::find_addr_interface(a, false) == nullptr);
             }
         }
 
-        SECTION("private address 127.x.x.x/8")
+        CATCH_SECTION("private address 127.x.x.x/8")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -1878,107 +1878,107 @@ TEST_CASE( "ipv4::network_type", "[ipv4]" )
                 // verify network type
                 //
                 a.set_ipv4(in);
-                REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
-                REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
             }
         }
     }
 }
 
 
-TEST_CASE( "ipv4::network", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::network", "[ipv4]" )
 {
-    GIVEN("set_from_socket()")
+    CATCH_GIVEN("set_from_socket()")
     {
-        SECTION("invalid socket")
+        CATCH_SECTION("invalid socket")
         {
             addr::addr a;
-            REQUIRE_THROWS_AS(a.set_from_socket(-1, true),  addr::addr_invalid_argument_exception);
-            REQUIRE_THROWS_AS(a.set_from_socket(-1, false), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(-1, true),  addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(-1, false), addr::addr_invalid_argument_exception);
         }
 
-        SECTION("non-opened file descriptor")
+        CATCH_SECTION("non-opened file descriptor")
         {
             addr::addr a;
 
             // unless we have a bug, there should not be any file descriptor
             // currently open with an ID of 1,000
             //
-            REQUIRE_THROWS_AS(a.set_from_socket(1000, true),  addr::addr_io_exception);
-            REQUIRE_THROWS_AS(a.set_from_socket(1000, false), addr::addr_io_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(1000, true),  addr::addr_io_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(1000, false), addr::addr_io_exception);
         }
 
-        SECTION("unknown socket type")
+        CATCH_SECTION("unknown socket type")
         {
             addr::addr a;
 
             int s(socket(AF_UNIX, SOCK_STREAM, 0));
-            REQUIRE(s >= 0);
+            CATCH_REQUIRE(s >= 0);
             std::shared_ptr<int> auto_free(&s, socket_deleter);
 
             // unless we have a bug, there should not be any file descriptor
             // currently open with an ID of 1,000
             //
-            REQUIRE_THROWS_AS(a.set_from_socket(s, true),  addr::addr_io_exception);
-            REQUIRE_THROWS_AS(a.set_from_socket(s, false), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(s, true),  addr::addr_io_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(s, false), addr::addr_invalid_state_exception);
         }
 
-        SECTION("create a server, but do not test it (yet)...")
+        CATCH_SECTION("create a server, but do not test it (yet)...")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("127.0.0.1:49999"));
-            REQUIRE(ips.size() >= 1);
+            CATCH_REQUIRE(ips.size() >= 1);
 
             addr::addr & a(ips[0].get_from());
             int s(a.create_socket(addr::addr::SOCKET_FLAG_NONBLOCK | addr::addr::SOCKET_FLAG_CLOEXEC | addr::addr::SOCKET_FLAG_REUSE));
-            REQUIRE(s >= 0);
+            CATCH_REQUIRE(s >= 0);
             std::shared_ptr<int> auto_free(&s, socket_deleter);
 
-            REQUIRE(a.bind(s) == 0);
+            CATCH_REQUIRE(a.bind(s) == 0);
         }
 
-        SECTION("connect with TCP to 127.0.0.1")
+        CATCH_SECTION("connect with TCP to 127.0.0.1")
         {
-            if(unittest::g_tcp_port != -1)
+            if(SNAP_CATCH2_NAMESPACE::g_tcp_port != -1)
             {
                 addr::addr_parser p;
-                addr::addr_range::vector_t ips(p.parse("127.0.0.1:" + std::to_string(unittest::g_tcp_port)));
-                REQUIRE(ips.size() >= 1);
+                addr::addr_range::vector_t ips(p.parse("127.0.0.1:" + std::to_string(SNAP_CATCH2_NAMESPACE::g_tcp_port)));
+                CATCH_REQUIRE(ips.size() >= 1);
 
                 addr::addr & a(ips[0].get_from());
                 int s(a.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC));// | addr::addr::SOCKET_FLAG_REUSE));
-                REQUIRE(s >= 0);
+                CATCH_REQUIRE(s >= 0);
                 std::shared_ptr<int> auto_free(&s, socket_deleter);
 
-                REQUIRE(a.connect(s) == 0);
+                CATCH_REQUIRE(a.connect(s) == 0);
 
                 // get socket info from the other side (peer == true)
                 //
                 addr::addr b;
                 b.set_from_socket(s, true);
-                REQUIRE(b.is_ipv4());
-                REQUIRE(b.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "127.0.0.1");
-                REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
+                CATCH_REQUIRE(b.is_ipv4());
+                CATCH_REQUIRE(b.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "127.0.0.1");
+                CATCH_REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
 
                 // in this case we know what the port is since we specified
                 // that when connecting
                 //
-                REQUIRE(b.get_port() == unittest::g_tcp_port);
+                CATCH_REQUIRE(b.get_port() == SNAP_CATCH2_NAMESPACE::g_tcp_port);
 
                 // now try this side (peer == false)
                 //
                 addr::addr c;
                 c.set_from_socket(s, false);
-                REQUIRE(c.is_ipv4());
-                REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "127.0.0.1");
-                REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
+                CATCH_REQUIRE(c.is_ipv4());
+                CATCH_REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "127.0.0.1");
+                CATCH_REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
 
                 // we cannot be sure of the port, there is a range we could
                 // test better (more constraining) but for this test is
                 // certainly does not matter much; it has to be more than
                 // 1023, though
                 //
-                REQUIRE(c.get_port() > 1023);
+                CATCH_REQUIRE(c.get_port() > 1023);
             }
             else
             {
@@ -1986,61 +1986,61 @@ TEST_CASE( "ipv4::network", "[ipv4]" )
             }
         }
 
-        SECTION("connect with UDP to 127.0.0.1")
+        CATCH_SECTION("connect with UDP to 127.0.0.1")
         {
             addr::addr_parser p;
             p.set_protocol("udp");
             addr::addr_range::vector_t ips(p.parse("127.0.0.1:53"));
-            REQUIRE(ips.size() >= 1);
+            CATCH_REQUIRE(ips.size() >= 1);
 
             addr::addr & a(ips[0].get_from());
             int s(a.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC));// | addr::addr::SOCKET_FLAG_REUSE));
-            REQUIRE(s >= 0);
+            CATCH_REQUIRE(s >= 0);
             std::shared_ptr<int> auto_free(&s, socket_deleter);
 
-            REQUIRE(a.connect(s) == -1);
+            CATCH_REQUIRE(a.connect(s) == -1);
 
             // get socket info from the other side (peer == true)
             //
             addr::addr b;
-            REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_exception);
-            REQUIRE_FALSE(b.is_ipv4());
-            REQUIRE(b.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "::");
-            REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::");
+            CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_exception);
+            CATCH_REQUIRE_FALSE(b.is_ipv4());
+            CATCH_REQUIRE(b.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "::");
+            CATCH_REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::");
 
             // in this case we know what the port is since we specified
             // that when connecting
             //
-            REQUIRE(b.get_port() == 0);
+            CATCH_REQUIRE(b.get_port() == 0);
 
             // now try this side (peer == false)
             //
             addr::addr c;
             c.set_from_socket(s, false);
-            REQUIRE(c.is_ipv4());
-            REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "0.0.0.0");
-            REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "0.0.0.0");
+            CATCH_REQUIRE(c.is_ipv4());
+            CATCH_REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "0.0.0.0");
+            CATCH_REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "0.0.0.0");
 
             // we cannot be sure of the port, there is a range we could
             // test better (more constraining) but for this test is
             // certainly does not matter much; it has to be more than
             // 1023, though
             //
-            REQUIRE(c.get_port() == 0);
+            CATCH_REQUIRE(c.get_port() == 0);
         }
     }
 }
 
 
-TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
 {
-    GIVEN("string_to_addr() ipv4")
+    CATCH_GIVEN("string_to_addr() ipv4")
     {
-        SECTION("empty address without defaults")
+        CATCH_SECTION("empty address without defaults")
         {
             addr::addr a(addr::string_to_addr(std::string()));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2051,32 +2051,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("explicit defaults")
+        CATCH_SECTION("explicit defaults")
         {
             addr::addr a(addr::string_to_addr("5.14.34.111", std::string(), -1, std::string(), false));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2087,32 +2087,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("defaults")
+        CATCH_SECTION("defaults")
         {
             addr::addr a(addr::string_to_addr("7.149.104.211"));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2123,32 +2123,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr & default addr")
+        CATCH_SECTION("addr & default addr")
         {
             addr::addr a(addr::string_to_addr("37.149.174.11", "1.205.32.11"));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2159,32 +2159,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("no addr, expect default addr")
+        CATCH_SECTION("no addr, expect default addr")
         {
             addr::addr a(addr::string_to_addr("", "1.205.32.11"));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2195,32 +2195,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr and port, with a default port")
+        CATCH_SECTION("addr and port, with a default port")
         {
             addr::addr a(addr::string_to_addr("69.109.223.17:697", "1.205.32.11", 123));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2231,32 +2231,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr without port, with a default port")
+        CATCH_SECTION("addr without port, with a default port")
         {
             addr::addr a(addr::string_to_addr("169.209.23.217", "1.205.32.11", 123));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2267,32 +2267,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr without port but protocol")
+        CATCH_SECTION("addr without port but protocol")
         {
             addr::addr a(addr::string_to_addr("4.5.123.7", "1.205.32.11", 60000, "tcp"));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2303,32 +2303,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr with port and protocol")
+        CATCH_SECTION("addr with port and protocol")
         {
             addr::addr a(addr::string_to_addr("204.105.13.9:65", "1.205.32.11", 60000, "tcp"));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2339,32 +2339,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr with port and protocol but no mask, albeit allowed")
+        CATCH_SECTION("addr with port and protocol but no mask, albeit allowed")
         {
             addr::addr a(addr::string_to_addr("94.95.131.18:765", "11.205.32.21", 54003, "tcp", true));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2375,32 +2375,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFF);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFF);
         }
-        SECTION("addr with port and protocol and mask, albeit allowed")
+        CATCH_SECTION("addr with port and protocol and mask, albeit allowed")
         {
             addr::addr a(addr::string_to_addr("44.45.141.48:765/30", "11.205.32.21", 54003, "tcp", true));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2411,32 +2411,32 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xFF);
-            REQUIRE(mask[13] == 0xFF);
-            REQUIRE(mask[14] == 0xFF);
-            REQUIRE(mask[15] == 0xFC);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xFF);
+            CATCH_REQUIRE(mask[13] == 0xFF);
+            CATCH_REQUIRE(mask[14] == 0xFF);
+            CATCH_REQUIRE(mask[15] == 0xFC);
         }
-        SECTION("addr with port and protocol and mask, albeit allowed")
+        CATCH_SECTION("addr with port and protocol and mask, albeit allowed")
         {
             addr::addr a(addr::string_to_addr("160.0.0.0:1675/4", "11.205.32.21", 14003, "udp", true));
 
-            REQUIRE(a.is_ipv4());
+            CATCH_REQUIRE(a.is_ipv4());
 
             struct sockaddr_in in = sockaddr_in();
             in.sin_family = AF_INET;
@@ -2447,30 +2447,30 @@ TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
             //
             struct sockaddr_in out;
             a.get_ipv4(out);
-            REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
+            CATCH_REQUIRE(memcmp(&out, &in, sizeof(struct sockaddr_in)) == 0);
 
             uint8_t mask[16];
             a.get_mask(mask);
-            REQUIRE(mask[ 0] == 0xFF);
-            REQUIRE(mask[ 1] == 0xFF);
-            REQUIRE(mask[ 2] == 0xFF);
-            REQUIRE(mask[ 3] == 0xFF);
-            REQUIRE(mask[ 4] == 0xFF);
-            REQUIRE(mask[ 5] == 0xFF);
-            REQUIRE(mask[ 6] == 0xFF);
-            REQUIRE(mask[ 7] == 0xFF);
-            REQUIRE(mask[ 8] == 0xFF);
-            REQUIRE(mask[ 9] == 0xFF);
-            REQUIRE(mask[10] == 0xFF);
-            REQUIRE(mask[11] == 0xFF);
-            REQUIRE(mask[12] == 0xF0);
-            REQUIRE(mask[13] == 0x00);
-            REQUIRE(mask[14] == 0x00);
-            REQUIRE(mask[15] == 0x00);
+            CATCH_REQUIRE(mask[ 0] == 0xFF);
+            CATCH_REQUIRE(mask[ 1] == 0xFF);
+            CATCH_REQUIRE(mask[ 2] == 0xFF);
+            CATCH_REQUIRE(mask[ 3] == 0xFF);
+            CATCH_REQUIRE(mask[ 4] == 0xFF);
+            CATCH_REQUIRE(mask[ 5] == 0xFF);
+            CATCH_REQUIRE(mask[ 6] == 0xFF);
+            CATCH_REQUIRE(mask[ 7] == 0xFF);
+            CATCH_REQUIRE(mask[ 8] == 0xFF);
+            CATCH_REQUIRE(mask[ 9] == 0xFF);
+            CATCH_REQUIRE(mask[10] == 0xFF);
+            CATCH_REQUIRE(mask[11] == 0xFF);
+            CATCH_REQUIRE(mask[12] == 0xF0);
+            CATCH_REQUIRE(mask[13] == 0x00);
+            CATCH_REQUIRE(mask[14] == 0x00);
+            CATCH_REQUIRE(mask[15] == 0x00);
         }
-        SECTION("addr with port and invalid protocol so we get an exception")
+        CATCH_SECTION("addr with port and invalid protocol so we get an exception")
         {
-            REQUIRE_THROWS_AS(addr::string_to_addr("169.60.33.0:9322/24", std::string(), -1, "icmp", true),
+            CATCH_REQUIRE_THROWS_AS(addr::string_to_addr("169.60.33.0:9322/24", std::string(), -1, "icmp", true),
                                                                         addr::addr_invalid_argument_exception);
         }
     }

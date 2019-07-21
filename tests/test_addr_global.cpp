@@ -44,18 +44,21 @@
 // self
 //
 #include "test_addr_main.h"
+
+// addr lib
+//
 #include "libaddr/addr.h"
 #include "libaddr/version.h"
 
 
 
 
-TEST_CASE( "version", "[global]" )
+CATCH_TEST_CASE( "version", "[global]" )
 {
-    REQUIRE(addr::get_version_major() == LIBADDR_VERSION_MAJOR);
-    REQUIRE(addr::get_version_minor() == LIBADDR_VERSION_MINOR);
-    REQUIRE(addr::get_version_patch() == LIBADDR_VERSION_PATCH);
-    REQUIRE(std::string(addr::get_version_string()) == std::string(LIBADDR_VERSION_STRING));
+    CATCH_REQUIRE(addr::get_version_major() == LIBADDR_VERSION_MAJOR);
+    CATCH_REQUIRE(addr::get_version_minor() == LIBADDR_VERSION_MINOR);
+    CATCH_REQUIRE(addr::get_version_patch() == LIBADDR_VERSION_PATCH);
+    CATCH_REQUIRE(std::string(addr::get_version_string()) == std::string(LIBADDR_VERSION_STRING));
 }
 
 

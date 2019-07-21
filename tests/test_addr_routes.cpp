@@ -50,16 +50,16 @@
 #include <net/route.h>
 
 
-TEST_CASE( "ipv4::routes", "[ipv4]" )
+CATCH_TEST_CASE( "ipv4::routes", "[ipv4]" )
 {
-    GIVEN("route::get_ipv4_routes()")
+    CATCH_GIVEN("route::get_ipv4_routes()")
     {
         addr::route::vector_t routes(addr::route::get_ipv4_routes());
         addr::route::vector_t routes_without_default;
 
-        SECTION("verify list")
+        CATCH_SECTION("verify list")
         {
-            REQUIRE_FALSE(routes.empty()); // at least the default route
+            CATCH_REQUIRE_FALSE(routes.empty()); // at least the default route
 
             // check a few things
             //
@@ -67,22 +67,22 @@ TEST_CASE( "ipv4::routes", "[ipv4]" )
             bool found_gateway(false);
             for(auto r : routes)
             {
-                REQUIRE_FALSE(r->get_interface_name().empty());
-                REQUIRE(r->get_interface_name().length() < IFNAMSIZ - 1); // IFNAMSIZ includes the '\0'
+                CATCH_REQUIRE_FALSE(r->get_interface_name().empty());
+                CATCH_REQUIRE(r->get_interface_name().length() < IFNAMSIZ - 1); // IFNAMSIZ includes the '\0'
 
                 // at least one flag is not zero
                 int const f(r->get_flags());
                 std::string const flags(r->flags_to_string());
 
-                REQUIRE(f != 0);
-                REQUIRE(!flags.empty());
+                CATCH_REQUIRE(f != 0);
+                CATCH_REQUIRE(!flags.empty());
 
                 if(r->get_destination_address().is_default())
                 {
-                    REQUIRE_FALSE(found_default);
+                    CATCH_REQUIRE_FALSE(found_default);
                     found_default = true;
 
-                    REQUIRE((f & RTF_UP) != 0);
+                    CATCH_REQUIRE((f & RTF_UP) != 0);
                 }
                 else
                 {
@@ -91,28 +91,28 @@ TEST_CASE( "ipv4::routes", "[ipv4]" )
 
                 if(!r->get_gateway_address().is_default())
                 {
-                    REQUIRE_FALSE(found_gateway);
+                    CATCH_REQUIRE_FALSE(found_gateway);
                     found_gateway = true;
 
-                    REQUIRE((f & RTF_GATEWAY) != 0);
+                    CATCH_REQUIRE((f & RTF_GATEWAY) != 0);
                 }
 
                 // Not much I can test on the following?
                 //r->get_flags()
-                REQUIRE(r->get_reference_count() >= 0);
-                REQUIRE(r->get_use() >= 0);
-                REQUIRE(r->get_metric() >= 0);
-                REQUIRE(r->get_mtu() >= 0);
-                REQUIRE(r->get_window() >= 0);
-                REQUIRE(r->get_irtt() >= 0);
+                CATCH_REQUIRE(r->get_reference_count() >= 0);
+                CATCH_REQUIRE(r->get_use() >= 0);
+                CATCH_REQUIRE(r->get_metric() >= 0);
+                CATCH_REQUIRE(r->get_mtu() >= 0);
+                CATCH_REQUIRE(r->get_window() >= 0);
+                CATCH_REQUIRE(r->get_irtt() >= 0);
             }
-            REQUIRE(found_default);
-            REQUIRE(found_gateway);
+            CATCH_REQUIRE(found_default);
+            CATCH_REQUIRE(found_gateway);
         }
 
-        SECTION("verify a search without a default route")
+        CATCH_SECTION("verify a search without a default route")
         {
-            REQUIRE(find_default_route(routes_without_default) == nullptr);
+            CATCH_REQUIRE(find_default_route(routes_without_default) == nullptr);
         }
     }
 }
