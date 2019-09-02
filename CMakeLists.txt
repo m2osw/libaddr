@@ -1,8 +1,4 @@
-#
-# File:         CMakeLists.txt
-# Object:       Definitions to create the build environment with cmake
-#
-# Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
@@ -24,11 +20,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 cmake_minimum_required(VERSION 3.0.0)
 
-project(addr_library)
+project(addr_project)
 
 enable_language(C)
 enable_language(CXX)
@@ -44,8 +39,14 @@ find_package( SnapDoxygen               )
 
 SnapGetVersion( LIBADDR ${CMAKE_CURRENT_SOURCE_DIR} )
 
+include_directories(
+    ${PROJECT_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}
+}
+
 add_subdirectory( cmake   )
 add_subdirectory( src     )
+add_subdirectory( tools   )
 add_subdirectory( doc     )
 add_subdirectory( tests   )
 

@@ -33,11 +33,17 @@
 // self
 //
 #include "libaddr/addr_range.h"
-#include "libaddr/addr_exceptions.h"
+#include "libaddr/addr_exception.h"
+
 
 // C++ library
 //
 #include <algorithm>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -138,7 +144,7 @@ bool addr_range::is_in(addr const & rhs) const
 {
     if(!is_range())
     {
-        throw addr_invalid_state_exception("addr_range::is_in(): range is not complete (from or to missing.)");
+        throw addr_invalid_state("addr_range::is_in(): range is not complete (from or to missing.)");
     }
 
     if(f_from <= f_to)

@@ -33,17 +33,24 @@
 // self
 //
 #include "libaddr/addr_parser.h"
-#include "libaddr/addr_exceptions.h"
+#include "libaddr/addr_exception.h"
+
 
 // C++ library
 //
 #include <algorithm>
 #include <iostream>
 
+
 // C library
 //
 #include <ifaddrs.h>
 #include <netdb.h>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -79,6 +86,9 @@ void addrinfo_deleter(struct addrinfo * ai)
  * This function sets the default IP addresses to be used by the parser
  * when the input string of the parse() function does not include an IP
  * address.
+ *
+ * The \p address parameter cannot include a port. See
+ * set_default_port() as a way to change the default port.
  *
  * The function expects either an IPv4 or an IPv6 address. It can be
  * called twice if you need to define both types of addresses (which
@@ -118,6 +128,10 @@ void addrinfo_deleter(struct addrinfo * ai)
  *      parser.set_default_address(std::string());
  * \endcode
  *
+ * \todo
+ * Consider saving the default IPs as addr structures and allow such
+ * as input.
+ *
  * \param[in] addr  The new address.
  */
 void addr_parser::set_default_address(std::string const & address)
@@ -133,7 +147,7 @@ void addr_parser::set_default_address(std::string const & address)
         //
         if(address.back() != ']')
         {
-            throw addr_invalid_argument_exception("an IPv6 address starting with '[' must end with ']'.");
+            throw addr_invalid_argument("an IPv6 address starting with '[' must end with ']'.");
         }
         f_default_address6 = address.substr(1, address.length() - 2);
     }
@@ -223,7 +237,7 @@ void addr_parser::set_default_port(int const port)
     if(port < -1
     || port > 65535)
     {
-        throw addr_invalid_argument_exception("addr_parser::set_default_port(): port must be in range [-1..65535].");
+        throw addr_invalid_argument("addr_parser::set_default_port(): port must be in range [-1..65535].");
     }
 
     f_default_port = port;
@@ -272,7 +286,8 @@ int addr_parser::get_default_port() const
  * \todo
  * Add a check of the default mask when it gets set so we can throw on
  * errors and that way it is much more likely that programmers can fix
- * their errors early.
+ * their errors early. (Actually by pre-parsing we could save it as
+ * an addr and allow a `set_default_mask(addr ...)`!)
  *
  * \param[in] mask  The mask to use by default.
  */
@@ -289,7 +304,7 @@ void addr_parser::set_default_mask(std::string const & mask)
         //
         if(mask.back() != ']')
         {
-            throw addr_invalid_argument_exception("an IPv6 mask starting with '[' must end with ']'.");
+            throw addr_invalid_argument("an IPv6 mask starting with '[' must end with ']'.");
         }
         f_default_mask6 = mask.substr(1, mask.length() - 2);
     }
@@ -393,7 +408,7 @@ void addr_parser::set_protocol(std::string const & protocol)
     {
         // not a protocol we support
         //
-        throw addr_invalid_argument_exception(
+        throw addr_invalid_argument(
                   std::string("unknown protocol \"")
                 + protocol
                 + "\", expected \"tcp\" or \"udp\".");
@@ -434,7 +449,7 @@ void addr_parser::set_protocol(int const protocol)
         break;
 
     default:
-        throw addr_invalid_argument_exception(
+        throw addr_invalid_argument(
                   std::string("unknown protocol \"")
                 + std::to_string(protocol)
                 + "\", expected \"tcp\" or \"udp\".");
@@ -539,7 +554,7 @@ void addr_parser::set_allow(flag_t const flag, bool const allow)
     if(flag < static_cast<flag_t>(0)
     || flag >= flag_t::FLAG_max)
     {
-        throw addr_invalid_argument_exception("addr_parser::set_allow(): flag has to be one of the valid flags.");
+        throw addr_invalid_argument("addr_parser::set_allow(): flag has to be one of the valid flags.");
     }
 
     f_flags[static_cast<int>(flag)] = allow;
@@ -591,7 +606,7 @@ bool addr_parser::get_allow(flag_t const flag) const
     if(flag < static_cast<flag_t>(0)
     || flag >= flag_t::FLAG_max)
     {
-        throw addr_invalid_argument_exception("addr_parser::get_allow(): flag has to be one of the valid flags.");
+        throw addr_invalid_argument("addr_parser::get_allow(): flag has to be one of the valid flags.");
     }
 
     return f_flags[static_cast<int>(flag)];
@@ -1567,17 +1582,26 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
  * the returned addr object or throws an error if the conversion
  * fails.
  *
- * The port can be specified or set to -1. If -1, then there is no
- * default port. Either way, the port can be defined in `a`.
+ * The \p default_address parameter string can be set to an address
+ * which is returned if the input in \p a does not include an
+ * address such as in ":123".
+ *
+ * The \p port parameter can be specified or set to -1. If -1, then
+ * there is no default port. Either way, the port can be defined in
+ * \p a.
  *
  * The protocol can be specified, as a string. For example, you can
  * use "tcp". The default is no specific protocol which means any
- * type of IP address can be returned.
+ * type of IP address can be returned. Note that if more than one
+ * result is returned when the protocol was not specified, the
+ * results will be filtered to only keep the address that uses the
+ * TCP protocol. If as a result we have a single address, then that
+ * result gets returned.
  *
  * \note
  * This function does not allow for address or port ranges. It is
- * expected to return exactly one addresss. A mask can be allowed,
- * though.
+ * expected to return exactly one address. You can allow a \p mask
+ * by setting that parameter to true.
  *
  * \param[in] a  The address string to be converted.
  * \param[in] default_addrress  The default address or an empty string.
@@ -1602,7 +1626,10 @@ addr string_to_addr(
         p.set_default_address(default_address);
     }
 
-    p.set_default_port(default_port);
+    if(default_port != -1)
+    {
+        p.set_default_port(default_port);
+    }
 
     if(!protocol.empty())
     {
@@ -1619,24 +1646,29 @@ addr string_to_addr(
         // time, we search for an entry with protocol TCP by default
         // because in most cases that's what people want
         //
-        result.erase(
-                  std::remove_if(
-                      result.begin()
-                    , result.end()
-                    , [](auto const it)
-                    {
-                        return it.has_from() && it.get_from().get_protocol() != IPPROTO_TCP;
-                    })
-                , result.end());
+        if(protocol.empty())
+        {
+            result.erase(
+                      std::remove_if(
+                          result.begin()
+                        , result.end()
+                        , [](auto const it)
+                        {
+                            return it.has_from() && it.get_from().get_protocol() != IPPROTO_TCP;
+                        })
+                    , result.end());
+        }
         if(result.size() != 1)
         {
             // an invalid protocol is caught by the set_protocol()
             // function so we should never be able to reach here
             //
-            throw addr_invalid_argument_exception(                                                          // LCOV_EXCL_LINE
-                    "the address could not be converted in a single address in string_to_addr(), found "    // LCOV_EXCL_LINE
-                            + std::to_string(result.size())                                                 // LCOV_EXCL_LINE
-                            + " instead.");                                                                 // LCOV_EXCL_LINE
+            throw addr_invalid_argument(                                                            // LCOV_EXCL_LINE
+                      "the address \""                                                              // LCOV_EXCL_LINE
+                    + a                                                                             // LCOV_EXCL_LINE
+                    + "\" could not be converted to a single address in string_to_addr(), found "   // LCOV_EXCL_LINE
+                    + std::to_string(result.size())                                                 // LCOV_EXCL_LINE
+                    + " entries instead.");                                                         // LCOV_EXCL_LINE
         }
     }
 
@@ -1646,12 +1678,12 @@ addr string_to_addr(
     if(result[0].has_to()
     || result[0].is_range())
     {
-        throw addr_invalid_argument_exception("string_to_addr() does not support ranges.");     // LCOV_EXCL_LINE
+        throw addr_invalid_argument("string_to_addr() does not support ranges.");     // LCOV_EXCL_LINE
     }
 
     if(!result[0].has_from())
     {
-        throw addr_invalid_argument_exception("string_to_addr() has no 'from' address.");       // LCOV_EXCL_LINE
+        throw addr_invalid_argument("string_to_addr() has no 'from' address.");       // LCOV_EXCL_LINE
     }
 
     return result[0].get_from();

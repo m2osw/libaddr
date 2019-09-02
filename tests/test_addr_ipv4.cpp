@@ -1,33 +1,32 @@
-/* test_addr_ipv4.cpp
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
- *
- * Project: https://snapwebsites.org/project/libaddr
- *
- * Permission is hereby granted, free of charge, to any
- * person obtaining a copy of this software and
- * associated documentation files (the "Software"), to
- * deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom
- * the Software is furnished to do so, subject to the
- * following conditions:
- *
- * The above copyright notice and this permission notice
- * shall be included in all copies or substantial
- * portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
- * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
- * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
- * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// Project: https://snapwebsites.org/project/libaddr
+//
+// Permission is hereby granted, free of charge, to any
+// person obtaining a copy of this software and
+// associated documentation files (the "Software"), to
+// deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify,
+// merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom
+// the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice
+// shall be included in all copies or substantial
+// portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+// LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+// EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 
 /** \file
  * \brief Test the IPv6 interface.
@@ -98,8 +97,8 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 while(in.sin_family == AF_INET);
                 in.sin_port = htons(rand());
                 in.sin_addr.s_addr = htonl(rand() ^ (rand() << 16));
-                CATCH_REQUIRE_THROWS_AS(a.set_ipv4(in), addr::addr_invalid_argument_exception);
-                CATCH_REQUIRE_THROWS_AS(addr::addr(in), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_ipv4(in), addr::addr_invalid_argument);
+                CATCH_REQUIRE_THROWS_AS(addr::addr(in), addr::addr_invalid_argument);
             }
         }
     }
@@ -129,9 +128,9 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 }
                 addr::addr_parser::flag_t const flag(static_cast<addr::addr_parser::flag_t>(n));
 
-                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument_exception);
-                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument_exception);
-                CATCH_REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument);
+                CATCH_REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument);
             }
         }
 
@@ -153,9 +152,9 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 while(n < static_cast<int>(addr::addr_parser::flag_t::FLAG_max));
                 addr::addr_parser::flag_t const flag(static_cast<addr::addr_parser::flag_t>(n));
 
-                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument_exception);
-                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument_exception);
-                CATCH_REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument);
+                CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument);
+                CATCH_REQUIRE_THROWS_AS(a.get_allow(flag), addr::addr_invalid_argument);
             }
         }
     }
@@ -260,7 +259,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                     port = rand() ^ (rand() << 16);
                 }
                 while(port >= -1 && port <= 65535); // -1 is valid here, it represents "no default port defined"
-                CATCH_REQUIRE_THROWS_AS(p.set_default_port(port), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(p.set_default_port(port), addr::addr_invalid_argument);
 
                 // verify port unchanged
                 //
@@ -362,13 +361,13 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             // not changing default protocol
             //
             CATCH_REQUIRE(p.get_protocol() == -1);
-            CATCH_REQUIRE_THROWS_AS(p.set_protocol("igmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_protocol("igmp"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_protocol() == -1);
 
             // change protocol to another valid value first
             //
             p.set_protocol("tcp");
-            CATCH_REQUIRE_THROWS_AS(p.set_protocol("icmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_protocol("icmp"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
         }
 
@@ -387,13 +386,13 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
 
                 addr::addr_parser p;
 
-                CATCH_REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument);
                 CATCH_REQUIRE(p.get_protocol() == -1);
 
                 // change protocol to another valid value first
                 //
                 p.set_protocol("tcp");
-                CATCH_REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(p.set_protocol(protocol), addr::addr_invalid_argument);
                 CATCH_REQUIRE(p.get_protocol() == IPPROTO_TCP);
             }
         }
@@ -412,13 +411,13 @@ CATCH_TEST_CASE( "ipv4::addr", "[ipv4]" )
             CATCH_REQUIRE_FALSE(a.is_ipv4());
 
             struct sockaddr_in in;
-            CATCH_REQUIRE_THROWS_AS(a.get_ipv4(in), addr::addr_invalid_state_exception);
-            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY),          addr::addr_invalid_state_exception);
-            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS),      addr::addr_invalid_state_exception);
-            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT),          addr::addr_invalid_state_exception);
-            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK),          addr::addr_invalid_state_exception);
-            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK), addr::addr_invalid_state_exception);
-            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL),           addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.get_ipv4(in), addr::addr_invalid_state);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY),          addr::addr_invalid_state);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS),      addr::addr_invalid_state);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT),          addr::addr_invalid_state);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK),          addr::addr_invalid_state);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK), addr::addr_invalid_state);
+            CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL),           addr::addr_invalid_state);
         }
 
         CATCH_SECTION("default network type (0.0.0.0)")
@@ -1585,7 +1584,7 @@ CATCH_TEST_CASE( "ipv4::protocol", "[ipv4]" )
                 while(invalid_protocol == IPPROTO_IP
                    || invalid_protocol == IPPROTO_TCP
                    || invalid_protocol == IPPROTO_UDP);
-                CATCH_REQUIRE_THROWS_AS(a.set_protocol(invalid_protocol), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_protocol(invalid_protocol), addr::addr_invalid_argument);
 
                 // make sure the protocol does not change on errors
                 CATCH_REQUIRE(a.get_protocol() == start_protocol);
@@ -1593,13 +1592,13 @@ CATCH_TEST_CASE( "ipv4::protocol", "[ipv4]" )
 
             // null string is not allowed
             //
-            CATCH_REQUIRE_THROWS_AS(a.set_protocol(nullptr), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol(nullptr), addr::addr_invalid_argument);
 
             // other "invalid" (unsupported, really) string protocols
             //
-            CATCH_REQUIRE_THROWS_AS(a.set_protocol("icmp"), addr::addr_invalid_argument_exception);
-            CATCH_REQUIRE_THROWS_AS(a.set_protocol("raw"), addr::addr_invalid_argument_exception);
-            CATCH_REQUIRE_THROWS_AS(a.set_protocol("hmp"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol("icmp"), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol("raw"), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(a.set_protocol("hmp"), addr::addr_invalid_argument);
 
             // test all valid protocols (numeric)
             //
@@ -1893,8 +1892,8 @@ CATCH_TEST_CASE( "ipv4::network", "[ipv4]" )
         CATCH_SECTION("invalid socket")
         {
             addr::addr a;
-            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(-1, true),  addr::addr_invalid_argument_exception);
-            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(-1, false), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(-1, true),  addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(-1, false), addr::addr_invalid_argument);
         }
 
         CATCH_SECTION("non-opened file descriptor")
@@ -1904,8 +1903,8 @@ CATCH_TEST_CASE( "ipv4::network", "[ipv4]" )
             // unless we have a bug, there should not be any file descriptor
             // currently open with an ID of 1,000
             //
-            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(1000, true),  addr::addr_io_exception);
-            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(1000, false), addr::addr_io_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(1000, true),  addr::addr_io_error);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(1000, false), addr::addr_io_error);
         }
 
         CATCH_SECTION("unknown socket type")
@@ -1919,8 +1918,8 @@ CATCH_TEST_CASE( "ipv4::network", "[ipv4]" )
             // unless we have a bug, there should not be any file descriptor
             // currently open with an ID of 1,000
             //
-            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(s, true),  addr::addr_io_exception);
-            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(s, false), addr::addr_invalid_state_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(s, true),  addr::addr_io_error);
+            CATCH_REQUIRE_THROWS_AS(a.set_from_socket(s, false), addr::addr_invalid_state);
         }
 
         CATCH_SECTION("create a server, but do not test it (yet)...")
@@ -2003,7 +2002,7 @@ CATCH_TEST_CASE( "ipv4::network", "[ipv4]" )
             // get socket info from the other side (peer == true)
             //
             addr::addr b;
-            CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_exception);
+            CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_error);
             CATCH_REQUIRE_FALSE(b.is_ipv4());
             CATCH_REQUIRE(b.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "::");
             CATCH_REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::");
@@ -2471,7 +2470,7 @@ CATCH_TEST_CASE( "ipv4::string_to_addr", "[ipv4]" )
         CATCH_SECTION("addr with port and invalid protocol so we get an exception")
         {
             CATCH_REQUIRE_THROWS_AS(addr::string_to_addr("169.60.33.0:9322/24", std::string(), -1, "icmp", true),
-                                                                        addr::addr_invalid_argument_exception);
+                                                                        addr::addr_invalid_argument);
         }
     }
     // TODO: add ipv6 tests, although at this point it's not too

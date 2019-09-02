@@ -1,3 +1,14 @@
+libaddr (1.0.18.0~xenial) xenial; urgency=high
+
+  * Cleaned up the exceptions (name, use macros).
+  * Modernize the `mk` script.
+  * Renamed the test `unittest` (planning unification).
+  * Added the #include poison.h to all .cpp files.
+  * Started moving things around so we have the library and tools separated.
+  * Moved header files out of the sub-libaddr directory.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon,  2 Sep 2019 03:17:02 -0800
+
 libaddr (1.0.17.0~xenial) xenial; urgency=high
 
   * Upgraded tests to compile against snapcatch2 instead of catch1.x

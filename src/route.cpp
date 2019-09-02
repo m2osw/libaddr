@@ -34,17 +34,25 @@
 
 // self
 //
-#include "libaddr/route.h"
+#include    "libaddr/addr_exception.h"
+#include    "libaddr/route.h"
+
 
 // C++ library
 //
-#include <algorithm>
-#include <fstream>
-#include <iostream>
+#include    <algorithm>
+#include    <fstream>
+#include    <iostream>
+
 
 // C library
 //
-#include <net/route.h>
+#include    <net/route.h>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -148,7 +156,7 @@ int hex_to_number(char c)
     {
         return c - 'A' + 10;
     }
-    throw std::runtime_error("invalid hexadecimal digit"); // LCOV_EXCL_LINE
+    throw addr_invalid_argument("invalid hexadecimal digit"); // LCOV_EXCL_LINE
 }
 
 
@@ -156,7 +164,7 @@ addr hex_to_addr(std::string const & address)
 {
     if(address.length() != 8)
     {
-        throw std::runtime_error("invalid length for an hex address"); // LCOV_EXCL_LINE
+        throw addr_invalid_argument("invalid length for an hex address"); // LCOV_EXCL_LINE
     }
 
     struct sockaddr_in in = sockaddr_in();

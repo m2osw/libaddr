@@ -1,33 +1,32 @@
-/* test_addr_ipv6.cpp
- * Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
- *
- * Project: https://snapwebsites.org/project/libaddr
- *
- * Permission is hereby granted, free of charge, to any
- * person obtaining a copy of this software and
- * associated documentation files (the "Software"), to
- * deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom
- * the Software is furnished to do so, subject to the
- * following conditions:
- *
- * The above copyright notice and this permission notice
- * shall be included in all copies or substantial
- * portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
- * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
- * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
- * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+//
+// Project: https://snapwebsites.org/project/libaddr
+//
+// Permission is hereby granted, free of charge, to any
+// person obtaining a copy of this software and
+// associated documentation files (the "Software"), to
+// deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify,
+// merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom
+// the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice
+// shall be included in all copies or substantial
+// portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+// LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+// EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 
 /** \file
  * \brief Test the IPv6 interface.
@@ -100,8 +99,8 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             {
                 in6.sin6_addr.s6_addr16[idx] = rand();
             }
-            CATCH_REQUIRE_THROWS_AS(a.set_ipv6(in6), addr::addr_invalid_argument_exception);
-            CATCH_REQUIRE_THROWS_AS(addr::addr(in6), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(a.set_ipv6(in6), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(addr::addr(in6), addr::addr_invalid_argument);
         }
     }
 
@@ -351,7 +350,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
         {
             addr::addr_parser p;
 
-            CATCH_REQUIRE_THROWS_AS(p.set_default_address("[4:5:4:5:7:8:7:8"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_default_address("[4:5:4:5:7:8:7:8"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_default_address4() == "");
             CATCH_REQUIRE(p.get_default_address6() == "");
 
@@ -359,7 +358,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             CATCH_REQUIRE(p.get_default_address4() == "");
             CATCH_REQUIRE(p.get_default_address6() == "1:7:1:7:1:7:1:7");
 
-            CATCH_REQUIRE_THROWS_AS(p.set_default_address("[9:5:9:5:9:8:9:8"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_default_address("[9:5:9:5:9:8:9:8"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_default_address4() == "");
             CATCH_REQUIRE(p.get_default_address6() == "1:7:1:7:1:7:1:7");
 
@@ -367,7 +366,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             CATCH_REQUIRE(p.get_default_address4() == "12.55.1.9");
             CATCH_REQUIRE(p.get_default_address6() == "1:7:1:7:1:7:1:7");
 
-            CATCH_REQUIRE_THROWS_AS(p.set_default_address("[9:f00f:9:e00e:9:d00d:9:c00c"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_default_address("[9:f00f:9:e00e:9:d00d:9:c00c"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_default_address4() == "12.55.1.9");
             CATCH_REQUIRE(p.get_default_address6() == "1:7:1:7:1:7:1:7");
 
@@ -380,7 +379,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
         {
             addr::addr_parser p;
 
-            CATCH_REQUIRE_THROWS_AS(p.set_default_mask("[4:5:4:5:7:8:7:8"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_default_mask("[4:5:4:5:7:8:7:8"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_default_mask4() == "");
             CATCH_REQUIRE(p.get_default_mask6() == "");
 
@@ -388,7 +387,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             CATCH_REQUIRE(p.get_default_mask4() == "");
             CATCH_REQUIRE(p.get_default_mask6() == "1:7:1:7:1:7:1:7");
 
-            CATCH_REQUIRE_THROWS_AS(p.set_default_mask("[9:5:9:5:9:8:9:8"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_default_mask("[9:5:9:5:9:8:9:8"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_default_mask4() == "");
             CATCH_REQUIRE(p.get_default_mask6() == "1:7:1:7:1:7:1:7");
 
@@ -396,7 +395,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             CATCH_REQUIRE(p.get_default_mask4() == "12.55.1.9");
             CATCH_REQUIRE(p.get_default_mask6() == "1:7:1:7:1:7:1:7");
 
-            CATCH_REQUIRE_THROWS_AS(p.set_default_mask("[9:f00f:9:e00e:9:d00d:9:c00c"), addr::addr_invalid_argument_exception);
+            CATCH_REQUIRE_THROWS_AS(p.set_default_mask("[9:f00f:9:e00e:9:d00d:9:c00c"), addr::addr_invalid_argument);
             CATCH_REQUIRE(p.get_default_mask4() == "12.55.1.9");
             CATCH_REQUIRE(p.get_default_mask6() == "1:7:1:7:1:7:1:7");
 
@@ -670,11 +669,11 @@ CATCH_TEST_CASE( "ipv6::ports", "[ipv6]" )
                     port_too_small = -(rand() & 0xFFFF);
                 }
                 while(port_too_small == 0);
-                CATCH_REQUIRE_THROWS_AS(a.set_port(port_too_small), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_port(port_too_small), addr::addr_invalid_argument);
 
                 // first try a negative port
                 int const port_too_large = (rand() & 0xFFFF) + 65536;
-                CATCH_REQUIRE_THROWS_AS(a.set_port(port_too_large), addr::addr_invalid_argument_exception);
+                CATCH_REQUIRE_THROWS_AS(a.set_port(port_too_large), addr::addr_invalid_argument);
 
                 // make sure port does not get modified on errors
                 CATCH_REQUIRE(a.get_port() == start_port);
@@ -1553,7 +1552,7 @@ CATCH_TEST_CASE( "ipv6::network", "[ipv6]" )
             // get socket info from the other side (peer == true)
             //
             addr::addr b;
-            CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_exception);
+            CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_error);
             CATCH_REQUIRE_FALSE(b.is_ipv4());
             CATCH_REQUIRE(b.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "::");
             CATCH_REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::");

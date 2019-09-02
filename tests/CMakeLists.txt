@@ -1,7 +1,3 @@
-#
-# File:         tests/CMakeLists.txt
-# Object:       Definitions to create the build environment with cmake
-#
 # Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
@@ -24,12 +20,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#
 
 ##
 ## libaddr tests
 ##
-project(addr_test)
+project(unittest)
 
 find_package(Catch)
 if(CATCH_FOUND)

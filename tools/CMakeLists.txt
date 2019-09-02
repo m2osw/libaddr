@@ -1,8 +1,4 @@
-#
-# File:         src/CMakeLists.txt
-# Object:       Definitions to create the build environment with cmake
-#
-# Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
@@ -25,64 +21,59 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+
 
 ##
-## addr library
+## Addr command line tool
 ##
-project(addr)
-
-configure_file(
-    version.h.in
-    ${PROJECT_BINARY_DIR}/version.h
-)
+project(validate_ip)
 
 include_directories(
     ${LIBEXCEPT_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME} SHARED
-    addr.cpp
-    addr_parser.cpp
-    addr_range.cpp
-    iface.cpp
-    route.cpp
-    version.cpp
-)
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    VERSION
-        ${LIBADDR_VERSION_MAJOR}.${LIBADDR_VERSION_MINOR}
-
-    SOVERSION
-        ${LIBADDR_VERSION_MAJOR}
+add_executable(${PROJECT_NAME}
+    validate_ip.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
-    ${LIBEXCEPT_LIBRARIES}
+    addr
 )
 
 install(
     TARGETS
         ${PROJECT_NAME}
 
-    LIBRARY DESTINATION
-        lib
+    RUNTIME DESTINATION
+        bin
+)
+
+
+##
+## Route command line tool
+##
+project(ipv4_routes)
+
+include_directories(
+    ${addr_project_BINARY_DIR}
+    ${addr_project_SOURCE_DIR}
+    ${LIBEXCEPT_INCLUDE_DIRS}
+)
+
+add_executable(${PROJECT_NAME}
+    ipv4_routes.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    addr
 )
 
 install(
-    FILES
-        addr.h
-        addr_exception.h
-        addr_parse.h
-        addr_range.h
-        iface.h
-        route.t
-        ${CMAKE_CURRENT_BINARY_DIR}/version.h
+    TARGETS
+        ${PROJECT_NAME}
 
-    DESTINATION
-        include/libaddr
+    RUNTIME DESTINATION
+        bin
 )
-
 
 # vim: ts=4 sw=4 et

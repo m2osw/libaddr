@@ -33,16 +33,23 @@
 // self
 //
 #include "libaddr/addr.h"
-#include "libaddr/addr_exceptions.h"
+#include "libaddr/addr_exception.h"
+
 
 // C++ library
 //
 #include <sstream>
 #include <iostream>
 
+
 // C library
 //
 #include <netdb.h>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -298,7 +305,7 @@ void addr::set_ipv4(struct sockaddr_in const & in)
         // although we convert the IPv4 to an IPv6 below, we really only
         // support AF_INET on entry
         //
-        throw addr_invalid_argument_exception("addr::set_ipv4(): the input address does not represent an IPv4 address (family is not AF_INET).");
+        throw addr_invalid_argument("addr::set_ipv4(): the input address does not represent an IPv4 address (family is not AF_INET).");
     }
 
     // reset the address first
@@ -334,7 +341,7 @@ void addr::set_port(int port)
     if(port > 65535 
     || port < 0)
     {
-        throw addr_invalid_argument_exception("port to set_port() cannot be out of the allowed range [0..65535].");
+        throw addr_invalid_argument("port to set_port() cannot be out of the allowed range [0..65535].");
     }
     f_address.sin6_port = htons(port);
 }
@@ -355,7 +362,7 @@ void addr::set_protocol(char const * protocol)
 {
     if(protocol == nullptr)
     {
-        throw addr_invalid_argument_exception("protocol pointer to set_protocol() cannot be a nullptr.");
+        throw addr_invalid_argument("protocol pointer to set_protocol() cannot be a nullptr.");
     }
 
     if(strcmp(protocol, "ip") == 0)
@@ -372,7 +379,7 @@ void addr::set_protocol(char const * protocol)
     }
     else
     {
-        throw addr_invalid_argument_exception(
+        throw addr_invalid_argument(
                           std::string("unknown protocol \"")
                         + protocol
                         + "\", expected \"tcp\" or \"udp\" (string).");
@@ -414,7 +421,7 @@ void addr::set_protocol(int protocol)
         break;
 
     default:
-        throw addr_invalid_argument_exception(
+        throw addr_invalid_argument(
                           "unknown protocol number "
                         + std::to_string(protocol)
                         + ", expected \"tcp\" ("
@@ -538,7 +545,7 @@ void addr::get_ipv4(struct sockaddr_in & in) const
         return;
     }
 
-    throw addr_invalid_state_exception("Not an IPv4 compatible address.");
+    throw addr_invalid_state("Not an IPv4 compatible address.");
 }
 
 
@@ -556,7 +563,7 @@ void addr::set_ipv6(struct sockaddr_in6 const & in6)
 {
     if(in6.sin6_family != AF_INET6)
     {
-        throw addr_invalid_argument_exception("addr::set_ipv6(): the input address does not represent an IPv6 address (family is not AF_INET6).");
+        throw addr_invalid_argument("addr::set_ipv6(): the input address does not represent an IPv6 address (family is not AF_INET6).");
     }
     memcpy(&f_address, &in6, sizeof(in6));
 
@@ -645,7 +652,7 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
         // buffer was too small...
     }
 
-    throw addr_invalid_state_exception("Not an IPv4 compatible address.");
+    throw addr_invalid_state("Not an IPv4 compatible address.");
 }
 
 
@@ -725,7 +732,7 @@ std::string addr::to_ipv6_string(string_ip_t mode) const
         return result.str();
     }
 
-    throw addr_invalid_state_exception("The address from this addr could not be converted to a valid canonicalized IPv6 address.");  // LCOV_EXCL_LINE
+    throw addr_invalid_state("The address from this addr could not be converted to a valid canonicalized IPv6 address.");  // LCOV_EXCL_LINE
 }
 
 
@@ -1076,7 +1083,7 @@ void addr::set_from_socket(int s, bool peer)
     //
     if(s < 0)
     {
-        throw addr_invalid_argument_exception("addr::set_from_socket(): the socket cannot be a negative number.");
+        throw addr_invalid_argument("addr::set_from_socket(): the socket cannot be a negative number.");
     }
 
     struct sockaddr_storage address = sockaddr_storage();
@@ -1097,7 +1104,7 @@ void addr::set_from_socket(int s, bool peer)
     if(r != 0)
     {
         int const e(errno);
-        throw addr_io_exception(
+        throw addr_io_error(
                   std::string("addr::set_from_socket(): ")
                 + (peer ? "getpeername()" : "getsockname()")
                 + " failed to retrieve IP address details (errno: "
@@ -1118,7 +1125,7 @@ void addr::set_from_socket(int s, bool peer)
         break;
 
     default:
-        throw addr_invalid_state_exception(
+        throw addr_invalid_state(
                   std::string("addr::set_from_socket(): ")
                 + (peer ? "getpeername()" : "getsockname()")
                 + " returned a type of address, which is not understood, i.e. not AF_INET or AF_INET6.");

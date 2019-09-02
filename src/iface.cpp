@@ -32,21 +32,29 @@
 
 // self
 //
-#include "libaddr/iface.h"
+#include    "libaddr/iface.h"
+
 
 // addr library
 //
-#include "libaddr/route.h"
+#include    "libaddr/route.h"
+
 
 // C++ library
 //
-#include <algorithm>
-#include <iostream>
+#include    <algorithm>
+#include    <iostream>
+
 
 // C library
 //
-#include <ifaddrs.h>
-#include <net/if.h>
+#include    <ifaddrs.h>
+#include    <net/if.h>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 
@@ -299,7 +307,7 @@ iface::vector_t iface::get_local_addresses()
 
         default:
             // TODO: can we just ignore unexpected address families?
-            //throw addr_invalid_structure_exception( "Unknown address family!" );
+            //throw addr_invalid_structure("Unknown address family!");
             continue;
 
         }

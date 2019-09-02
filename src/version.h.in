@@ -1,5 +1,5 @@
-// Network Address -- get addresses on the command line and validate them
-// Copyright (c) 2012-2019  Made to Order Software Corp.  All Rights Reserved
+// Snap Websites Server -- version of libaddr
+// Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/libaddr
 //
@@ -22,22 +22,29 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+#pragma once
 
 /** \file
- * \brief A tool to check the validity of an IP address.
+ * \brief Version header.
  *
- * This tool can be used to check that an IP address or a list of
- * IP addresses are all valid.
+ * This header file defines the snapwebsites library version information.
+ *
+ * See the addr.cpp/.h for other details.
  */
 
-#include "libaddr/addr.h"
+#define    LIBADDR_VERSION_MAJOR   @LIBADDR_VERSION_MAJOR@
+#define    LIBADDR_VERSION_MINOR   @LIBADDR_VERSION_MINOR@
+#define    LIBADDR_VERSION_PATCH   @LIBADDR_VERSION_PATCH@
+#define    LIBADDR_VERSION_STRING  "@LIBADDR_VERSION_MAJOR@.@LIBADDR_VERSION_MINOR@.@LIBADDR_VERSION_PATCH@"
 
-#include <iostream>
-
-int main(int argc, char * argv[])
+namespace addr
 {
-    std::cerr << "error: " << argc << " not implemented " << argv << "...\n";
-    return 0;
+
+int             get_version_major();
+int             get_version_minor();
+int             get_version_patch();
+char const *    get_version_string();
+
 }
 
 // vim: ts=4 sw=4 et

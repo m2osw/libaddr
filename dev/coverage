@@ -2,7 +2,7 @@
 #
 # Run all the libaddr tests with coverage
 #
-# Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
@@ -72,16 +72,16 @@ echo
 echo "***"
 echo "*** run (`date`)"
 echo "***"
-if test `BUILD/tests/addr_test --version` != "$VERSION"
+if test `BUILD/tests/unittest --version` != "$VERSION"
 then
-    echo "the version of addr_test (`BUILD/tests/addr_test --version`) is not equal to the project version ($VERSION)"
+    echo "the version of unittest (`BUILD/tests/unittest --version`) is not equal to the project version ($VERSION)"
     exit 1;
 fi
 
 # We test the pipe status on exit to detect whether the test failed
 echo "Start running the tests on `date`" >test_log.txt
 echo >>test_log.txt
-BUILD/tests/addr_test --tcp-port 80 $TEST_NAME 2>&1 | tee -a test_log.txt; test ${PIPESTATUS[0]} -eq 0
+BUILD/tests/unittest --tcp-port 80 $TEST_NAME 2>&1 | tee -a test_log.txt; test ${PIPESTATUS[0]} -eq 0
 echo >>test_log.txt
 echo "Finished running the tests on `date`" >>test_log.txt
 echo

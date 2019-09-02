@@ -35,8 +35,14 @@
 
 // self
 //
-#include "libaddr/addr.h"
-#include "libaddr/version.h"
+#include    "libaddr/addr.h"
+#include    "libaddr/version.h"
+
+
+// last include
+//
+#include    <snapdev/poison.h>
+
 
 
 namespace addr
