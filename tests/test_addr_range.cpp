@@ -37,7 +37,16 @@
  * addr_parser class.
  */
 
-#include "test_addr_main.h"
+
+// self
+//
+#include    "test_addr_main.h"
+
+
+// last include
+//
+#include    <snapdev/poison.h>
+
 
 
 

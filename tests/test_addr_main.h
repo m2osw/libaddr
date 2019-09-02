@@ -28,6 +28,7 @@
 // SOFTWARE.
 #pragma once
 
+
 /** \file
  * \brief Basic definitions for all of our libaddr unit tests.
  *
@@ -35,30 +36,38 @@
  * by all our unit tests.
  */
 
+
 // libaddr library
 //
-#include "libaddr/addr_parser.h"
-#include "libaddr/addr_exception.h"
-#include "libaddr/version.h"
+#include    <libaddr/addr_parser.h>
+#include    <libaddr/addr_exception.h>
+#include    <libaddr/version.h>
+
 
 // catch
 //
-#include <catch2/snapcatch2.hpp>
+#include    <catch2/snapcatch2.hpp>
+
 
 // C++ library
 //
-#include <string>
-#include <cstring>
-#include <cstdlib>
-#include <iostream>
-#include <sstream>
+#include    <string>
+#include    <cstring>
+#include    <cstdlib>
+#include    <iostream>
+#include    <sstream>
+
 
 // C library
-#include <unistd.h>
-#include <limits.h>
-#include <netdb.h>
+//
+#include    <unistd.h>
+#include    <limits.h>
+#include    <netdb.h>
 
 
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 

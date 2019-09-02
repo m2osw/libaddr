@@ -1,4 +1,4 @@
-# Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+
 ##
 ## libaddr tests
 ##
@@ -35,8 +36,6 @@ if(CATCH_FOUND)
 
     # The reference to the src folder is required by the internal test
     include_directories(
-        ${addr_library_BINARY_DIR}/src
-        ${addr_library_SOURCE_DIR}/src
         ${CATCH_INCLUDE_DIR}
         ${LIBEXCEPT_INCLUDE_DIRS}
     )

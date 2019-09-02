@@ -42,11 +42,17 @@
 
 // self
 //
-#include "test_addr_main.h"
+#include    "test_addr_main.h"
+
 
 // addr lib
 //
-#include "libaddr/iface.h"
+#include    <libaddr/iface.h>
+
+
+// last include
+//
+#include    <snapdev/poison.h>
 
 
 

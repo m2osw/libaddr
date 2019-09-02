@@ -42,10 +42,10 @@ SnapGetVersion( LIBADDR ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories(
     ${PROJECT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}
-}
+)
 
 add_subdirectory( cmake   )
-add_subdirectory( src     )
+add_subdirectory( libaddr )
 add_subdirectory( tools   )
 add_subdirectory( doc     )
 add_subdirectory( tests   )
