@@ -1,11 +1,17 @@
 libaddr (1.0.18.0~xenial) xenial; urgency=high
 
+  * Fix: Default address and port are now used after testing for emptiness.
   * Cleaned up the exceptions (name, use macros).
   * Modernize the `mk` script.
-  * Renamed the test `unittest` (planning unification).
+  * Renamed the test `unittest` (planned unification).
   * Added the #include poison.h to all .cpp files.
   * Started moving things around so we have the library and tools separated.
   * Moved header files out of the sub-libaddr directory.
+  * Renamed the "src" directory as "libaddr".
+  * Actually implemented the validate_ip command line tool.
+  * Added new dependencies (AdvGetOpt, LibUtf8, SnapDev).
+  * Updated the dev/coverage script to work with the new folders.
+  * Avoid showing errno in one emit_error() when errno == 0.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon,  2 Sep 2019 03:17:02 -0800
 

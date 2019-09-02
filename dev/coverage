@@ -92,7 +92,7 @@ echo "***"
 # Choose one of the following gcov commands
 mkdir -p gcov
 cd gcov
-gcov -o ../BUILD/src/CMakeFiles/libaddr.dir/addr.cpp.gcno ../../../src/addr.cpp
+gcov -o ../BUILD/libaddr/CMakeFiles/addr.cpp.gcno ../../../libaddr/addr.cpp
 cd ..
 
 
@@ -111,7 +111,7 @@ end_date=`date`
 # Statistics
 echo "<html><head><title>libaddr $VERSION statistics</title></head><body>" >html/statistics.html
 echo "<h3>Statistics of the libaddr $VERSION code</h3><pre>" >>html/statistics.html
-cloc $SOURCE/src/ >>html/statistics.html
+cloc $SOURCE/libaddr/ >>html/statistics.html
 echo "</pre><h3>Statistics of the libaddr $VERSION tests</h3><pre>" >>html/statistics.html
 cloc $SOURCE/tests/ >>html/statistics.html
 #echo "</pre><h3>Statistics of libaddr scripts $VERSION</h3><pre>" >>html/statistics.html

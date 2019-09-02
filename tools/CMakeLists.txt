@@ -37,6 +37,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
+    ${ADVGETOPT_LIBRARIES}
     addr
 )
 
@@ -55,8 +56,6 @@ install(
 project(ipv4_routes)
 
 include_directories(
-    ${addr_project_BINARY_DIR}
-    ${addr_project_SOURCE_DIR}
     ${LIBEXCEPT_INCLUDE_DIRS}
 )
 

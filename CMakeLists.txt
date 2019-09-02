@@ -33,9 +33,12 @@ enable_language(CXX)
 # (must be included in a project even though it is not made
 # specific to that project)
 #
-find_package( SnapCMakeModules REQUIRED )
-find_package( LibExcept        REQUIRED )
-find_package( SnapDoxygen               )
+find_package(SnapCMakeModules REQUIRED)
+find_package(AdvGetOpt        REQUIRED)
+find_package(LibExcept        REQUIRED)
+find_package(LibUtf8          REQUIRED)
+find_package(SnapDev          REQUIRED)
+find_package(SnapDoxygen              )
 
 SnapGetVersion( LIBADDR ${CMAKE_CURRENT_SOURCE_DIR} )
 

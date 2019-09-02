@@ -1064,8 +1064,8 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
  */
 void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & result)
 {
-    std::string address(f_default_address4);
-    std::string port_str(f_default_port == -1 ? std::string() : std::to_string(f_default_port));
+    std::string address;
+    std::string port_str;
 
     std::string::size_type const p(in.find(':'));
 
@@ -1113,7 +1113,7 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
         }
     }
 
-    parse_address_port(address, port_str, result, "0.0.0.0");
+    parse_address_port(address, port_str, result, false);
 }
 
 
@@ -1137,8 +1137,8 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
 {
     std::string::size_type p(0);
 
-    std::string address(f_default_address6);
-    std::string port_str(f_default_port == -1 ? std::string() : std::to_string(f_default_port));
+    std::string address;
+    std::string port_str;
 
     // if there is an address extract it otherwise put the default
     //
@@ -1184,7 +1184,7 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
         }
     }
 
-    parse_address_port(address, port_str, result, "::");
+    parse_address_port(address, port_str, result, true);
 }
 
 
@@ -1204,16 +1204,25 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
  * if required.
  *
  * \param[in] address  The address to convert to binary.
+ * \param[in] port_str  The port as a string.
+ * \param[out] result  The range where we save the results.
+ * \param[in] ipv6  Use the default IPv6 address if the address is empty.
  */
-void addr_parser::parse_address_port(std::string address, std::string const & port_str, addr_range::vector_t & result, std::string const & default_address)
+void addr_parser::parse_address_port(std::string address, std::string port_str, addr_range::vector_t & result, bool ipv6)
 {
     // make sure the port is good
     //
-    if(port_str.empty()
-    && f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+    if(port_str.empty())
     {
-        emit_error("Required port is missing.");
-        return;
+        if(f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+        {
+            emit_error("Required port is missing.");
+            return;
+        }
+        if(f_default_port != -1)
+        {
+            port_str = std::to_string(f_default_port);
+        }
     }
 
     // make sure the address is good
@@ -1228,7 +1237,28 @@ void addr_parser::parse_address_port(std::string address, std::string const & po
         // internal default if no address was defined
         // (TBD: should it be an IPv6 instead?)
         //
-        address = default_address;
+        if(ipv6)
+        {
+            if(f_default_address6.empty())
+            {
+                address = "::";
+            }
+            else
+            {
+                address = f_default_address6;
+            }
+        }
+        else
+        {
+            if(f_default_address4.empty())
+            {
+                address = "0.0.0.0";
+            }
+            else
+            {
+                address = f_default_address4;
+            }
+        }
     }
 
     // prepare hints for the the getaddrinfo() function
@@ -1263,19 +1293,22 @@ void addr_parser::parse_address_port(std::string address, std::string const & po
             // break on invalid addresses
             //
             int const e(errno); // if r == EAI_SYSTEM, then 'errno' is consistent here
-            emit_error("Invalid address in \""
-                     + address
-                     + (port_str.empty() ? "" : ":")
-                     + port_str
-                     + "\" error "
-                     + std::to_string(r)
-                     + " -- "
-                     + gai_strerror(r)
-                     + " (errno: "
-                     + std::to_string(e)
-                     + " -- "
-                     + strerror(e)
-                     + ").");
+            emit_error(
+                      "Invalid address in \""
+                    + address
+                    + (port_str.empty() ? "" : ":")
+                    + port_str
+                    + "\" error "
+                    + std::to_string(r)
+                    + " -- "
+                    + gai_strerror(r)
+                    + (e == 0
+                        ? ""
+                        : " (errno: "
+                        + std::to_string(e)
+                        + " -- "
+                        + strerror(e)
+                        + ")."));
             return;
         }
     }

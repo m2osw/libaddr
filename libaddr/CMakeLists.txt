@@ -70,10 +70,10 @@ install(
     FILES
         addr.h
         addr_exception.h
-        addr_parse.h
+        addr_parser.h
         addr_range.h
         iface.h
-        route.t
+        route.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
 
     DESTINATION
