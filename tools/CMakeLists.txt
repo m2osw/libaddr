@@ -37,8 +37,9 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    ${ADVGETOPT_LIBRARIES}
     addr
+    ${ADVGETOPT_LIBRARIES}
+    ${LIBUTF8_LIBRARIES}
 )
 
 install(
