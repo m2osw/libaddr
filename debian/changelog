@@ -1,3 +1,10 @@
+libaddr (1.0.19.0~xenial) xenial; urgency=high
+
+  * Fixed the `validate_ip.cpp` to use the new name of the exit exception in
+    the advgetopt library.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 28 Sep 2019 22:59:59 -0800
+
 libaddr (1.0.18.0~xenial) xenial; urgency=high
 
   * Fix: Default address and port are now used after testing for emptiness.
