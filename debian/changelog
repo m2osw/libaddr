@@ -1,3 +1,9 @@
+libaddr (1.0.20.2~bionic) bionic; urgency=high
+
+  * Bump version to recompile against cppthread.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 15 Jan 2021 20:37:11 -0800
+
 libaddr (1.0.20.1~bionic) bionic; urgency=high
 
   * Bump version to get the advgetopt/snaplogger group name change.
