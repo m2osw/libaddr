@@ -1,3 +1,11 @@
+libaddr (1.0.20.3~bionic) bionic; urgency=high
+
+  * Bump version to recompile against cppthread.
+  * Updated copyright notices to 2021.
+  * Adde the -r option to the mk script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 15 Mar 2021 22:59:54 -0700
+
 libaddr (1.0.20.2~bionic) bionic; urgency=high
 
   * Bump version to recompile against cppthread.

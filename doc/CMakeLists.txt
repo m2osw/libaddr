@@ -1,7 +1,7 @@
 # File:         doc/CMakeLists.txt
 # Object:       Generate and install documentation using Doxygen
 #
-# Copyright:    Copyright (c) 2011-2019  Made to Order Software Corp.  All Rights Reserved
+# Copyright:    Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
