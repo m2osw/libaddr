@@ -32,7 +32,7 @@ if test "$1" = "--help" -o "$1" = "-h"
 then
     echo "Usage: $0 [--opt]"
     echo "where --opt is one of:"
-    echo "   --help | -h    disply this help screen"
+    echo "   --help | -h    display this help screen"
     exit 1;
 fi
 
