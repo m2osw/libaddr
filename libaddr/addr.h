@@ -31,8 +31,9 @@
 
 // C++ library
 //
-#include    <memory>
 #include    <cstring>
+#include    <memory>
+#include    <string>
 #include    <vector>
 
 
