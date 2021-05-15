@@ -1,3 +1,9 @@
+libaddr (1.0.20.4~bionic) bionic; urgency=high
+
+  * Recompile against newer versions.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 15 May 2021 11:04:23 -0700
+
 libaddr (1.0.20.3~bionic) bionic; urgency=high
 
   * Bump version to recompile against cppthread.
