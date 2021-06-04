@@ -1,3 +1,10 @@
+libaddr (1.0.21.0~bionic) bionic; urgency=high
+
+  * Updated the NOTUSED() with an underscore.
+  * Fixed the mk script.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 04 Jun 2021 14:07:30 -0700
+
 libaddr (1.0.20.5~bionic) bionic; urgency=high
 
   * Recompile against newer versions.
