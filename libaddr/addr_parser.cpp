@@ -520,7 +520,7 @@ int addr_parser::get_protocol() const
  * lists of ports separated by commas. Both are not supported
  * simultaneously. This means you want to allow multiple addresses
  * separated by commas, the function makes sure that the multiple
- * port separated by commas support is turned of.
+ * port separated by commas support is turned off.
  *
  * \li ADDRESS -- the IP address is allowed, but optional
  * \li REQUIRED_ADDRESS -- the IP address is mandatory
@@ -1635,6 +1635,13 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
  * expected to return exactly one address. You can allow a \p mask
  * by setting that parameter to true.
  *
+ * \exception addr_invalid_argument
+ * If the parsed address is not returning a valid `addr` object, then
+ * this function fails by throwing an error. If you would prefer to
+ * handle the error mechanism, you want to create your own addr_parser
+ * and then call the addr_parser::parse() function. This will allow
+ * you to get error messages instead of an exception.
+ *
  * \param[in] a  The address string to be converted.
  * \param[in] default_addrress  The default address or an empty string.
  * \param[in] default_port  The default port or -1
@@ -1643,6 +1650,8 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
  * \param[in] m  Whether to allow a mask (true) or not (false).
  *
  * \return The address converted in an `addr` object.
+ *
+ * \sa addr_parser::parse()
  */
 addr string_to_addr(
           std::string const & a
