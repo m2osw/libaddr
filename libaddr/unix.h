@@ -95,6 +95,7 @@ public:
     void                            set_file(std::string const & address);
     void                            set_abstract(std::string const & address);
     void                            set_uri(std::string const & address);
+    bool                            set_from_socket(int s);
 
     bool                            is_file() const;
     bool                            is_abstract() const;

@@ -50,6 +50,11 @@
 #include    <libutf8/exception.h>
 
 
+// snapdev lib
+//
+#include    <snapdev/raii_generic_deleter.h>
+
+
 // C lib
 //
 #include    <sys/stat.h>
@@ -155,6 +160,36 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
         {
             CATCH_CHECK(un.sun_path[idx] == 0);
         }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("unix() with an unnamed which we re-collect from socket")
+    {
+        sockaddr_un un;
+
+        addr::unix u;
+
+        CATCH_REQUIRE_FALSE(u.is_file());
+        CATCH_REQUIRE_FALSE(u.is_abstract());
+        CATCH_REQUIRE(u.is_unnamed());
+        CATCH_REQUIRE(u.to_string() == std::string());
+        CATCH_REQUIRE(u.to_uri() == "unix:");
+
+        u.get_un(un);
+        CATCH_REQUIRE(un.sun_family == AF_UNIX);
+        for(std::size_t idx(0); idx < sizeof(un.sun_path); ++idx)
+        {
+            CATCH_CHECK(un.sun_path[idx] == 0);
+        }
+
+        snap::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
+        CATCH_REQUIRE(s != nullptr);
+
+        // unnamed sockets are unbound...
+
+        addr::unix retrieve;
+        retrieve.set_from_socket(s.get());
+        CATCH_REQUIRE(retrieve == u);
     }
     CATCH_END_SECTION()
 }
@@ -376,6 +411,46 @@ CATCH_TEST_CASE("unix::file", "[unix]")
         }
     }
     CATCH_END_SECTION()
+
+    CATCH_START_SECTION("unix() with a file name which we re-collect from socket")
+    {
+        sockaddr_un un;
+
+        std::string name("socket-test");
+        int count(rand() % 5 + 3);
+        for(int id(0); id < count; ++id)
+        {
+            name += '0' + rand() % 10;
+        }
+        unlink(name.c_str());
+
+        addr::unix u(name);
+
+        CATCH_REQUIRE(u.is_file());
+        CATCH_REQUIRE_FALSE(u.is_abstract());
+        CATCH_REQUIRE_FALSE(u.is_unnamed());
+        CATCH_REQUIRE(u.to_string() == name);
+        CATCH_REQUIRE(u.to_uri() == "unix:" + name);
+
+        u.get_un(un);
+        CATCH_REQUIRE(un.sun_family == AF_UNIX);
+        CATCH_REQUIRE(strcmp(un.sun_path, name.c_str()) == 0);
+        for(std::size_t idx(name.length()); idx < sizeof(un.sun_path); ++idx)
+        {
+            CATCH_CHECK(un.sun_path[idx] == 0);
+        }
+
+        snap::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
+        CATCH_REQUIRE(s != nullptr);
+        sockaddr_un address;
+        u.get_un(address);
+        CATCH_REQUIRE(bind(s.get(), reinterpret_cast<sockaddr *>(&address), sizeof(address)) == 0);
+
+        addr::unix retrieve;
+        retrieve.set_from_socket(s.get());
+        CATCH_REQUIRE(retrieve == u);
+    }
+    CATCH_END_SECTION()
 }
 
 
@@ -570,6 +645,47 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
                 CATCH_CHECK(un.sun_path[idx] == 0);
             }
         }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("unix() with an abstract name which we re-collect from socket")
+    {
+        sockaddr_un un;
+
+        std::string name("/net/snapwebsites/test");
+        int count(rand() % 5 + 3);
+        for(int id(0); id < count; ++id)
+        {
+            name += '0' + rand() % 10;
+        }
+
+        addr::unix u(name, true);
+
+        CATCH_REQUIRE_FALSE(u.is_file());
+        CATCH_REQUIRE(u.is_abstract());
+        CATCH_REQUIRE_FALSE(u.is_unnamed());
+        CATCH_REQUIRE(u.to_string() == name);
+        CATCH_REQUIRE(u.to_uri() == "unix://" + name + "?abstract");
+
+        u.get_un(un);
+        CATCH_REQUIRE(un.sun_family == AF_UNIX);
+        CATCH_REQUIRE(un.sun_path[0] == '\0');
+        CATCH_REQUIRE(strcmp(un.sun_path + 1, name.c_str()) == 0);
+        for(std::size_t idx(name.length() + 1); idx < sizeof(un.sun_path); ++idx)
+        {
+            CATCH_CHECK(un.sun_path[idx] == 0);
+        }
+
+        snap::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
+        CATCH_REQUIRE(s != nullptr);
+        sockaddr_un address;
+        u.get_un(address);
+        socklen_t const len(sizeof(address.sun_family) + 1 + strlen(address.sun_path + 1));
+        CATCH_REQUIRE(bind(s.get(), reinterpret_cast<sockaddr *>(&address), len) == 0);
+
+        addr::unix retrieve;
+        retrieve.set_from_socket(s.get());
+        CATCH_REQUIRE(retrieve == u);
     }
     CATCH_END_SECTION()
 }
@@ -1013,6 +1129,37 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
             name += static_cast<char>(0x80);
         }
         CATCH_REQUIRE_THROWS_AS(addr::unix(name), libutf8::libutf8_exception_decoding);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("get unix() of socket set to -1")
+    {
+        addr::unix u;
+        bool const result(u.set_from_socket(-1));
+        int const e(errno);
+        CATCH_REQUIRE_FALSE(result);
+        CATCH_REQUIRE(e == EBADF);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("get unix() of socket set to UDP")
+    {
+        addr::addr udp(addr::string_to_addr(
+                  "127.0.0.1:3999"
+                , "127.0.0.1"
+                , 3999
+                , "udp"));
+        snap::raii_fd_t s(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+        CATCH_REQUIRE(s != nullptr);
+        sockaddr_in in;
+        udp.get_ipv4(in);
+        CATCH_REQUIRE(bind(s.get(), reinterpret_cast<sockaddr *>(&in), sizeof(in)) == 0);
+
+        addr::unix u;
+        bool const result(u.set_from_socket(s.get()));
+        int const e(errno);
+        CATCH_REQUIRE_FALSE(result);
+        CATCH_REQUIRE(e == EADDRNOTAVAIL);
     }
     CATCH_END_SECTION()
 }

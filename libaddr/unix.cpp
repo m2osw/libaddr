@@ -445,6 +445,58 @@ void unix::set_uri(std::string const & uri)
 }
 
 
+/** \brief Define this address given an open socket.
+ *
+ * This function tries to retrieve the address of a socket. If the function
+ * succeeds, then it returns true meaning that the address is considered
+ * valid.
+ *
+ * The function verifies that the address is indeed a Unix address. If not,
+ * then it fails with EADDRNOTAVAIL and this object is not modified.
+ *
+ * \warning
+ * The function makes sure that the name of the socket fits a
+ * sockaddr_un.sun_path as per our rules (i.e. we force the presence
+ * of the '\0' terminator). So this function may throw an exception
+ * on Linux which supports socket names without the '\0'. Further,
+ * if the name is not considered compatible with our verify_path()
+ * function.
+ *
+ * \return true if the address was successfully retrieved.
+ */
+bool unix::set_from_socket(int s)
+{
+    // WARNING: the sockaddr (or sockaddr_storage) structure that the
+    //          getsockname() expects is not large enough for a Unix
+    //          socket so we use a sockaddr_un instead
+    //
+    sockaddr_un address;
+    socklen_t length(sizeof(address));
+    if(getsockname(s, reinterpret_cast<sockaddr *>(&address), &length) != 0)
+    {
+        return false;
+    }
+
+    if(address.sun_family != AF_UNIX)
+    {
+        errno = EADDRNOTAVAIL;
+        return false;
+    }
+
+    if(length < sizeof(address))
+    {
+        memset(
+                  reinterpret_cast<char *>(&address) + length
+                , 0
+                , sizeof(address) - length);
+    }
+
+    set_un(address);
+
+    return true;
+}
+
+
 /** \brief Check whether this address represents file based Unix address.
  *
  * The function checks whether the path starts with a character other

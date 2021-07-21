@@ -266,7 +266,7 @@ addr::addr()
  *
  * \param[in] in  The binary IPv4 address.
  */
-addr::addr(struct sockaddr_in const & in)
+addr::addr(sockaddr_in const & in)
 {
     set_ipv4(in);
     // keep default protocol (TCP)
@@ -280,7 +280,7 @@ addr::addr(struct sockaddr_in const & in)
  *
  * \param[in] in6  The binary IPv6 address.
  */
-addr::addr(struct sockaddr_in6 const & in6)
+addr::addr(sockaddr_in6 const & in6)
 {
     set_ipv6(in6);
     // keep default protocol (TCP)
@@ -297,7 +297,7 @@ addr::addr(struct sockaddr_in6 const & in6)
  *
  * \param[in] in  The IPv4 address to save in this addr object.
  */
-void addr::set_ipv4(struct sockaddr_in const & in)
+void addr::set_ipv4(sockaddr_in const & in)
 {
     if(in.sin_family != AF_INET)
     {
@@ -526,12 +526,12 @@ bool addr::is_ipv4() const
  * This function can be used to retrieve the IPv4 address of this addr
  * object. If the address is not an IPv4, then the function throws.
  *
- * \exception addr_invalid_structure_exception
+ * \exception addr_invalid_state
  * This exception is raised if the address is not an IPv4 address.
  *
  * \param[out] in  The structure where the IPv4 Internet address gets saved.
  */
-void addr::get_ipv4(struct sockaddr_in & in) const
+void addr::get_ipv4(sockaddr_in & in) const
 {
     if(is_ipv4())
     {
@@ -558,7 +558,7 @@ void addr::get_ipv4(struct sockaddr_in & in) const
  *
  * \param[in] in6  The source IPv6 to save in the addr object.
  */
-void addr::set_ipv6(struct sockaddr_in6 const & in6)
+void addr::set_ipv6(sockaddr_in6 const & in6)
 {
     if(in6.sin6_family != AF_INET6)
     {
@@ -578,7 +578,7 @@ void addr::set_ipv6(struct sockaddr_in6 const & in6)
  *
  * \param[out] in6  The structure where the address gets saved.
  */
-void addr::get_ipv6(struct sockaddr_in6 & in6) const
+void addr::get_ipv6(sockaddr_in6 & in6) const
 {
     memcpy(&in6, &f_address, sizeof(in6));
 }
@@ -615,7 +615,7 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
         // this is an IPv4 mapped in an IPv6, "unmap" that IP
         // so the inet_ntop() can correctly generate an output IP
         //
-        struct in_addr in;
+        in_addr in;
         memset(&in, 0, sizeof(in));
         in.s_addr = f_address.sin6_addr.s6_addr32[3];
         char buf[INET_ADDRSTRLEN + 1];
@@ -999,7 +999,7 @@ int addr::connect(int s) const
         }
         else
         {
-            return ::connect(s, reinterpret_cast<sockaddr const *>(&f_address), sizeof(struct sockaddr_in6));
+            return ::connect(s, reinterpret_cast<sockaddr const *>(&f_address), sizeof(sockaddr_in6));
         }
         break;
 
@@ -1037,7 +1037,7 @@ int addr::bind(int s) const
     }
     else
     {
-        return ::bind(s, reinterpret_cast<sockaddr const *>(&f_address), sizeof(struct sockaddr_in6));
+        return ::bind(s, reinterpret_cast<sockaddr const *>(&f_address), sizeof(sockaddr_in6));
     }
 }
 
@@ -1073,20 +1073,20 @@ void addr::set_from_socket(int s, bool peer)
         throw addr_invalid_argument("addr::set_from_socket(): the socket cannot be a negative number.");
     }
 
-    struct sockaddr_storage address = sockaddr_storage();
+    sockaddr_storage address = sockaddr_storage();
     socklen_t length(sizeof(address));
     int r;
     if(peer)
     {
         // this retrieves the information from the other side
         //
-        r = getpeername(s, reinterpret_cast<struct sockaddr *>(&address), &length);
+        r = getpeername(s, reinterpret_cast<sockaddr *>(&address), &length);
     }
     else
     {
         // retrieve the local socket information
         //
-        r = getsockname(s, reinterpret_cast<struct sockaddr *>(&address), &length);
+        r = getsockname(s, reinterpret_cast<sockaddr *>(&address), &length);
     }
     if(r != 0)
     {
@@ -1104,11 +1104,11 @@ void addr::set_from_socket(int s, bool peer)
     switch(address.ss_family)
     {
     case AF_INET:
-        set_ipv4(reinterpret_cast<struct sockaddr_in &>(address));
+        set_ipv4(reinterpret_cast<sockaddr_in &>(address));
         break;
 
     case AF_INET6:
-        set_ipv6(reinterpret_cast<struct sockaddr_in6 &>(address));
+        set_ipv6(reinterpret_cast<sockaddr_in6 &>(address));
         break;
 
     default:

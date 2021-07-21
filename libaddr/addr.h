@@ -56,9 +56,9 @@ namespace addr
  *
  * return The initialized IPv6 address.
  */
-constexpr struct sockaddr_in6 init_in6()
+constexpr sockaddr_in6 init_in6()
 {
-    struct sockaddr_in6 in6 = sockaddr_in6();
+    sockaddr_in6 in6 = sockaddr_in6();
     in6.sin6_family = AF_INET6;
     return in6;
 }
@@ -99,12 +99,12 @@ public:
     static socket_flag_t const      SOCKET_FLAG_REUSE    = 0x04;
 
                                     addr();
-                                    addr(struct sockaddr_in const & in);
-                                    addr(struct sockaddr_in6 const & in6);
+                                    addr(sockaddr_in const & in);
+                                    addr(sockaddr_in6 const & in6);
 
     void                            set_from_socket(int s, bool peer);
-    void                            set_ipv4(struct sockaddr_in const & in);
-    void                            set_ipv6(struct sockaddr_in6 const & in6);
+    void                            set_ipv4(sockaddr_in const & in);
+    void                            set_ipv6(sockaddr_in6 const & in6);
     void                            set_port(int port);
     void                            set_protocol(char const * protocol);
     void                            set_protocol(int protocol);
@@ -113,8 +113,8 @@ public:
 
     bool                            is_default() const;
     bool                            is_ipv4() const;
-    void                            get_ipv4(struct sockaddr_in & in) const;
-    void                            get_ipv6(struct sockaddr_in6 & in6) const;
+    void                            get_ipv4(sockaddr_in & in) const;
+    void                            get_ipv6(sockaddr_in6 & in6) const;
     std::string                     to_ipv4_string(string_ip_t mode) const;
     std::string                     to_ipv6_string(string_ip_t mode) const;
     std::string                     to_ipv4or6_string(string_ip_t mode) const;
@@ -144,7 +144,7 @@ private:
 
     // always keep address in an IPv6 structure
     //
-    struct sockaddr_in6             f_address = init_in6();
+    sockaddr_in6                    f_address = init_in6();
     uint8_t                         f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
     int                             f_protocol = IPPROTO_TCP;
     mutable network_type_t          f_private_network_defined = network_type_t::NETWORK_TYPE_UNDEFINED;
@@ -158,39 +158,39 @@ private:
 // namespace addr
 
 
-inline bool operator == (struct sockaddr_in6 const & a, struct sockaddr_in6 const & b)
+inline bool operator == (sockaddr_in6 const & a, sockaddr_in6 const & b)
 {
-    return memcmp(&a, &b, sizeof(struct sockaddr_in6)) == 0;
+    return memcmp(&a, &b, sizeof(sockaddr_in6)) == 0;
 }
 
 
-inline bool operator != (struct sockaddr_in6 const & a, struct sockaddr_in6 const & b)
+inline bool operator != (sockaddr_in6 const & a, sockaddr_in6 const & b)
 {
-    return memcmp(&a, &b, sizeof(struct sockaddr_in6)) != 0;
+    return memcmp(&a, &b, sizeof(sockaddr_in6)) != 0;
 }
 
 
-inline bool operator < (struct sockaddr_in6 const & a, struct sockaddr_in6 const & b)
+inline bool operator < (sockaddr_in6 const & a, sockaddr_in6 const & b)
 {
-    return memcmp(&a, &b, sizeof(struct sockaddr_in6)) < 0;
+    return memcmp(&a, &b, sizeof(sockaddr_in6)) < 0;
 }
 
 
-inline bool operator <= (struct sockaddr_in6 const & a, struct sockaddr_in6 const & b)
+inline bool operator <= (sockaddr_in6 const & a, sockaddr_in6 const & b)
 {
-    return memcmp(&a, &b, sizeof(struct sockaddr_in6)) <= 0;
+    return memcmp(&a, &b, sizeof(sockaddr_in6)) <= 0;
 }
 
 
-inline bool operator > (struct sockaddr_in6 const & a, struct sockaddr_in6 const & b)
+inline bool operator > (sockaddr_in6 const & a, sockaddr_in6 const & b)
 {
-    return memcmp(&a, &b, sizeof(struct sockaddr_in6)) > 0;
+    return memcmp(&a, &b, sizeof(sockaddr_in6)) > 0;
 }
 
 
-inline bool operator >= (struct sockaddr_in6 const & a, struct sockaddr_in6 const & b)
+inline bool operator >= (sockaddr_in6 const & a, sockaddr_in6 const & b)
 {
-    return memcmp(&a, &b, sizeof(struct sockaddr_in6)) >= 0;
+    return memcmp(&a, &b, sizeof(sockaddr_in6)) >= 0;
 }
 
 
