@@ -1,6 +1,8 @@
 libaddr (1.0.22.0~bionic) bionic; urgency=high
 
   * Added support for a Unix address.
+  * Fixed a test which maximum size was wrong (interface name can be 15 chars).
+  * Fixed the get_service() test, under UDP, 80 & 443 are not known.
 
  -- Alexis Wilke <alexis@m2osw.com>  Tue, 20 Jul 2021 16:27:01 -0700
 
