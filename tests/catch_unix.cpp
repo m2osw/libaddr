@@ -44,10 +44,15 @@
 #include    <libaddr/unix.h>
 
 
-// libutf8 library
+// libutf8 lib
 //
 #include    <libutf8/libutf8.h>
 #include    <libutf8/exception.h>
+
+
+// C lib
+//
+#include    <sys/stat.h>
 
 
 // last include
@@ -141,6 +146,7 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
         CATCH_REQUIRE(u.is_unnamed());
         CATCH_REQUIRE(u.to_string() == std::string());
         CATCH_REQUIRE(u.to_uri() == "unix:");
+        CATCH_REQUIRE(u.unlink() == 0);
 
         sockaddr_un un;
         u.get_un(un);
@@ -342,6 +348,34 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
+    CATCH_START_SECTION("unix() verify that file gets unlink()'ed")
+    {
+        for(int count(0); count < 10; ++count)
+        {
+            std::string name("test");
+            int const max(rand() % 5 + 3);
+            for(int id(0); id < max; ++id)
+            {
+                name += '0' + rand() % 10;
+            }
+
+            // verify the init_un() as we're at it
+            //
+            addr::unix u(name);
+
+            std::string cmd("touch ");
+            cmd += name;
+            CATCH_REQUIRE(system(cmd.c_str()) == 0);
+
+            struct stat s;
+            CATCH_REQUIRE(stat(name.c_str(), &s) == 0);
+
+            CATCH_REQUIRE(u.unlink() == 0);
+
+            CATCH_REQUIRE(stat(name.c_str(), &s) != 0);
+        }
+    }
+    CATCH_END_SECTION()
 }
 
 
@@ -375,6 +409,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             CATCH_REQUIRE_FALSE(u.is_unnamed());
             CATCH_REQUIRE(u.to_string() == name);
             CATCH_REQUIRE(u.to_uri() == "unix:" + name + "?abstract");
+            CATCH_REQUIRE(u.unlink() == 0);
 
             sockaddr_un un;
             u.get_un(un);

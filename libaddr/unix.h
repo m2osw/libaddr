@@ -102,6 +102,7 @@ public:
     void                            get_un(sockaddr_un & un) const;
     std::string                     to_string() const;
     std::string                     to_uri() const;
+    int                             unlink();
 
     bool                            operator == (unix const & rhs) const;
     bool                            operator != (unix const & rhs) const;

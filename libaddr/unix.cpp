@@ -571,6 +571,34 @@ std::string unix::to_uri() const
 }
 
 
+/** \brief Delete the socket file.
+ *
+ * This function will delete the socket file if it exists.
+ *
+ * The function does nothing if the address is not representing a file.
+ * In that case, the function returns 0 and does not modify the errno
+ * variable.
+ *
+ * \note
+ * This function does not verify whether the file is in use. That means
+ * you may delete a file that should not be deleted. It is your
+ * responsibility to verify the current state of the socket. The
+ * ed::local_stream_server_connection implementation takes care of
+ * that for you if you want to have it easy.
+ *
+ * \return 0 if the unlink worked, -1 on error and errno is set.
+ */
+int unix::unlink()
+{
+    if(is_file())
+    {
+        return ::unlink(f_address.sun_path);
+    }
+
+    return 0;
+}
+
+
 /** \brief Check whether two addresses are equal.
  *
  * This function compares the left hand side (this) and the right
