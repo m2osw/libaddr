@@ -329,7 +329,7 @@ void addr::set_ipv4(struct sockaddr_in const & in)
  *
  * This function changes the port of this address to \p port.
  *
- * \exception addr_invalid_argument_exception
+ * \exception addr_invalid_argument
  * This exception is raised whenever the \p port parameter is set to
  * an invalid number (negative or larger than 65535.)
  *
@@ -351,7 +351,7 @@ void addr::set_port(int port)
  * This function is used to change the current protocol defined in
  * this addr object.
  *
- * \exception addr_invalid_argument_exception
+ * \exception addr_invalid_argument
  * We currently support "tcp", "udp", and "ip". Any other protocol
  * name generates this exception.
  *
@@ -403,7 +403,7 @@ void addr::set_protocol(char const * protocol)
  * and UDP these days (there is the IP protocol, but that's not
  * useful at our level.)
  *
- * \exception addr_invalid_argument_exception
+ * \exception addr_invalid_argument
  * This exception is raised if the specified protocol is not currently
  * supported by the addr implementation.
  *
@@ -915,10 +915,6 @@ std::string addr::get_network_type_string() const
  * \warning
  * This class does not hold the socket created by this function.
  *
- * \todo
- * Move this to our eventdispatcher once we create that separate library.
- * Probably within a form of low level socket class.
- *
  * \param[in] flags  A set of socket flags to use when creating the socket.
  * \param[in] reuse_address  Set the reuse address flag.
  *
@@ -975,10 +971,6 @@ int addr::create_socket(socket_flag_t flags) const
  * may not work properly on all systems, so for now we use the
  * distinction.)
  *
- * \todo
- * Move this to our eventdispatcher once we create that separate library.
- * Probably within a form of low level socket class.
- *
  * \param[in] s  The socket to connect to the address.
  *
  * \return 0 if the bind() succeeded, -1 on errors
@@ -1030,10 +1022,6 @@ int addr::connect(int s) const
  *
  * If the IP address represents an IPv4 addressm then the bind() is done
  * with an IPv4 address and not the IPv6 as it is stored.
- *
- * \todo
- * Move this to our eventdispatcher once we create that separate library.
- * Probably within a form of low level socket class.
  *
  * \param[in] s  The socket to bind to this address.
  *
@@ -1201,7 +1189,14 @@ std::string addr::get_service() const
     {
         flags |= NI_DGRAM;
     }
-    int const r(getnameinfo(reinterpret_cast<sockaddr const *>(&f_address), sizeof(f_address), nullptr, 0, service, sizeof(service), flags));
+    int const r(getnameinfo(
+              reinterpret_cast<sockaddr const *>(&f_address)
+            , sizeof(f_address)
+            , nullptr
+            , 0
+            , service
+            , sizeof(service)
+            , flags));
 
     // return value is 0, then it worked
     //

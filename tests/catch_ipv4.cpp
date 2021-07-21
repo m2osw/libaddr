@@ -29,20 +29,17 @@
 
 
 /** \file
- * \brief Test the IPv6 interface.
+ * \brief Test the IPv4 interface.
  *
- * These test verify that the IPv6 side of things function as expected.
+ * These test verify that the IPv4 side of things function as expected.
  *
  * Note that some of the tests between the IPv4 and IPv6 overlap. Here
- * you mainly find the IPv6 side of things.
- *
- * Also, the IPv6 test include a certain number of default/global
- * test because by default the addr class implements an IPv6 object.
+ * you mainly find the IPv4 side of things.
  */
 
 // self
 //
-#include    "test_addr_main.h"
+#include    "catch_main.h"
 
 
 // addr lib
@@ -68,12 +65,12 @@
 namespace
 {
 
-/** \brief Delete an ifaddrs structure.
+/** \brief Close a socket.
  *
- * This deleter is used to make sure all the ifaddrs get released when
- * an exception occurs or the function using such exists.
+ * This deleter is used to make sure all the socket we test get closed
+ * on exit.
  *
- * \param[in] ia  The ifaddrs structure to free.
+ * \param[in] s  The socket to close.
  */
 void socket_deleter(int * s)
 {

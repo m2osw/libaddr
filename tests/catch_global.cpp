@@ -29,21 +29,26 @@
 
 
 /** \file
- * \brief The main() function of the addr library tests.
+ * \brief Check the global functions.
  *
- * This file implements the main() function of the unit tests used to
- * verify the addr library.
+ * This test file includes test that checks the global functions.
  *
- * It defines any globals (none at this point) and a few basic command
- * line options such as --help and --version.
+ * At this time, the only global functions we check here are the
+ * version functions.
+ *
+ * The address_match_ranges() function is checked in the IPv4
+ * and IPv6 tests along with other address tests.
  */
-
-// Tell catch we want it to add the runner code in this file.
-#define CATCH_CONFIG_RUNNER
 
 // self
 //
-#include    "test_addr_main.h"
+#include    "catch_main.h"
+
+
+// addr lib
+//
+#include    <libaddr/addr.h>
+#include    <libaddr/version.h>
 
 
 // last include
@@ -52,43 +57,15 @@
 
 
 
-namespace SNAP_CATCH2_NAMESPACE
+
+
+CATCH_TEST_CASE( "version", "[global]" )
 {
-
-int         g_tcp_port = -1;
-
+    CATCH_REQUIRE(addr::get_version_major() == LIBADDR_VERSION_MAJOR);
+    CATCH_REQUIRE(addr::get_version_minor() == LIBADDR_VERSION_MINOR);
+    CATCH_REQUIRE(addr::get_version_patch() == LIBADDR_VERSION_PATCH);
+    CATCH_REQUIRE(std::string(addr::get_version_string()) == std::string(LIBADDR_VERSION_STRING));
 }
 
-
-namespace
-{
-
-
-Catch::clara::Parser add_command_line_options(Catch::clara::Parser const & cli)
-{
-    return cli
-         | Catch::clara::Opt(SNAP_CATCH2_NAMESPACE::g_tcp_port, "port")
-              ["--tcp-port"]
-              ("define a TCP port we can connect to to test the get_from_socket() function");
-}
-
-
-}
-// namespace
-
-
-int main(int argc, char * argv[])
-{
-    return SNAP_CATCH2_NAMESPACE::snap_catch2_main(
-              "libaddr"
-            , LIBADDR_VERSION_STRING
-            , argc
-            , argv
-            , nullptr
-            , &add_command_line_options
-            , nullptr
-            , nullptr
-        );
-}
 
 // vim: ts=4 sw=4 et

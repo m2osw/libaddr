@@ -38,19 +38,28 @@
 
 // self
 //
-#include "test_addr_main.h"
+#include    "catch_main.h"
+
+
 
 // addr lib
 //
-#include "libaddr/route.h"
+#include    "libaddr/route.h"
+
 
 // C lib
 //
-#include <net/if.h>
-#include <net/route.h>
+#include    <net/if.h>
+#include    <net/route.h>
 
 
-CATCH_TEST_CASE( "ipv4::routes", "[ipv4]" )
+// last include
+//
+#include    <snapdev/poison.h>
+
+
+
+CATCH_TEST_CASE("ipv4::routes", "[ipv4]")
 {
     CATCH_GIVEN("route::get_ipv4_routes()")
     {
@@ -68,7 +77,7 @@ CATCH_TEST_CASE( "ipv4::routes", "[ipv4]" )
             for(auto r : routes)
             {
                 CATCH_REQUIRE_FALSE(r->get_interface_name().empty());
-                CATCH_REQUIRE(r->get_interface_name().length() < IFNAMSIZ - 1); // IFNAMSIZ includes the '\0'
+                CATCH_REQUIRE(r->get_interface_name().length() < IFNAMSIZ); // IFNAMSIZ includes the '\0' so '<' and not '<='
 
                 // at least one flag is not zero
                 int const f(r->get_flags());

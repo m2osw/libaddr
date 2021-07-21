@@ -36,13 +36,13 @@
  * Note that some of the tests between the IPv4 and IPv6 overlap. Here
  * you mainly find the IPv6 side of things.
  *
- * Also, the IPv6 test include a certain number of default/global
- * test because by default the addr class implements an IPv6 object.
+ * Also, the IPv6 tests include a certain number of default/global
+ * tests because internally the addr class implements an IPv6 object.
  */
 
 // self
 //
-#include    "test_addr_main.h"
+#include    "catch_main.h"
 
 
 // addr lib
@@ -68,12 +68,11 @@
 namespace
 {
 
-/** \brief Delete an ifaddrs structure.
+/** \brief Close a socket.
  *
- * This deleter is used to make sure all the ifaddrs get released when
- * an exception occurs or the function using such exists.
+ * This deleter is used to make sure all the sockets get closed on exit.
  *
- * \param[in] ia  The ifaddrs structure to free.
+ * \param[in] s  The socket to close.
  */
 void socket_deleter(int * s)
 {
@@ -708,10 +707,12 @@ CATCH_TEST_CASE( "ipv6::ports", "[ipv6]" )
             a.set_protocol(IPPROTO_UDP);
 
             a.set_port(80);
-            CATCH_REQUIRE(a.get_service() == "http");
+            std::string service(a.get_service());
+            CATCH_REQUIRE((service == "http" || service == "80"));
 
             a.set_port(443);
-            CATCH_REQUIRE(a.get_service() == "https");
+            service = a.get_service();
+            CATCH_REQUIRE((service == "https"|| service == "443"));
         }
     }
 

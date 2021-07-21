@@ -33,17 +33,25 @@ configure_file(
     ${PROJECT_BINARY_DIR}/version.h
 )
 
-include_directories(
-    ${LIBEXCEPT_INCLUDE_DIRS}
-)
-
 add_library(${PROJECT_NAME} SHARED
     addr.cpp
     addr_parser.cpp
     addr_range.cpp
     iface.cpp
     route.cpp
+    unix.cpp
     version.cpp
+)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${LIBEXCEPT_INCLUDE_DIRS}
+        ${LIBUTF8_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    ${LIBEXCEPT_LIBRARIES}
+    ${LIBUTF8_LIBRARIES}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -52,10 +60,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
     SOVERSION
         ${LIBADDR_VERSION_MAJOR}
-)
-
-target_link_libraries(${PROJECT_NAME}
-    ${LIBEXCEPT_LIBRARIES}
 )
 
 install(
@@ -74,6 +78,7 @@ install(
         addr_range.h
         iface.h
         route.h
+        unix.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
 
     DESTINATION

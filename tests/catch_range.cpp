@@ -40,7 +40,7 @@
 
 // self
 //
-#include    "test_addr_main.h"
+#include    "catch_main.h"
 
 
 // last include

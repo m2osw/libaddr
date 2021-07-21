@@ -27,27 +27,30 @@
 ##
 project(unittest)
 
-find_package(Catch)
-if(CATCH_FOUND)
+find_package(Catch2)
+if(Catch2_FOUND)
 
     add_definitions(
         -DCATCH_CONFIG_PREFIX_ALL
     )
 
-    # The reference to the src folder is required by the internal test
-    include_directories(
-        ${CATCH_INCLUDE_DIR}
-        ${LIBEXCEPT_INCLUDE_DIRS}
+    add_executable(${PROJECT_NAME}
+        catch_main.cpp
+
+        catch_global.cpp
+        catch_interfaces.cpp
+        catch_ipv4.cpp
+        catch_ipv6.cpp
+        catch_range.cpp
+        catch_routes.cpp
+        catch_unix.cpp
     )
 
-    add_executable(${PROJECT_NAME}
-        test_addr_main.cpp
-        test_addr_global.cpp
-        test_addr_interfaces.cpp
-        test_addr_ipv4.cpp
-        test_addr_ipv6.cpp
-        test_addr_range.cpp
-        test_addr_routes.cpp
+    # The reference to the src folder is required by the internal test
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            ${CATCH_INCLUDE_DIR}
+            ${LIBEXCEPT_INCLUDE_DIRS}
     )
 
     target_link_libraries(${PROJECT_NAME}

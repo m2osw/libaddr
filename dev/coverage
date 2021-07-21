@@ -60,7 +60,7 @@ modules=$dist/share/cmake-3.5/Modules
 cmake -DCMAKE_INSTALL_PREFIX:PATH=$dist \
     -DCMAKE_MODULE_PATH:PATH=$modules \
     -DCMAKE_BUILD_TYPE=Debug \
-    -Daddr_library_COVERAGE:BOOL=ON \
+    -Daddr_project_COVERAGE:BOOL=ON \
     ../../..
 cd ..
 echo
