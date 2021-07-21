@@ -86,10 +86,6 @@ public:
     typedef std::vector<unix>       vector_t;
     typedef int                     socket_flag_t;
 
-    static socket_flag_t const      SOCKET_FLAG_CLOEXEC  = 0x01;
-    static socket_flag_t const      SOCKET_FLAG_NONBLOCK = 0x02;
-    static socket_flag_t const      SOCKET_FLAG_REUSE    = 0x04;
-
                                     unix();
                                     unix(sockaddr_un const & un);
                                     unix(std::string const & address, bool abstract = false);

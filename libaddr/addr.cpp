@@ -950,7 +950,7 @@ int addr::create_socket(socket_flag_t flags) const
     case IPPROTO_UDP:
         return socket(family, SOCK_DGRAM | sock_flags, IPPROTO_UDP);
 
-    default:
+    default:            // LCOV_EXCL_LINE
         // this should never happen since we control the f_protocol field
         //
         return -1;      // LCOV_EXCL_LINE
