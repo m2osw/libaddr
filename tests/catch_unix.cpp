@@ -175,7 +175,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
             addr::unix u(init);
 
@@ -249,7 +249,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
             u.set_file(name);
 
@@ -290,7 +290,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
             addr::unix u(init);
 
@@ -366,7 +366,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path) - 2);
 
             addr::unix u(init);
 
@@ -442,7 +442,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
             u.set_abstract(name);
 
@@ -484,7 +484,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path) - 2);
 
             addr::unix u(init);
 
@@ -587,8 +587,8 @@ CATCH_TEST_CASE("unix::compare", "[unix]")
         CATCH_REQUIRE_FALSE(a > b);
         CATCH_REQUIRE(a >= b);
 
-        strncpy(a.sun_path, "unix:flowers", sizeof(a.sun_path));
-        strncpy(b.sun_path, "unix:oranges", sizeof(a.sun_path));
+        strncpy(a.sun_path, "unix:flowers", sizeof(a.sun_path) - 1);
+        strncpy(b.sun_path, "unix:oranges", sizeof(a.sun_path) - 1);
 
         CATCH_REQUIRE_FALSE(a == b);
         CATCH_REQUIRE(a != b);
@@ -631,7 +631,7 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
             addr::unix u(init);
 
@@ -687,7 +687,7 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
             {
                 CATCH_CHECK(init.sun_path[idx] == 0);
             }
-            strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path));
+            strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path) - 2);
 
             addr::unix u(init);
 
