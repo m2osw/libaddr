@@ -796,9 +796,6 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
         std::string::size_type s(0);
         while(s < in.length())
         {
-            // since C++11 we have a way to search for a set of character
-            // in a string with an algorithm!
-            //
             auto const it(std::find_first_of(in.begin() + s, in.end(), comma_space.begin(), comma_space.end()));
             std::string::size_type const e(it == in.end() ? in.length() : it - in.begin());
             if(e > s)

@@ -1150,9 +1150,16 @@ std::string addr::get_name() const
     // TODO: test with the NI_IDN* flags and make sure we know what we get
     //       (i.e. we want UTF-8 as a result)
     //
-    int const r(getnameinfo(reinterpret_cast<sockaddr const *>(&f_address), sizeof(f_address), host, sizeof(host), nullptr, 0, flags));
+    int const r(getnameinfo(
+              reinterpret_cast<sockaddr const *>(&f_address)
+            , sizeof(f_address)
+            , host
+            , sizeof(host)
+            , nullptr
+            , 0
+            , flags));
 
-    // return value is 0, then it worked
+    // if return value is 0, then it worked
     //
     return r == 0 ? host : std::string();
 }
