@@ -231,15 +231,15 @@ void unix::set_file(std::string const & file)
 {
     std::string const address(verify_path(file, false));
 
-    strncpy(f_address.sun_path, address.c_str(), sizeof(f_address.sun_path));
-    if(file.length() < sizeof(f_address.sun_path) - 1)
+    memcpy(f_address.sun_path, address.c_str(), address.length());
+    if(address.length() < sizeof(f_address.sun_path))
     {
         // clear the rest
         //
         memset(
-              f_address.sun_path + address.length() + 1
+              f_address.sun_path + address.length()
             , 0
-            , sizeof(f_address.sun_path) - address.length() - 1);
+            , sizeof(f_address.sun_path) - address.length());
     }
 }
 
