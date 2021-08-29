@@ -1,3 +1,9 @@
+libaddr (1.0.23.1~bionic) bionic; urgency=high
+
+  * Bumped build version to rebuild on Launchpad.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 29 Aug 2021 15:49:36 -0700
+
 libaddr (1.0.23.0~bionic) bionic; urgency=high
 
   * Fix Unix address copying, the strncpy() can generate error on Ubuntu 20.04.
