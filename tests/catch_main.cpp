@@ -1,6 +1,7 @@
-// Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 //
-// Project: https://snapwebsites.org/project/libaddr
+// https://snapwebsites.org/project/libaddr
+// contact@m2osw.com
 //
 // Permission is hereby granted, free of charge, to any
 // person obtaining a copy of this software and
@@ -64,10 +65,10 @@ namespace
 {
 
 
-Catch::clara::Parser add_command_line_options(Catch::clara::Parser const & cli)
+Catch::Clara::Parser add_command_line_options(Catch::Clara::Parser const & cli)
 {
     return cli
-         | Catch::clara::Opt(SNAP_CATCH2_NAMESPACE::g_tcp_port, "port")
+         | Catch::Clara::Opt(SNAP_CATCH2_NAMESPACE::g_tcp_port, "port")
               ["--tcp-port"]
               ("define a TCP port we can connect to to test the get_from_socket() function");
 }

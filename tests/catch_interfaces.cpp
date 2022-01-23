@@ -1,6 +1,7 @@
-// Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+// Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 //
-// Project: https://snapwebsites.org/project/libaddr
+// https://snapwebsites.org/project/libaddr
+// contact@m2osw.com
 //
 // Permission is hereby granted, free of charge, to any
 // person obtaining a copy of this software and
@@ -83,7 +84,7 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
 
                 default:
 std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().get_network_type()) << "\n";
-                    CATCH_REQUIRE_FALSE("unexpected network type for interface");
+                    CATCH_REQUIRE(i.get_address().get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
                     break;
 
                 }

@@ -1,4 +1,4 @@
-# Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+# Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 #
 # https://snapwebsites.org/project/libaddr
 # contact@m2osw.com
@@ -27,12 +27,8 @@
 ##
 project(unittest)
 
-find_package(Catch2)
-if(Catch2_FOUND)
-
-    add_definitions(
-        -DCATCH_CONFIG_PREFIX_ALL
-    )
+find_package(SnapCatch2)
+if(SnapCatch2_FOUND)
 
     add_executable(${PROJECT_NAME}
         catch_main.cpp
@@ -49,12 +45,13 @@ if(Catch2_FOUND)
     # The reference to the src folder is required by the internal test
     target_include_directories(${PROJECT_NAME}
         PUBLIC
-            ${CATCH_INCLUDE_DIR}
+            ${SNAPCATCH2_INCLUDE_DIRS}
             ${LIBEXCEPT_INCLUDE_DIRS}
     )
 
     target_link_libraries(${PROJECT_NAME}
         addr
+        ${SNAPCATCH2_LIBRARIES}
     )
 
     # if running a service for test purposes, we can add:
@@ -71,6 +68,11 @@ if(Catch2_FOUND)
         WORKING_DIRECTORY
             ${CMAKE_CURRENT_SOURCE_DIR}
     )
-endif()
+
+else(SnapCatch2_FOUND)
+
+    message("snapcatch2 not found... no test will be built.")
+
+endif(SnapCatch2_FOUND)
 
 # vim: ts=4 sw=4 et
