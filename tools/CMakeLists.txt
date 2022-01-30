@@ -28,17 +28,19 @@
 ##
 project(validate_ip)
 
-include_directories(
-    ${LIBEXCEPT_INCLUDE_DIRS}
-)
-
 add_executable(${PROJECT_NAME}
     validate_ip.cpp
+)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        ${LIBEXCEPT_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
     addr
     ${ADVGETOPT_LIBRARIES}
+    ${LIBEXCEPT_LIBRARIES}
     ${LIBUTF8_LIBRARIES}
 )
 

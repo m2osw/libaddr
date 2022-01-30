@@ -31,7 +31,9 @@
 ##
 project(documentation)
 
-AddDoxygenTarget( libaddr
+find_package(SnapDoxygen)
+
+AddDoxygenTarget(libaddr
     ${LIBADDR_VERSION_MAJOR}
     ${LIBADDR_VERSION_MINOR}
     ${LIBADDR_VERSION_PATCH}

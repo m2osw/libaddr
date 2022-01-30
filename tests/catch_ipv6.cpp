@@ -639,6 +639,54 @@ CATCH_TEST_CASE( "ipv6::address", "[ipv6]" )
             }
         }
     }
+
+    CATCH_GIVEN("addr_parser() with numeric only IPv6 addresses")
+    {
+        CATCH_SECTION("Simple numeric IPv6")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            addr::addr_range::vector_t ips(p.parse("[4::f003:3001:20af]:5093"));
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 1);
+
+            addr::addr_range const & r(ips[0]);
+            CATCH_REQUIRE(r.has_from());
+            CATCH_REQUIRE_FALSE(r.has_to());
+            CATCH_REQUIRE_FALSE(r.is_range());
+            CATCH_REQUIRE_FALSE(r.is_empty());
+            addr::addr f(r.get_from());
+            CATCH_REQUIRE_FALSE(f.is_ipv4());
+            // getting an IPv4 would throw, which is checked somewhere else
+            //CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "");
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "4::f003:3001:20af");
+            CATCH_REQUIRE(f.get_port() == 5093);
+            CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            uint8_t mask[16] = {};
+            f.get_mask(mask);
+            for(int idx(0); idx < 16; ++idx)
+            {
+                CATCH_REQUIRE(mask[idx] == 255);
+            }
+        }
+
+        CATCH_SECTION("Invalid IPv6 domain name address when we only accept numeric IPs")
+        {
+            // this is exactly the same path as the IPv4 test...
+            // if we have a named domain then IPv4 fails, IPv6 fails, then we err on it
+            //
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            addr::addr_range::vector_t ips(p.parse("ipv6.example.com:4471"));
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Unknown address in \"ipv6.example.com\" (no DNS lookup was allowed).\n");
+            CATCH_REQUIRE(ips.size() == 0);
+        }
+    }
 }
 
 

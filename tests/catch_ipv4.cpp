@@ -731,7 +731,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
                 case addr::addr_parser::flag_t::ADDRESS:
                 case addr::addr_parser::flag_t::ADDRESS_LOOKUP:
                 case addr::addr_parser::flag_t::PORT:
-                    // only the ADDRESS and PORT are true by default
+                    // only these are true by default
                     //
                     CATCH_REQUIRE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
                     break;
@@ -827,7 +827,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
         }
 
-        CATCH_SECTION("address, not port allowed")
+        CATCH_SECTION("address, no port allowed")
         {
             // specific address with a default
             {
@@ -1105,6 +1105,62 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
                     CATCH_REQUIRE(mask[idx] == 255);
                 }
             }
+        }
+    }
+
+    CATCH_GIVEN("addr_parser() with numeric only IPv4 addresses")
+    {
+        CATCH_SECTION("Simple numeric IPv4")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            addr::addr_range::vector_t ips(p.parse("4.3.1.2:3003"));
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 1);
+
+            addr::addr_range const & r(ips[0]);
+            CATCH_REQUIRE(r.has_from());
+            CATCH_REQUIRE_FALSE(r.has_to());
+            CATCH_REQUIRE_FALSE(r.is_range());
+            CATCH_REQUIRE_FALSE(r.is_empty());
+            addr::addr f(r.get_from());
+            CATCH_REQUIRE(f.is_ipv4());
+            CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "4.3.1.2");
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "4.3.1.2");
+            CATCH_REQUIRE(f.get_port() == 3003);
+            CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+            CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            uint8_t mask[16] = {};
+            f.get_mask(mask);
+            for(int idx(0); idx < 16; ++idx)
+            {
+                CATCH_REQUIRE(mask[idx] == 255);
+            }
+        }
+
+        CATCH_SECTION("Invalid domain name address when we only accept numeric IPs")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            addr::addr_range::vector_t ips(p.parse("www.example.com:4471"));
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Unknown address in \"www.example.com\" (no DNS lookup was allowed).\n");
+            CATCH_REQUIRE(ips.size() == 0);
+        }
+
+        CATCH_SECTION("Invalid port: service name not allowed")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            addr::addr_range::vector_t ips(p.parse("192.168.255.32:https"));
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(p.error_count() == 1);
+            CATCH_REQUIRE(p.error_messages() == "Invalid port in \"https\" (no service name lookup allowed).\n");
+            CATCH_REQUIRE(ips.size() == 0);
         }
     }
 }

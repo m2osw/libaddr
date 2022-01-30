@@ -35,6 +35,11 @@
 #include    "libaddr/addr_exception.h"
 
 
+// advgetopt library
+//
+#include    <advgetopt/validator_integer.h>
+
+
 // C++ library
 //
 #include    <algorithm>
@@ -225,7 +230,7 @@ std::string const & addr_parser::get_default_address6() const
  * This function is used to define the default port to use in the address
  * parser object. By default this is set to -1 meaning: no default port.
  *
- * This function accepts any port number from 0 to 65535. It also accepts
+* This function accepts any port number from 0 to 65535. It also accepts
  * -1 to reset the port back to "no default".
  *
  * To prevent the parser from working when no default and no port
@@ -804,6 +809,11 @@ void addr_parser::clear_errors()
  * Ranges are not yet implemented.
  *
  * \param[in] in  The input string to be parsed.
+ *
+ * \return A vector of address ranges, see has_errors() to determine whether
+ * errors occurred while parsing the input.
+ *
+ * \sa has_errors()
  */
 addr_range::vector_t addr_parser::parse(std::string const & in)
 {
@@ -1306,7 +1316,12 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
         addrinfo * addrlist(nullptr);
         {
             errno = 0;
-            int const r(getaddrinfo(address.c_str(), port_str.c_str(), &hints, &addrlist));
+            char const * service(port_str.c_str());
+            if(port_str.empty())
+            {
+                service = "0"; // fallback to port 0 when unspecified
+            }
+            int const r(getaddrinfo(address.c_str(), service, &hints, &addrlist));
             if(r != 0)
             {
                 // break on invalid addresses
@@ -1394,11 +1409,22 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     }
     else
     {
+        std::int64_t port(0);
+        bool const valid_port(advgetopt::validator_integer::convert_string(port_str, port));
+        if(!valid_port
+        || port < 0
+        || port > 65535)
+        {
+            emit_error("Invalid port in \""
+                     + port_str
+                     + "\" (no service name lookup allowed).");
+            return;
+        }
         sockaddr_in in;
         if(inet_pton(AF_INET, address.c_str(), &in.sin_addr) == 1)
         {
             in.sin_family = AF_INET;
-            in.sin_port = atoi(port_str.c_str());
+            in.sin_port = htons(port);
             memset(in.sin_zero, 0, sizeof(in.sin_zero)); // probably useless
 
             addr a(in);
@@ -1409,10 +1435,10 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
         else
         {
             sockaddr_in6 in6;
-            if(inet_pton(AF_INET, address.c_str(), &in6.sin6_addr) == 1)
+            if(inet_pton(AF_INET6, address.c_str(), &in6.sin6_addr) == 1)
             {
                 in6.sin6_family = AF_INET6;
-                in6.sin6_port = atoi(port_str.c_str());
+                in6.sin6_port = htons(port);
                 in6.sin6_flowinfo = 0;
                 in6.sin6_scope_id = 0;
 
