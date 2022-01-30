@@ -70,7 +70,7 @@ Catch::Clara::Parser add_command_line_options(Catch::Clara::Parser const & cli)
     return cli
          | Catch::Clara::Opt(SNAP_CATCH2_NAMESPACE::g_tcp_port, "port")
               ["--tcp-port"]
-              ("define a TCP port we can connect to to test the get_from_socket() function");
+              ("define a TCP port we can connect to in order to test the get_from_socket() function");
 }
 
 

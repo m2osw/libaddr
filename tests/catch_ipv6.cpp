@@ -1469,6 +1469,7 @@ CATCH_TEST_CASE( "ipv6::network_type", "[ipv6]" )
                 a.set_ipv6(*reinterpret_cast<sockaddr_in6 *>(addrlist->ai_addr));
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                freeaddrinfo(addrlist);
             }
         }
     }
@@ -1538,6 +1539,9 @@ CATCH_TEST_CASE( "ipv6::network", "[ipv6]" )
             }
             else
             {
+                // avoid issue of no assertions
+                //
+                CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::g_tcp_port == -1);
                 std::cout << "connect to [::1] test skipped as no TCP port was specified on the command line." << std::endl;
             }
         }

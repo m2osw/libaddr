@@ -1985,6 +1985,9 @@ CATCH_TEST_CASE( "ipv4::network", "[ipv4]" )
             }
             else
             {
+                // avoid issue of no assertions
+                //
+                CATCH_REQUIRE(SNAP_CATCH2_NAMESPACE::g_tcp_port == -1);
                 std::cout << "connect to 127.0.0.1 test skipped as no TCP port was specified on the command line." << std::endl;
             }
         }

@@ -178,7 +178,8 @@ void unix::set_un(struct sockaddr_un const & un)
     }
     else if(un.sun_path[1] != '\0')
     {
-        if(strnlen(un.sun_path + 1, sizeof(un.sun_path) - 1) == sizeof(un.sun_path) - 1)
+        std::size_t const len(strnlen(un.sun_path + 1, sizeof(un.sun_path) - 1));
+        if(len == sizeof(un.sun_path) - 1)
         {
             throw addr_invalid_argument("unix::set_un(): the input abstract name is too long.");
         }
@@ -186,10 +187,14 @@ void unix::set_un(struct sockaddr_un const & un)
         // in case we are missing a '\0' at the end
         // (we are not compatible in that way too)
         //
-        char temp[sizeof(un.sun_path) + 1];
-        memcpy(temp, un.sun_path + 1, sizeof(temp) - 1);
-        temp[sizeof(temp) - 1] = '\0';
-        set_abstract(temp);
+        //char temp[sizeof(un.sun_path) + 1];
+        //for(int idx(0); idx < sizeof(temp) - 1 && un.sun_path[idx + 1] != '\0'; ++idx)
+        //{
+        //    temp[idx] = un.sun_path[idx + 1];
+        //}
+        ////memcpy(temp, un.sun_path + 1, sizeof(temp) - 1);
+        //temp[sizeof(temp) - 1] = '\0';
+        set_abstract(std::string(un.sun_path + 1, len));
     }
     else
     {
