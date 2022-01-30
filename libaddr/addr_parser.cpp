@@ -68,7 +68,7 @@ namespace
  *
  * \param[in] ai  The addrinfo structure to free.
  */
-void addrinfo_deleter(struct addrinfo * ai)
+void addrinfo_deleter(addrinfo * ai)
 {
     freeaddrinfo(ai);
 }
@@ -78,6 +78,26 @@ void addrinfo_deleter(struct addrinfo * ai)
 
 
 
+
+
+/** \brief Initialize an addr_parser object.
+ *
+ * This function initializes the addr_parser object.
+ *
+ * Especially, it calls the set_allow() functions a few times to set
+ * flags which are expected to be true on initialization.
+ */
+addr_parser::addr_parser()
+{
+    // allow addresses & DNS lookups by default
+    //
+    set_allow(flag_t::ADDRESS, true);
+    set_allow(flag_t::ADDRESS_LOOKUP, true);
+
+    // allow port after address
+    //
+    set_allow(flag_t::PORT, true);
+}
 
 
 /** \brief Set the default IP addresses.
@@ -129,7 +149,8 @@ void addrinfo_deleter(struct addrinfo * ai)
  *
  * \todo
  * Consider saving the default IPs as addr structures and allow such
- * as input.
+ * as input (keep in mind that the default could also represent multiple
+ * addresses).
  *
  * \param[in] addr  The new address.
  */
@@ -522,26 +543,31 @@ int addr_parser::get_protocol() const
  * separated by commas, the function makes sure that the multiple
  * port separated by commas support is turned off.
  *
- * \li ADDRESS -- the IP address is allowed, but optional
- * \li REQUIRED_ADDRESS -- the IP address is mandatory
- * \li PORT -- the port is allowed, but optional
- * \li REQUIRED_PORT -- the port is mandatory
- * \li MASK -- the mask is allowed, but optional
- * \li MULTI_ADDRESSES_COMMAS -- the input can have multiple addresses
- * separated by commas, spaces are not allowed (prevents MULTI_PORTS_COMMAS)
- * \li MULTI_ADDRESSES_SPACES -- the input can have multiple addresses
+ * \li `ADDRESS` -- the IP address is allowed, but optional
+ * \li `REQUIRED_ADDRESS` -- the IP address is mandatory
+ * \li `PORT` -- the port is allowed, but optional
+ * \li `REQUIRED_PORT` -- the port is mandatory
+ * \li `MASK` -- the mask is allowed, but optional
+ * \li `MULTI_ADDRESSES_COMMAS` -- the input can have multiple addresses
+ * separated by commas (prevents MULTI_PORTS_COMMAS)
+ * \li `MULTI_ADDRESSES_SPACES` -- the input can have multiple addresses
  * separated by spaces
- * \li MULTI_ADDRESSES_COMMAS_AND_SPACES -- the input can have multiple
- * addresses separated by spaces and commas (prevents MULTI_PORTS_COMMAS)
- * \li MULTI_PORTS_SEMICOLONS -- the input can  have multiple ports
+ * \li `MULTI_PORTS_SEMICOLONS` -- the input can  have multiple ports
  * separated by semicolons _NOT IMPLEMENTED YET_
- * \li MULTI_PORTS_COMMAS -- the input can have multiple ports separated
- * by commas (prevents MULTI_ADDRESSES_COMMAS and
- * MULTI_ADDRESSES_COMMAS_AND_SPACES) _NOT IMPLEMENTED YET_
- * \li PORT_RANGE -- the input supports port ranges (p1-p2) _NOT
+ * \li `MULTI_PORTS_COMMAS` -- the input can have multiple ports separated
+ * by commas (prevents MULTI_ADDRESSES_COMMAS) _NOT IMPLEMENTED YET_
+ * \li `PORT_RANGE` -- the input supports port ranges (p1-p2) _NOT
  * IMPLEMENTED YET_
- * \li ADDRESS_RANGE -- the input supports address ranges (addr-addr) _NOT
+ * \li `ADDRESS_RANGE` -- the input supports address ranges (addr-addr) _NOT
  * IMPLEMENTED YET_
+ *
+ * The `MULTI_ADDRESSES_COMMAS` and `MULTI_ADDRESSES_SPACES` can be used
+ * together in which case any number of both characters are accepted
+ * between addresses.
+ *
+ * Note that the `MULTI_ADDRESSES_COMMAS` and `MULTI_PORTS_COMMAS` are
+ * mutually exclusive. The last set_allow() counts as the one you are
+ * interested in.
  *
  * \param[in] flag  The flag to set or clear.
  * \param[in] allow  Whether to allow (true) or disallow (false).
@@ -567,13 +593,11 @@ void addr_parser::set_allow(flag_t const flag, bool const allow)
         switch(flag)
         {
         case flag_t::MULTI_ADDRESSES_COMMAS:
-        case flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES:
             f_flags[static_cast<int>(flag_t::MULTI_PORTS_COMMAS)] = false;
             break;
 
         case flag_t::MULTI_PORTS_COMMAS:
             f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_COMMAS)] = false;
-            f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES)] = false;
             break;
 
         default:
@@ -748,12 +772,8 @@ void addr_parser::clear_errors()
  * ### Multiple Addresses
  *
  * Multiple addresses can be defined if at least one of the
- * `MULTI_ADDRESSES_COMMAS`, `MULTI_ADDRESSES_SPACES`, or
- * `MULTI_ADDRESSES_COMMAS_AND_SPACES` allow flags is set to true.
- *
- * Note that the `MULTI_ADDRESSES_COMMAS_AND_SPACES` has priotity. If
- * set to true, then both, commas and spaces are allowed between
- * addresses.
+ * `MULTI_ADDRESSES_COMMAS` or `MULTI_ADDRESSES_SPACES` allow
+ * flags is set to true.
  *
  * Next comes `MULTI_ADDRESSES_COMMAS`: if set to true, addresses
  * must be separated by commas and spaces are not allowed.
@@ -781,8 +801,7 @@ void addr_parser::clear_errors()
  *
  * ### Ranges
  *
- * At this time we do not need support for ranges so it did not yet
- * get implemented.
+ * Ranges are not yet implemented.
  *
  * \param[in] in  The input string to be parsed.
  */
@@ -790,9 +809,10 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
 {
     addr_range::vector_t result;
 
-    if(f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES)])
+    if(get_allow(flag_t::MULTI_ADDRESSES_COMMAS)
+    && get_allow(flag_t::MULTI_ADDRESSES_SPACES))
     {
-        std::string comma_space(", ");
+        std::string const comma_space(", ");
         std::string::size_type s(0);
         while(s < in.length())
         {
@@ -805,10 +825,10 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
             s = e + 1;
         }
     }
-    else if(f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_COMMAS)]
-         || f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_SPACES)])
+    else if(get_allow(flag_t::MULTI_ADDRESSES_COMMAS)
+         || get_allow(flag_t::MULTI_ADDRESSES_SPACES))
     {
-        char sep(f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_COMMAS)] ? ',' : ' ');
+        char const sep(get_allow(flag_t::MULTI_ADDRESSES_COMMAS) ? ',' : ' ');
         std::string::size_type s(0);
         while(s < in.length())
         {
@@ -846,7 +866,7 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
  */
 void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & result)
 {
-    if(f_flags[static_cast<int>(flag_t::MASK)])
+    if(get_allow(flag_t::MASK))
     {
         // check whether there is a mask
         //
@@ -1023,8 +1043,8 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
             // address because there is no other ':', but if there are
             // '.' before the ':' then we assume that it is IPv4 still
             //
-            if(!f_flags[static_cast<int>(flag_t::PORT)]
-            && !f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+            if(!get_allow(flag_t::PORT)
+            && !get_allow(flag_t::REQUIRED_PORT))
             {
                 std::string::size_type const p(in.find(':'));
                 if(p != std::string::npos
@@ -1066,8 +1086,8 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
 
     std::string::size_type const p(in.find(':'));
 
-    if(f_flags[static_cast<int>(flag_t::PORT)]
-    || f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+    if(get_allow(flag_t::PORT)
+    || get_allow(flag_t::REQUIRED_PORT))
     {
         // the address can include a port
         //
@@ -1097,8 +1117,8 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
     else
     {
         if(p != std::string::npos
-        && !f_flags[static_cast<int>(flag_t::PORT)]
-        && !f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+        && !get_allow(flag_t::PORT)
+        && !get_allow(flag_t::REQUIRED_PORT))
         {
             emit_error("Port not allowed (" + in + ").");
             return;
@@ -1166,15 +1186,15 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
 
     if(p != std::string::npos)
     {
-        if(f_flags[static_cast<int>(flag_t::PORT)]
-        || f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+        if(get_allow(flag_t::PORT)
+        || get_allow(flag_t::REQUIRED_PORT))
         {
             // there is also a port, extract it
             //
             port_str = in.substr(p + 1);
         }
-        else if(!f_flags[static_cast<int>(flag_t::PORT)]
-             && !f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+        else if(!get_allow(flag_t::PORT)
+             && !get_allow(flag_t::REQUIRED_PORT))
         {
             emit_error("Port not allowed (" + in + ").");
             return;
@@ -1211,7 +1231,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     //
     if(port_str.empty())
     {
-        if(f_flags[static_cast<int>(flag_t::REQUIRED_PORT)])
+        if(get_allow(flag_t::REQUIRED_PORT))
         {
             emit_error("Required port is missing.");
             return;
@@ -1226,7 +1246,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     //
     if(address.empty())
     {
-        if(f_flags[static_cast<int>(flag_t::REQUIRED_ADDRESS)])
+        if(get_allow(flag_t::REQUIRED_ADDRESS))
         {
             emit_error("Required address is missing.");
             return;
@@ -1260,7 +1280,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
 
     // prepare hints for the the getaddrinfo() function
     //
-    struct addrinfo hints;
+    addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG | AI_V4MAPPED;
     hints.ai_family = AF_UNSPEC;
@@ -1281,93 +1301,133 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
 
     // convert address to binary
     //
-    struct addrinfo * addrlist(nullptr);
+    if(get_allow(flag_t::ADDRESS_LOOKUP))
     {
-        errno = 0;
-        int const r(getaddrinfo(address.c_str(), port_str.c_str(), &hints, &addrlist));
-        if(r != 0)
+        addrinfo * addrlist(nullptr);
         {
-            // break on invalid addresses
-            //
-            int const e(errno); // if r == EAI_SYSTEM, then 'errno' is consistent here
-            emit_error(
-                      "Invalid address in \""
-                    + address
-                    + (port_str.empty() ? "" : ":")
-                    + port_str
-                    + "\" error "
-                    + std::to_string(r)
-                    + " -- "
-                    + gai_strerror(r)
-                    + (e == 0
-                        ? ""
-                        : " (errno: "
-                        + std::to_string(e)
+            errno = 0;
+            int const r(getaddrinfo(address.c_str(), port_str.c_str(), &hints, &addrlist));
+            if(r != 0)
+            {
+                // break on invalid addresses
+                //
+                int const e(errno); // if r == EAI_SYSTEM, then 'errno' is consistent here
+                emit_error(
+                          "Invalid address in \""
+                        + address
+                        + (port_str.empty() ? "" : ":")
+                        + port_str
+                        + "\" error "
+                        + std::to_string(r)
                         + " -- "
-                        + strerror(e)
-                        + ")."));
-            return;
+                        + gai_strerror(r)
+                        + (e == 0
+                            ? ""
+                            : " (errno: "
+                            + std::to_string(e)
+                            + " -- "
+                            + strerror(e)
+                            + ")."));
+                return;
+            }
+        }
+        std::shared_ptr<addrinfo> ai(addrlist, addrinfo_deleter);
+
+        bool first(true);
+        while(addrlist != nullptr)
+        {
+            // go through the addresses and create ranges and save that in the result
+            //
+            if(addrlist->ai_family == AF_INET)
+            {
+                if(addrlist->ai_addrlen != sizeof(sockaddr_in))
+                {
+                    emit_error("Unsupported address size ("                  // LCOV_EXCL_LINE
+                             + std::to_string(addrlist->ai_addrlen)          // LCOV_EXCL_LINE
+                             + ", expected"                                  // LCOV_EXCL_LINE
+                             + std::to_string(sizeof(sockaddr_in))           // LCOV_EXCL_LINE
+                             + ").");                                        // LCOV_EXCL_LINE
+                }
+                else
+                {
+                    addr a(*reinterpret_cast<sockaddr_in *>(addrlist->ai_addr));
+                    // in most cases we do not get a protocol from
+                    // the getaddrinfo() function...
+                    a.set_protocol(addrlist->ai_protocol);
+                    addr_range r;
+                    r.set_from(a);
+                    result.push_back(r);
+                }
+            }
+            else if(addrlist->ai_family == AF_INET6)
+            {
+                if(addrlist->ai_addrlen != sizeof(sockaddr_in6))
+                {
+                    emit_error("Unsupported address size ("                  // LCOV_EXCL_LINE
+                             + std::to_string(addrlist->ai_addrlen)          // LCOV_EXCL_LINE
+                             + ", expected "                                 // LCOV_EXCL_LINE
+                             + std::to_string(sizeof(sockaddr_in6))          // LCOV_EXCL_LINE
+                             + ").");                                        // LCOV_EXCL_LINE
+                }
+                else
+                {
+                    addr a(*reinterpret_cast<sockaddr_in6 *>(addrlist->ai_addr));
+                    a.set_protocol(addrlist->ai_protocol);
+                    addr_range r;
+                    r.set_from(a);
+                    result.push_back(r);
+                }
+            }
+            else if(first)                                                  // LCOV_EXCL_LINE
+            {
+                // ignore errors from further addresses
+                //
+                emit_error("Unsupported address family "                     // LCOV_EXCL_LINE
+                         + std::to_string(addrlist->ai_family)               // LCOV_EXCL_LINE
+                         + ".");                                             // LCOV_EXCL_LINE
+            }
+
+            first = false;
+
+            addrlist = addrlist->ai_next;
         }
     }
-    std::shared_ptr<struct addrinfo> ai(addrlist, addrinfo_deleter);
-
-    bool first(true);
-    while(addrlist != nullptr)
+    else
     {
-        // go through the addresses and create ranges and save that in the result
-        //
-        if(addrlist->ai_family == AF_INET)
+        sockaddr_in in;
+        if(inet_pton(AF_INET, address.c_str(), &in.sin_addr) == 1)
         {
-            if(addrlist->ai_addrlen != sizeof(struct sockaddr_in))
+            in.sin_family = AF_INET;
+            in.sin_port = atoi(port_str.c_str());
+            memset(in.sin_zero, 0, sizeof(in.sin_zero)); // probably useless
+
+            addr a(in);
+            addr_range r;
+            r.set_from(a);
+            result.push_back(r);
+        }
+        else
+        {
+            sockaddr_in6 in6;
+            if(inet_pton(AF_INET, address.c_str(), &in6.sin6_addr) == 1)
             {
-                emit_error("Unsupported address size ("                  // LCOV_EXCL_LINE
-                         + std::to_string(addrlist->ai_addrlen)          // LCOV_EXCL_LINE
-                         + ", expected"                                  // LCOV_EXCL_LINE
-                         + std::to_string(sizeof(struct sockaddr_in))    // LCOV_EXCL_LINE
-                         + ").");                                        // LCOV_EXCL_LINE
-            }
-            else
-            {
-                addr a(*reinterpret_cast<struct sockaddr_in *>(addrlist->ai_addr));
-                // in most cases we do not get a protocol from
-                // the getaddrinfo() function...
-                a.set_protocol(addrlist->ai_protocol);
+                in6.sin6_family = AF_INET6;
+                in6.sin6_port = atoi(port_str.c_str());
+                in6.sin6_flowinfo = 0;
+                in6.sin6_scope_id = 0;
+
+                addr a(in6);
                 addr_range r;
                 r.set_from(a);
                 result.push_back(r);
             }
-        }
-        else if(addrlist->ai_family == AF_INET6)
-        {
-            if(addrlist->ai_addrlen != sizeof(struct sockaddr_in6))
-            {
-                emit_error("Unsupported address size ("                  // LCOV_EXCL_LINE
-                         + std::to_string(addrlist->ai_addrlen)          // LCOV_EXCL_LINE
-                         + ", expected "                                 // LCOV_EXCL_LINE
-                         + std::to_string(sizeof(struct sockaddr_in6))   // LCOV_EXCL_LINE
-                         + ").");                                        // LCOV_EXCL_LINE
-            }
             else
             {
-                addr a(*reinterpret_cast<struct sockaddr_in6 *>(addrlist->ai_addr));
-                a.set_protocol(addrlist->ai_protocol);
-                addr_range r;
-                r.set_from(a);
-                result.push_back(r);
+                emit_error("Unknown address in \""
+                         + address
+                         + "\" (no DNS lookup was allowed).");
             }
         }
-        else if(first)                                                  // LCOV_EXCL_LINE
-        {
-            // ignore errors from further addresses
-            //
-            emit_error("Unsupported address family "                     // LCOV_EXCL_LINE
-                     + std::to_string(addrlist->ai_family)               // LCOV_EXCL_LINE
-                     + ".");                                             // LCOV_EXCL_LINE
-        }
-
-        first = false;
-
-        addrlist = addrlist->ai_next;
     }
 }
 
@@ -1472,7 +1532,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
     {
         // prepare hints for the the getaddrinfo() function
         //
-        struct addrinfo hints;
+        addrinfo hints;
         memset(&hints, 0, sizeof(hints));
         hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_ADDRCONFIG | AI_V4MAPPED;
         hints.ai_family = AF_UNSPEC;
@@ -1532,7 +1592,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
         // if negative, we may have a full address here, so call the
         // getaddrinfo() on this other string
         //
-        struct addrinfo * masklist(nullptr);
+        addrinfo * masklist(nullptr);
         errno = 0;
         int const r(getaddrinfo(m.c_str(), port_str.c_str(), &hints, &masklist));
         if(r != 0)
@@ -1553,7 +1613,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
                      + ").");
             return;
         }
-        std::shared_ptr<struct addrinfo> mask_ai(masklist, addrinfo_deleter);
+        std::shared_ptr<addrinfo> mask_ai(masklist, addrinfo_deleter);
 
         if(cidr.is_ipv4())
         {
@@ -1566,16 +1626,16 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
                           " mask address (first was an IPv4 second an IPv6).");
                 return;
             }
-            if(masklist->ai_addrlen != sizeof(struct sockaddr_in))
+            if(masklist->ai_addrlen != sizeof(sockaddr_in))
             {
                 emit_error("Unsupported address size ("                 // LCOV_EXCL_LINE
                         + std::to_string(masklist->ai_addrlen)          // LCOV_EXCL_LINE
                         + ", expected"                                  // LCOV_EXCL_LINE
-                        + std::to_string(sizeof(struct sockaddr_in))    // LCOV_EXCL_LINE
+                        + std::to_string(sizeof(sockaddr_in))           // LCOV_EXCL_LINE
                         + ").");                                        // LCOV_EXCL_LINE
                 return;                                                 // LCOV_EXCL_LINE
             }
-            memcpy(mask_bits + 12, &reinterpret_cast<struct sockaddr_in *>(masklist->ai_addr)->sin_addr.s_addr, 4); // last 4 bytes are the IPv4 address, keep the rest as 1s
+            memcpy(mask_bits + 12, &reinterpret_cast<sockaddr_in *>(masklist->ai_addr)->sin_addr.s_addr, 4); // last 4 bytes are the IPv4 address, keep the rest as 1s
         }
         else //if(!cidr.is_ipv4())
         {
@@ -1588,16 +1648,16 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
                           " and mask address (first was an IPv6 second an IPv4).");
                 return;
             }
-            if(masklist->ai_addrlen != sizeof(struct sockaddr_in6))
+            if(masklist->ai_addrlen != sizeof(sockaddr_in6))
             {
                 emit_error("Unsupported address size ("                 // LCOV_EXCL_LINE
                          + std::to_string(masklist->ai_addrlen)         // LCOV_EXCL_LINE
                          + ", expected "                                // LCOV_EXCL_LINE
-                         + std::to_string(sizeof(struct sockaddr_in6))  // LCOV_EXCL_LINE
+                         + std::to_string(sizeof(sockaddr_in6))         // LCOV_EXCL_LINE
                          + ").");                                       // LCOV_EXCL_LINE
                 return;                                                 // LCOV_EXCL_LINE
             }
-            memcpy(mask_bits, &reinterpret_cast<struct sockaddr_in6 *>(masklist->ai_addr)->sin6_addr.s6_addr, 16);
+            memcpy(mask_bits, &reinterpret_cast<sockaddr_in6 *>(masklist->ai_addr)->sin6_addr.s6_addr, 16);
         }
     }
 

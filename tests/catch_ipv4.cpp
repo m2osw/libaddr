@@ -729,6 +729,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
                 switch(static_cast<addr::addr_parser::flag_t>(idx))
                 {
                 case addr::addr_parser::flag_t::ADDRESS:
+                case addr::addr_parser::flag_t::ADDRESS_LOOKUP:
                 case addr::addr_parser::flag_t::PORT:
                     // only the ADDRESS and PORT are true by default
                     //
@@ -747,59 +748,59 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
 
-            // by default we start with false
+            // by default these are set to false
             //
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // check setting MULTI_ADDRESSES_COMMAS to true
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
             CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
-            // add MULTI_ADDRESSES_COMMAS_AND_SPACES
+            // add MULTI_ADDRESSES_SPACES
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
+            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
             CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_PORTS_COMMAS
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS, true);
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
-            // add MULTI_ADDRESSES_COMMAS_AND_SPACES only
-            //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
-
-            // add MULTI_ADDRESSES_COMMAS second, order should not affect anything
+            // add MULTI_ADDRESSES_COMMAS again
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
             CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+
+            // remove MULTI_ADDRESSES_SPACES
+            //
+            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, false);
+            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // back to MULTI_PORTS_COMMAS
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS, true);
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS first now
             //
             p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
             CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
             CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
         }
 
@@ -1034,7 +1035,8 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
+            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
             addr::addr_range::vector_t ips(p.parse(" 1.2.3.4:55,, 5.6.7.8 , 10.11.12.99:77 "));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 3);

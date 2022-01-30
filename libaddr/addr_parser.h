@@ -46,14 +46,16 @@ public:
     {
         ADDRESS,                            // address (IP)
         REQUIRED_ADDRESS,                   // address cannot be empty
-        PORT,                               // port
-        REQUIRED_PORT,                      // port cannot be empty
-        MASK,                               // mask
         MULTI_ADDRESSES_COMMAS,             // IP:port/mask,IP:port/mask,...
         MULTI_ADDRESSES_SPACES,             // IP:port/mask IP:port/mask ...
-        MULTI_ADDRESSES_COMMAS_AND_SPACES,  // IP:port/mask, IP:port/mask, ...
+        ADDRESS_LOOKUP,                     // whether DNS lookup is allowed
 
-        // the following are not yet implemented
+        PORT,                               // port
+        REQUIRED_PORT,                      // port cannot be empty
+
+        MASK,                               // mask
+
+        // TODO: the following are not yet implemented
         MULTI_PORTS_SEMICOLONS,             // port1;port2;...
         MULTI_PORTS_COMMAS,                 // port1,port2,...
         PORT_RANGE,                         // port1-port2
@@ -61,6 +63,8 @@ public:
 
         FLAG_max
     };
+
+                            addr_parser();
 
     void                    set_default_address(std::string const & address);
     std::string const &     get_default_address4() const;
@@ -97,7 +101,7 @@ private:
     void                    parse_address_port(std::string address, std::string port_str, addr_range::vector_t & result, bool ipv6);
     void                    parse_mask(std::string const & mask, addr & cidr);
 
-    bool                    f_flags[static_cast<int>(flag_t::FLAG_max)] = { true, false, true, false, false, false, false, false, false, false, false, false };
+    bool                    f_flags[static_cast<int>(flag_t::FLAG_max)] = {};
     std::string             f_default_address4 = std::string();
     std::string             f_default_address6 = std::string();
     std::string             f_default_mask4 = std::string();

@@ -308,7 +308,8 @@ void validate_ip::run()
         }
         if(f_opts.is_defined("list"))
         {
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS_AND_SPACES, true);
+            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
         }
 
         addr::addr_range::vector_t const range(p.parse(addr));

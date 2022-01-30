@@ -1,3 +1,10 @@
+libaddr (1.0.24.0~bionic) bionic; urgency=high
+
+  * Removed the MULTI_ADDRESSES_COMMAS_AND_SPACES.
+  * Added the ADDRESS_LOOKUP to allow DNS lookup or not.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 30 Jan 2022 10:38:35 -0800
+
 libaddr (1.0.23.2~bionic) bionic; urgency=high
 
   * Bumped build version to rebuild on Launchpad.

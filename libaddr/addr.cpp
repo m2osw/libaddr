@@ -211,6 +211,23 @@ struct sockaddr_in {
 };
 
 
+struct in6_addr
+{
+    union
+    {
+         uint8_t    __u6_addr8[16];
+#ifdef __USE_MISC
+         uint16_t   __u6_addr16[8];
+         uint32_t   __u6_addr32[4];
+#endif
+    } __in6_u;
+#define s6_addr			__in6_u.__u6_addr8
+#ifdef __USE_MISC
+# define s6_addr16		__in6_u.__u6_addr16
+# define s6_addr32		__in6_u.__u6_addr32
+#endif
+};
+
 // IPv6
 struct sockaddr_in6 {
     u_int16_t       sin6_family;   // address family, AF_INET6
@@ -219,23 +236,6 @@ struct sockaddr_in6 {
     struct in6_addr sin6_addr;     // IPv6 address
     u_int32_t       sin6_scope_id; // Scope ID
 };
-
-struct in6_addr
-  {
-    union
-      {
-	uint8_t	__u6_addr8[16];
-#ifdef __USE_MISC
-	uint16_t __u6_addr16[8];
-	uint32_t __u6_addr32[4];
-#endif
-      } __in6_u;
-#define s6_addr			__in6_u.__u6_addr8
-#ifdef __USE_MISC
-# define s6_addr16		__in6_u.__u6_addr16
-# define s6_addr32		__in6_u.__u6_addr32
-#endif
-  };
 
 
 */
