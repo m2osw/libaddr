@@ -182,7 +182,7 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
             CATCH_CHECK(un.sun_path[idx] == 0);
         }
 
-        snap::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
+        snapdev::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
         CATCH_REQUIRE(s != nullptr);
 
         // unnamed sockets are unbound...
@@ -440,7 +440,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
             CATCH_CHECK(un.sun_path[idx] == 0);
         }
 
-        snap::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
+        snapdev::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
         CATCH_REQUIRE(s != nullptr);
         sockaddr_un address;
         u.get_un(address);
@@ -676,7 +676,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             CATCH_CHECK(un.sun_path[idx] == 0);
         }
 
-        snap::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
+        snapdev::raii_fd_t s(socket(AF_UNIX, SOCK_STREAM, 0));
         CATCH_REQUIRE(s != nullptr);
         sockaddr_un address;
         u.get_un(address);
@@ -1149,7 +1149,7 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
                 , "127.0.0.1"
                 , 3999
                 , "udp"));
-        snap::raii_fd_t s(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+        snapdev::raii_fd_t s(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
         CATCH_REQUIRE(s != nullptr);
         sockaddr_in in;
         udp.get_ipv4(in);

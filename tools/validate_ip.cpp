@@ -383,7 +383,7 @@ int main(int argc, char * argv[])
     }
     catch(advgetopt::getopt_exit const & e)
     {
-        snap::NOT_USED(e);
+        snapdev::NOT_USED(e);
         return 0;
     }
     catch(std::exception const & e)

@@ -807,8 +807,8 @@ std::string unix::verify_path(std::string const & path, bool abstract)
                 : sizeof(f_address.sun_path));
 
     std::vector<std::string> segments;
-    snap::tokenize_string(segments, path, "/", true);
-    std::string p(snap::join_strings(segments, "/"));
+    snapdev::tokenize_string(segments, path, "/", true);
+    std::string p(snapdev::join_strings(segments, "/"));
     if(path[0] == '/')
     {
         p.insert(0, 1, '/');
