@@ -1410,15 +1410,28 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     else
     {
         std::int64_t port(0);
-        bool const valid_port(advgetopt::validator_integer::convert_string(port_str, port));
-        if(!valid_port
-        || port < 0
-        || port > 65535)
+        if(get_allow(flag_t::REQUIRED_PORT)
+        || !port_str.empty())
         {
-            emit_error("Invalid port in \""
-                     + port_str
-                     + "\" (no service name lookup allowed).");
-            return;
+            bool const valid_port(advgetopt::validator_integer::convert_string(port_str, port));
+            if(!valid_port
+            || port < 0
+            || port > 65535)
+            {
+                emit_error("Invalid port in \""
+                         + port_str
+                         + "\" (no service name lookup allowed).");
+                return;
+            }
+
+            if(!get_allow(flag_t::PORT)
+            && !get_allow(flag_t::REQUIRED_PORT))
+            {
+                emit_error("Found a port (\""
+                         + port_str
+                         + "\") when it is not allowed.");
+                return;
+            }
         }
         sockaddr_in in;
         if(inet_pton(AF_INET, address.c_str(), &in.sin_addr) == 1)
