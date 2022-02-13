@@ -64,6 +64,34 @@ constexpr sockaddr_in6 init_in6()
 }
 
 
+/** \brief Result of a compare between IP addresses.
+ *
+ * This enumeration includes compare results between IP addresses.
+ *
+ * The results can also be used by the addr_range class which explains
+ * the range like results.
+ */
+enum class compare_t
+{
+    COMPARE_EQUAL,                          // lhs == rhs
+    COMPARE_SMALLER,                        // lhs < rhs
+    COMPARE_LARGER,                         // lhs > rhs
+    COMPARE_OVERLAP_SMALL_VS_LARGE,         // lhs is before rhs with an overlap
+    COMPARE_OVERLAP_LARGE_VS_SMALL,         // rhs is before lhs with an overlap
+    COMPARE_INCLUDED,                       // rhs is included in lhs
+    COMPARE_INCLUDES,                       // lhs is included in rhs
+    COMPARE_IPV4_VS_IPV6,                   // lhs is an IPv4, rhs an IPv6
+    COMPARE_IPV6_VS_IPV4,                   // lhs is an IPv6, rhs an IPv4
+    COMPARE_SMALL_VS_LARGE,                 // lhs is smaller than rhs
+    COMPARE_LARGE_VS_SMALL,                 // lhs is larger than rhs
+    COMPARE_FOLLOWS,                        // rhs is just after lhs
+    COMPARE_FOLLOWING,                      // lhs is just after rhs
+    COMPARE_FIRST,                          // lhs is defined, rhs is empty
+    COMPARE_LAST,                           // lhs is empty, rhs is defined
+    COMPARE_UNORDERED,                      // lhs and rhs are both empty
+};
+
+
 class addr
 {
 public:
@@ -118,6 +146,10 @@ public:
     std::string                     to_ipv4_string(string_ip_t mode) const;
     std::string                     to_ipv6_string(string_ip_t mode) const;
     std::string                     to_ipv4or6_string(string_ip_t mode) const;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    unsigned __int128               ip_to_uint128() const;
+#pragma GCC diagnostic pop
 
     network_type_t                  get_network_type() const;
     std::string                     get_network_type_string() const;
@@ -130,8 +162,11 @@ public:
     int                             get_port() const;
     int                             get_protocol() const;
     void                            get_mask(uint8_t * mask) const;
+    int                             get_mask_size() const;
 
-    bool                            match(addr const & ip) const;
+    bool                            match(addr const & ip, bool any = false) const;
+    bool                            is_next(addr const & a) const;
+    bool                            is_previous(addr const & a) const;
     bool                            operator == (addr const & rhs) const;
     bool                            operator != (addr const & rhs) const;
     bool                            operator <  (addr const & rhs) const;

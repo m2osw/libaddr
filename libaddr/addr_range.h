@@ -43,8 +43,6 @@ namespace addr
 {
 
 
-
-
 class addr_range
 {
 public:
@@ -56,6 +54,7 @@ public:
     bool                            is_range() const;
     bool                            is_empty() const;
     bool                            is_in(addr const & rhs) const;
+    bool                            is_ipv4() const;
 
     void                            set_from(addr const & from);
     addr &                          get_from();
@@ -63,9 +62,12 @@ public:
     void                            set_to(addr const & to);
     addr &                          get_to();
     addr const &                    get_to() const;
+    void                            from_cidr(addr const & range);
 
     addr_range                      intersection(addr_range const & rhs) const;
+    addr_range                      union_if_possible(addr_range const & rhs) const;
     bool                            match(addr const & address) const;
+    compare_t                       compare(addr_range const & rhs) const;
 
 private:
     bool                            f_has_from = false;

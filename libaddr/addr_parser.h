@@ -39,31 +39,42 @@ namespace addr
 {
 
 
+enum class allow_t
+{
+    ALLOW_ADDRESS,                          // address (IP)
+    ALLOW_REQUIRED_ADDRESS,                 // address cannot be empty
+    ALLOW_MULTI_ADDRESSES_COMMAS,           // IP:port/mask,IP:port/mask,...
+    ALLOW_MULTI_ADDRESSES_SPACES,           // IP:port/mask IP:port/mask ...
+    ALLOW_ADDRESS_LOOKUP,                   // whether DNS lookup is allowed
+
+    ALLOW_PORT,                             // port
+    ALLOW_REQUIRED_PORT,                    // port cannot be empty
+
+    ALLOW_MASK,                             // mask
+
+    // TODO: the following are not yet implemented
+    ALLOW_MULTI_PORTS_SEMICOLONS,           // port1;port2;...
+    ALLOW_MULTI_PORTS_COMMAS,               // port1,port2,...
+    ALLOW_PORT_RANGE,                       // port1-port2
+    ALLOW_ADDRESS_RANGE,                    // IP-IP
+
+    ALLOW_max
+};
+
+
+typedef std::uint_fast16_t                  sort_t;
+
+constexpr sort_t const                      SORT_NO             = 0x0000;       // keep IPs as found
+constexpr sort_t const                      SORT_IPV6_FIRST     = 0x0001;       // put IPv6 first (IPv6, IPv4, empty)
+constexpr sort_t const                      SORT_IPV4_FIRST     = 0x0002;       // put IPv4 first (IPv4, IPv6, empty)
+constexpr sort_t const                      SORT_FULL           = 0x0004;       // sort IPs between each others (default keep in order found)
+constexpr sort_t const                      SORT_MERGE          = 0x0008 | SORT_FULL; // merge ranges which support a union (implies SORT_FULL)
+constexpr sort_t const                      SORT_NO_EMPTY       = 0x0010;       // remove empty entries
+
+
 class addr_parser
 {
 public:
-    enum class flag_t
-    {
-        ADDRESS,                            // address (IP)
-        REQUIRED_ADDRESS,                   // address cannot be empty
-        MULTI_ADDRESSES_COMMAS,             // IP:port/mask,IP:port/mask,...
-        MULTI_ADDRESSES_SPACES,             // IP:port/mask IP:port/mask ...
-        ADDRESS_LOOKUP,                     // whether DNS lookup is allowed
-
-        PORT,                               // port
-        REQUIRED_PORT,                      // port cannot be empty
-
-        MASK,                               // mask
-
-        // TODO: the following are not yet implemented
-        MULTI_PORTS_SEMICOLONS,             // port1;port2;...
-        MULTI_PORTS_COMMAS,                 // port1,port2,...
-        PORT_RANGE,                         // port1-port2
-        ADDRESS_RANGE,                      // IP-IP
-
-        FLAG_max
-    };
-
                             addr_parser();
 
     void                    set_default_address(std::string const & address);
@@ -82,8 +93,11 @@ public:
     void                    clear_protocol();
     int                     get_protocol() const;
 
-    void                    set_allow(flag_t const flag, bool const allow);
-    bool                    get_allow(flag_t const flag) const;
+    void                    set_sort_order(sort_t const sort);
+    sort_t                  get_sort_order() const;
+
+    void                    set_allow(allow_t const flag, bool const allow);
+    bool                    get_allow(allow_t const flag) const;
 
     bool                    has_errors() const;
     void                    emit_error(std::string const & msg);
@@ -101,7 +115,8 @@ private:
     void                    parse_address_port(std::string address, std::string port_str, addr_range::vector_t & result, bool ipv6);
     void                    parse_mask(std::string const & mask, addr & cidr);
 
-    bool                    f_flags[static_cast<int>(flag_t::FLAG_max)] = {};
+    bool                    f_flags[static_cast<int>(allow_t::ALLOW_max)] = {};
+    sort_t                  f_sort = SORT_NO;
     std::string             f_default_address4 = std::string();
     std::string             f_default_address6 = std::string();
     std::string             f_default_mask4 = std::string();

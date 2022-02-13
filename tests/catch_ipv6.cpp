@@ -135,7 +135,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::REQUIRED_ADDRESS, true);
+            p.set_allow(addr::allow_t::ALLOW_REQUIRED_ADDRESS, true);
             addr::addr_range::vector_t ips(p.parse("[]"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -152,7 +152,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             {
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
+                p.set_allow(addr::allow_t::ALLOW_REQUIRED_PORT, true);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -164,8 +164,8 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             {
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
-                p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_REQUIRED_PORT, true);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -179,7 +179,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             {
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:123"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -190,7 +190,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             {
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
                 addr::addr_range::vector_t ips(p.parse("1:2:3:4:5:6:7:8:123.5"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -211,7 +211,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
                 int const mask((rand() & 0xFF) + 1001);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -231,7 +231,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
                 int const mask((rand() & 0xFF) + 1001);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/[" + std::to_string(mask) + "]"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -248,7 +248,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
                 int const mask((rand() & 0xFF) + 1001);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse(":" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -265,7 +265,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
                 int const mask((rand() & 0xFF));
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse(":" + std::to_string(port) + "/" + std::to_string(mask) + "q"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -283,7 +283,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
                 int const mask((rand() & 0xFF) + 129);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -300,7 +300,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/[localhost]"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -315,7 +315,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/::3"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -329,7 +329,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/[::3"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -343,7 +343,7 @@ CATCH_TEST_CASE( "ipv6::invalid_input", "[ipv6]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/[1.2.3.4]"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -593,7 +593,7 @@ CATCH_TEST_CASE( "ipv6::address", "[ipv6]" )
             // specific address with a default
             {
                 addr::addr_parser p;
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("8:7:6:5:4:3:2:1");
                 addr::addr_range::vector_t ips(p.parse("[9:9:9:9:4:3:2:1]"));
@@ -617,7 +617,7 @@ CATCH_TEST_CASE( "ipv6::address", "[ipv6]" )
             // only a default address
             {
                 addr::addr_parser p;
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("5:1:6:2:7:3:8:4");
                 addr::addr_range::vector_t ips(p.parse(""));
@@ -646,7 +646,7 @@ CATCH_TEST_CASE( "ipv6::address", "[ipv6]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            p.set_allow(addr::allow_t::ALLOW_ADDRESS_LOOKUP, false);
             addr::addr_range::vector_t ips(p.parse("[4::f003:3001:20af]:5093"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -679,7 +679,7 @@ CATCH_TEST_CASE( "ipv6::address", "[ipv6]" )
             //
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            p.set_allow(addr::allow_t::ALLOW_ADDRESS_LOOKUP, false);
             addr::addr_range::vector_t ips(p.parse("ipv6.example.com:4471"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -924,7 +924,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port)));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -944,7 +944,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -964,7 +964,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/[]"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -986,7 +986,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/" + std::to_string(idx)));
                 CATCH_REQUIRE_FALSE(p.has_errors());
                 CATCH_REQUIRE(ips.size() == 1);
@@ -1026,7 +1026,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 // when specified as an IP, the mask can be absolutely anything
                 uint8_t mask[16];
                 for(int j(0); j < 16; ++j)
@@ -1077,7 +1077,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 // when specified as an IP, the mask can be absolutely anything
                 // (here the mask is a string an it will be parsed by the
                 // parser if required)
@@ -1140,7 +1140,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
 
                 // here we want a default and an IP with a specific mask
                 // to make sure that the specific mask has priority
@@ -1237,7 +1237,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 //p.set_default_address("55:33:22:11:0:cc:bb:aa");
                 addr::addr_range::vector_t ips(p.parse(":" + std::to_string(port) + "/" + std::to_string(idx)));
                 CATCH_REQUIRE_FALSE(p.has_errors());
@@ -1281,7 +1281,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 //p.set_default_address("55:33:22:11:0:cc:bb:aa");
                 addr::addr_range::vector_t ips(p.parse(":" + std::to_string(port) + "/[1:2:3:4:5:6:7:8]"));
                 CATCH_REQUIRE_FALSE(p.has_errors());

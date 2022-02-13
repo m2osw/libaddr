@@ -291,25 +291,25 @@ void validate_ip::run()
 
         p.set_protocol(f_opts.get_string("protocol"));
 
-        p.set_allow(addr::addr_parser::flag_t::ADDRESS, true);
-        p.set_allow(addr::addr_parser::flag_t::PORT, true);
+        p.set_allow(addr::allow_t::ALLOW_ADDRESS, true);
+        p.set_allow(addr::allow_t::ALLOW_PORT, true);
 
         if(f_opts.is_defined("address"))
         {
-            p.set_allow(addr::addr_parser::flag_t::REQUIRED_ADDRESS, true);
+            p.set_allow(addr::allow_t::ALLOW_REQUIRED_ADDRESS, true);
         }
         if(f_opts.is_defined("port"))
         {
-            p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
+            p.set_allow(addr::allow_t::ALLOW_REQUIRED_PORT, true);
         }
         if(f_opts.is_defined("mask"))
         {
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
         }
         if(f_opts.is_defined("list"))
         {
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES, true);
         }
 
         addr::addr_range::vector_t const range(p.parse(addr));

@@ -35,6 +35,11 @@
 #include    "libaddr/addr_exception.h"
 
 
+// snapdev
+//
+#include    <snapdev/int128_literal.h>
+
+
 // C++ library
 //
 #include    <sstream>
@@ -435,12 +440,15 @@ void addr::set_protocol(int protocol)
 
 /** \brief Set the mask.
  *
- * The input mask must be exactly 16 bytes. If you are dealing with an
+ * The input mask must be at least 16 bytes. If you are dealing with an
  * IPv4, make sure the first 12 bytes are 255.
+ *
+ * \todo
+ * Look into having a type that clearly defines the buffer size.
  *
  * \param[in] mask  The mask to save in this address.
  */
-void addr::set_mask(uint8_t const * mask)
+void addr::set_mask(std::uint8_t const * mask)
 {
     memcpy(f_mask, mask, sizeof(f_mask));
 }
@@ -469,18 +477,116 @@ void addr::apply_mask()
  * dealing with an IPv4, all the bytes are expected to be 255 except
  * the bottom 4 bytes (offset 12, 13, 14, 15).
  *
+ * \todo
+ * Look into having a type that clearly defines the buffer size.
+ *
  * \param[out] mask  The buffer where the mask gets copied.
  */
-void addr::get_mask(uint8_t * mask) const
+void addr::get_mask(std::uint8_t * mask) const
 {
     memcpy(mask, f_mask, sizeof(f_mask));
 }
 
 
-/** \brief Check whether this address represents the ANY address.
+/** \brief Get the mask as a number of bits set to 1.
  *
- * The IPv4 and IPv6 have an ANY address also called the default address.
- * This function returns true if this address represents the ANY address.
+ * This function computes the number of bits set to 1 starting from the most
+ * significant bit.
+ *
+ * If the function detects that a simple number of bits cannot represent
+ * the mask, then the function returns -1.
+ *
+ * A count of 0 means that the mask is all zeroes.
+ *
+ * A count of 128 means that the mask is all ones.
+ *
+ * To compute an IPv4 count, subtract 96 from the result. If the result is
+ * not at least 96, then the mask is not a valid IPv4 mask.
+ *
+ * \note
+ * The current Internet consortium says that only masks that can be
+ * represented as a simple number are valid. In other words, if this
+ * function returns -1, this means the mask is considered invalid.
+ *
+ * \return The number of bits in the mask or -1 if the mask has holes.
+ */
+int addr::get_mask_size() const
+{
+    int count(0);
+
+    bool found(false);
+    for(std::size_t i(0); i < sizeof(f_mask); ++i)
+    {
+        if(found)
+        {
+            if(f_mask[i] != 0x00)
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            switch(f_mask[i])
+            {
+            case 0xFF:
+                count += 8;
+                break;
+
+            case 0xFE:
+                count += 7;
+                found = true;
+                break;
+
+            case 0xFC:
+                count += 6;
+                found = true;
+                break;
+
+            case 0xF8:
+                count += 5;
+                found = true;
+                break;
+
+            case 0xF0:
+                count += 4;
+                found = true;
+                break;
+
+            case 0xE0:
+                count += 3;
+                found = true;
+                break;
+
+            case 0xC0:
+                count += 2;
+                found = true;
+                break;
+
+            case 0x80:
+                count += 1;
+                found = true;
+                break;
+
+            case 0x00:
+                found = true;
+                break;
+
+            default:
+                return -1;
+
+            }
+        }
+    }
+
+    return count;
+}
+
+
+/** \brief Check whether this address represents the ANY or NULL address.
+ *
+ * The IPv4 and IPv6 have an ANY address also called the default address
+ * and the null address. This function returns true if this address
+ * represents the ANY address.
  *
  * The any address is represented by `"0.0.0.0"` in IPv4 and `"::"` in
  * IPv6. (i.e. all zeroes)
@@ -755,6 +861,32 @@ std::string addr::to_ipv4or6_string(string_ip_t mode) const
     return is_ipv4() ? to_ipv4_string(mode)
                      : to_ipv6_string(mode);
 }
+
+
+/** \brief Convert the IP address to an unsigned 128 bit ingeter.
+ *
+ * This function converts the IP address to an integer of 128 bits which
+ * supports IPv6 and IPv4.
+ *
+ * \return The address converted to a unsigned int128 bit integer.
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+unsigned __int128 addr::ip_to_uint128() const
+{
+    // warning: the address is defined in big endian so we want to
+    //          swap those bytes
+    //
+    unsigned __int128 result(0);
+    for(std::size_t idx(0); idx < sizeof(f_address.sin6_addr.s6_addr); ++idx)
+    {
+        result <<= 8;
+        result |= static_cast<unsigned __int128>(f_address.sin6_addr.s6_addr[idx]);
+    }
+
+    return result;
+}
+#pragma GCC diagnostic pop
 
 
 /** \brief Determine the type of network this IP represents.
@@ -1253,11 +1385,21 @@ int addr::get_protocol() const
  * port, family, protocol and other peripheral details.
  *
  * \param[in] ip  The address to match against this IP/mask CIDR.
+ * \param[in] any  If `this` addr object is an ANY address (see is_default())
+ * then always return true.
  *
  * \return true if \p ip is a match.
+ *
+ * \sa is_default()
  */
-bool addr::match(addr const & ip) const
+bool addr::match(addr const & ip, bool any) const
 {
+    if(any
+    && is_default())
+    {
+        return true;
+    }
+
     for(int idx(0); idx < 16; ++idx)
     {
         if((f_address.sin6_addr.s6_addr[idx] & f_mask[idx]) != (ip.f_address.sin6_addr.s6_addr[idx] & f_mask[idx]))
@@ -1267,6 +1409,56 @@ bool addr::match(addr const & ip) const
     }
 
     return true;
+}
+
+
+/** \brief Determine whether addresses are adjacent.
+ *
+ * This function returns true if the specified address (\p a) is the very
+ * next address of `this` address.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's.
+ *
+ * \param[in] a  The address to check against.
+ *
+ * \return true if this address + 1 equal \p a.
+ */
+bool addr::is_next(addr const & a) const
+{
+    using namespace snapdev::literals;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    unsigned __int128 lhs(ip_to_uint128());
+    unsigned __int128 rhs(a.ip_to_uint128());
+#pragma GCC diagnostic pop
+    return lhs != 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF_uint128 && lhs + 1 == rhs;
+}
+
+
+/** \brief Determine whether addresses are adjacent.
+ *
+ * This function returns true if the specified address (\p a) is the very
+ * previous address of `this` address.
+ *
+ * \note
+ * The addresses do not wrap around. So the address with all f's is not
+ * just before the default address.
+ *
+ * \param[in] a  The address to check against.
+ *
+ * \return true if this address - 1 equal \p a.
+ */
+bool addr::is_previous(addr const & a) const
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    unsigned __int128 lhs(ip_to_uint128());
+    unsigned __int128 rhs(a.ip_to_uint128());
+#pragma GCC diagnostic pop
+    return lhs != 0 && lhs - 1 == rhs;
 }
 
 

@@ -96,12 +96,12 @@ addr_parser::addr_parser()
 {
     // allow addresses & DNS lookups by default
     //
-    set_allow(flag_t::ADDRESS, true);
-    set_allow(flag_t::ADDRESS_LOOKUP, true);
+    set_allow(allow_t::ALLOW_ADDRESS, true);
+    set_allow(allow_t::ALLOW_ADDRESS_LOOKUP, true);
 
     // allow port after address
     //
-    set_allow(flag_t::PORT, true);
+    set_allow(allow_t::ALLOW_PORT, true);
 }
 
 
@@ -133,7 +133,7 @@ addr_parser::addr_parser()
  * flag to true:
  *
  * \code
- *      parser.set_allow(parser.flag_t::REQUIRED_ADDRESS, true);
+ *      parser.set_allow(parser.allow_t::ALLOW_REQUIRED_ADDRESS, true);
  *      // now address is mandatory
  * \endcode
  *
@@ -141,8 +141,8 @@ addr_parser::addr_parser()
  * the `ADDRESS` and `REQUIRED_ADDRESS` values to false:
  *
  * \code
- *      parser.set_allow(parser.flag_t::ADDRESS,          false);
- *      parser.set_allow(parser.flag_t::REQUIRED_ADDRESS, false);
+ *      parser.set_allow(parser.allow_t::ALLOW_ADDRESS,          false);
+ *      parser.set_allow(parser.allow_t::ALLOW_REQUIRED_ADDRESS, false);
  * \endcode
  *
  * To remove both default IP addresses, call this function with an empty
@@ -238,7 +238,7 @@ std::string const & addr_parser::get_default_address6() const
  * flag to true:
  *
  * \code
- *      parser.set_allow(parser.flag_t::REQUIRED_PORT, true);
+ *      parser.set_allow(parser.allow_t::ALLOW_REQUIRED_PORT, true);
  *      // now port is mandatory
  * \endcode
  *
@@ -246,8 +246,8 @@ std::string const & addr_parser::get_default_address6() const
  * the `PORT` and `REQUIRED_PORT` values to false:
  *
  * \code
- *      parser.set_allow(parser.flag_t::PORT,          false);
- *      parser.set_allow(parser.flag_t::REQUIRED_PORT, false);
+ *      parser.set_allow(parser.allow_t::ALLOW_PORT,          false);
+ *      parser.set_allow(parser.allow_t::ALLOW_REQUIRED_PORT, false);
  * \endcode
  *
  * \exception addr_invalid_argument_exception
@@ -283,11 +283,11 @@ int addr_parser::get_default_port() const
 /** \brief Define the default mask.
  *
  * This function is used to define the default mask. Note that the
- * default mask will not be used at all if the flag_t::MASK allow
+ * default mask will not be used at all if the allow_t::ALLOW_MASK allow
  * flag is not set to true:
  *
  * \code
- *      parser.set_allow(parser.flag_t::MASK, true);
+ *      parser.set_allow(parser.allow_t::ALLOW_MASK, true);
  *      parser.set_default_mask("255.255.0.0");
  *      parser.set_default_mask("[ffff:ffff:ffff::]");
  * \endcode
@@ -528,6 +528,54 @@ int addr_parser::get_protocol() const
 }
 
 
+/** \brief Change the set of flags defining the sorting order.
+ *
+ * The parser, once done parsing all the input, will sort the addresses
+ * according to these flags.
+ *
+ * By default, it does not re-arrange the order in which the addresses
+ * were defined.
+ *
+ * The parser is capable of sorting by IP type (IPv6 or IPv4 first),
+ * and simply by IP addresses. It can also merge adjacent or overlapping
+ * ranges into a single range.
+ *
+ * \exception addr_invalid_argument
+ * This exception is raised you set SORT_IPV6_FIRST and SORT_IPV4_FIRST
+ * at the same time because these flags are mutually exclusive.
+ *
+ * \param[in] sort  The sort parameters.
+ *
+ * \sa get_sort_order()
+ */
+void addr_parser::set_sort_order(sort_t const sort)
+{
+    if((sort & (SORT_IPV6_FIRST | SORT_IPV4_FIRST)) == (SORT_IPV6_FIRST | SORT_IPV4_FIRST))
+    {
+        throw addr_invalid_argument("addr_parser::set_sort_order(): flags SORT_IPV6_FIRST and SORT_IPV4_FIRST are mutually exclusive.");
+    }
+
+    f_sort = sort;
+}
+
+
+/** \brief Get the flags defining the sort order of the parser.
+ *
+ * This function returns the sort order of the parser as a set of flags.
+ *
+ * By default this value is set to NO_SORT meaning that the input is
+ * kept as is.
+ *
+ * \return The sort order flags.
+ *
+ * \sa set_sort_order()
+ */
+sort_t addr_parser::get_sort_order() const
+{
+    return f_sort;
+}
+
+
 /** \brief Set or clear allow flags in the parser.
  *
  * This parser has a set of flags it uses to know whether the input
@@ -579,10 +627,10 @@ int addr_parser::get_protocol() const
  *
  * \sa get_allow()
  */
-void addr_parser::set_allow(flag_t const flag, bool const allow)
+void addr_parser::set_allow(allow_t const flag, bool const allow)
 {
-    if(flag < static_cast<flag_t>(0)
-    || flag >= flag_t::FLAG_max)
+    if(flag < static_cast<allow_t>(0)
+    || flag >= allow_t::ALLOW_max)
     {
         throw addr_invalid_argument("addr_parser::set_allow(): flag has to be one of the valid flags.");
     }
@@ -597,12 +645,12 @@ void addr_parser::set_allow(flag_t const flag, bool const allow)
         //
         switch(flag)
         {
-        case flag_t::MULTI_ADDRESSES_COMMAS:
-            f_flags[static_cast<int>(flag_t::MULTI_PORTS_COMMAS)] = false;
+        case allow_t::ALLOW_MULTI_ADDRESSES_COMMAS:
+            f_flags[static_cast<int>(allow_t::ALLOW_MULTI_PORTS_COMMAS)] = false;
             break;
 
-        case flag_t::MULTI_PORTS_COMMAS:
-            f_flags[static_cast<int>(flag_t::MULTI_ADDRESSES_COMMAS)] = false;
+        case allow_t::ALLOW_MULTI_PORTS_COMMAS:
+            f_flags[static_cast<int>(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS)] = false;
             break;
 
         default:
@@ -629,10 +677,10 @@ void addr_parser::set_allow(flag_t const flag, bool const allow)
  *
  * \sa set_allow()
  */
-bool addr_parser::get_allow(flag_t const flag) const
+bool addr_parser::get_allow(allow_t const flag) const
 {
-    if(flag < static_cast<flag_t>(0)
-    || flag >= flag_t::FLAG_max)
+    if(flag < static_cast<allow_t>(0)
+    || flag >= allow_t::ALLOW_max)
     {
         throw addr_invalid_argument("addr_parser::get_allow(): flag has to be one of the valid flags.");
     }
@@ -808,6 +856,18 @@ void addr_parser::clear_errors()
  *
  * Ranges are not yet implemented.
  *
+ * ### Sort
+ *
+ * After the function parsed all the input, it sorts the results in
+ * the vector of ranges. Ranges are sorted using the addr_range::compare()
+ * function. Sorting can also be used to merge ranges. So if two ranges
+ * have an overlap or are adjacent, the union of those two ranges will
+ * be kept and the two ranges are otherwise removed from the result.
+ *
+ * The sort is particularly useful if you first want to connect with
+ * IPv6 addresses instead of IPv4 (which is the current expected behavior
+ * of your services and tools).
+ *
  * \param[in] in  The input string to be parsed.
  *
  * \return A vector of address ranges, see has_errors() to determine whether
@@ -819,8 +879,8 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
 {
     addr_range::vector_t result;
 
-    if(get_allow(flag_t::MULTI_ADDRESSES_COMMAS)
-    && get_allow(flag_t::MULTI_ADDRESSES_SPACES))
+    if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS)
+    && get_allow(allow_t::ALLOW_MULTI_ADDRESSES_SPACES))
     {
         std::string const comma_space(", ");
         std::string::size_type s(0);
@@ -835,10 +895,10 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
             s = e + 1;
         }
     }
-    else if(get_allow(flag_t::MULTI_ADDRESSES_COMMAS)
-         || get_allow(flag_t::MULTI_ADDRESSES_SPACES))
+    else if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS)
+         || get_allow(allow_t::ALLOW_MULTI_ADDRESSES_SPACES))
     {
-        char const sep(get_allow(flag_t::MULTI_ADDRESSES_COMMAS) ? ',' : ' ');
+        char const sep(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS) ? ',' : ' ');
         std::string::size_type s(0);
         while(s < in.length())
         {
@@ -859,6 +919,69 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
         parse_cidr(in, result);
     }
 
+    if((f_sort & SORT_FULL) != 0)
+    {
+        std::sort(
+              result.begin()
+            , result.end()
+            , [](auto const & a, auto const & b)
+            {
+                switch(a.compare(b))
+                {
+                case compare_t::COMPARE_SMALLER:
+                case compare_t::COMPARE_OVERLAP_SMALL_VS_LARGE:
+                case compare_t::COMPARE_INCLUDED:
+                case compare_t::COMPARE_IPV6_VS_IPV4:
+                case compare_t::COMPARE_SMALL_VS_LARGE:
+                case compare_t::COMPARE_FOLLOWS:
+                case compare_t::COMPARE_FIRST:
+                    return true;
+
+                default:
+                    return false;
+
+                }
+            });
+    }
+
+    if((f_sort & SORT_MERGE) != 0)
+    {
+        std::size_t max(result.size());
+        for(std::size_t idx(0); idx < max - 1; ++idx)
+        {
+            addr_range const r(result[idx].union_if_possible(result[idx + 1]));
+            if(!r.is_empty())
+            {
+                // merge worked
+                //
+                result[idx] = r;
+                result.erase(result.begin() + idx + 1);
+                --max;
+            }
+        }
+    }
+
+    if((f_sort & SORT_IPV4_FIRST) != 0)
+    {
+        std::sort(
+              result.begin()
+            , result.end()
+            , [](auto const & a, auto const & b)
+            {
+                return a.compare(b) == compare_t::COMPARE_IPV4_VS_IPV6;
+            });
+    }
+    else if((f_sort & SORT_IPV6_FIRST) != 0)
+    {
+        std::sort(
+              result.begin()
+            , result.end()
+            , [](auto const & a, auto const & b)
+            {
+                return a.compare(b) == compare_t::COMPARE_IPV6_VS_IPV4;
+            });
+    }
+
     return result;
 }
 
@@ -876,7 +999,7 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
  */
 void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & result)
 {
-    if(get_allow(flag_t::MASK))
+    if(get_allow(allow_t::ALLOW_MASK))
     {
         // check whether there is a mask
         //
@@ -930,6 +1053,9 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
         //
         if(errcnt == f_error_count)
         {
+            // note: no need to test the SORT_NO_EMPTY since that was already
+            //       done when adding addresses to addr_mask
+            //
             result.insert(result.end(), addr_mask.begin(), addr_mask.end());
         }
     }
@@ -1053,8 +1179,8 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
             // address because there is no other ':', but if there are
             // '.' before the ':' then we assume that it is IPv4 still
             //
-            if(!get_allow(flag_t::PORT)
-            && !get_allow(flag_t::REQUIRED_PORT))
+            if(!get_allow(allow_t::ALLOW_PORT)
+            && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
             {
                 std::string::size_type const p(in.find(':'));
                 if(p != std::string::npos
@@ -1096,8 +1222,8 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
 
     std::string::size_type const p(in.find(':'));
 
-    if(get_allow(flag_t::PORT)
-    || get_allow(flag_t::REQUIRED_PORT))
+    if(get_allow(allow_t::ALLOW_PORT)
+    || get_allow(allow_t::ALLOW_REQUIRED_PORT))
     {
         // the address can include a port
         //
@@ -1127,8 +1253,8 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
     else
     {
         if(p != std::string::npos
-        && !get_allow(flag_t::PORT)
-        && !get_allow(flag_t::REQUIRED_PORT))
+        && !get_allow(allow_t::ALLOW_PORT)
+        && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
         {
             emit_error("Port not allowed (" + in + ").");
             return;
@@ -1196,15 +1322,15 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
 
     if(p != std::string::npos)
     {
-        if(get_allow(flag_t::PORT)
-        || get_allow(flag_t::REQUIRED_PORT))
+        if(get_allow(allow_t::ALLOW_PORT)
+        || get_allow(allow_t::ALLOW_REQUIRED_PORT))
         {
             // there is also a port, extract it
             //
             port_str = in.substr(p + 1);
         }
-        else if(!get_allow(flag_t::PORT)
-             && !get_allow(flag_t::REQUIRED_PORT))
+        else if(!get_allow(allow_t::ALLOW_PORT)
+             && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
         {
             emit_error("Port not allowed (" + in + ").");
             return;
@@ -1241,7 +1367,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     //
     if(port_str.empty())
     {
-        if(get_allow(flag_t::REQUIRED_PORT))
+        if(get_allow(allow_t::ALLOW_REQUIRED_PORT))
         {
             emit_error("Required port is missing.");
             return;
@@ -1256,7 +1382,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     //
     if(address.empty())
     {
-        if(get_allow(flag_t::REQUIRED_ADDRESS))
+        if(get_allow(allow_t::ALLOW_REQUIRED_ADDRESS))
         {
             emit_error("Required address is missing.");
             return;
@@ -1311,7 +1437,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
 
     // convert address to binary
     //
-    if(get_allow(flag_t::ADDRESS_LOOKUP))
+    if(get_allow(allow_t::ALLOW_ADDRESS_LOOKUP))
     {
         addrinfo * addrlist(nullptr);
         {
@@ -1371,7 +1497,11 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                     a.set_protocol(addrlist->ai_protocol);
                     addr_range r;
                     r.set_from(a);
-                    result.push_back(r);
+                    if((f_sort & SORT_NO_EMPTY) == 0
+                    || !r.is_empty())
+                    {
+                        result.push_back(r);
+                    }
                 }
             }
             else if(addrlist->ai_family == AF_INET6)
@@ -1390,7 +1520,11 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                     a.set_protocol(addrlist->ai_protocol);
                     addr_range r;
                     r.set_from(a);
-                    result.push_back(r);
+                    if((f_sort & SORT_NO_EMPTY) == 0
+                    || !r.is_empty())
+                    {
+                        result.push_back(r);
+                    }
                 }
             }
             else if(first)                                                  // LCOV_EXCL_LINE
@@ -1410,7 +1544,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
     else
     {
         std::int64_t port(0);
-        if(get_allow(flag_t::REQUIRED_PORT)
+        if(get_allow(allow_t::ALLOW_REQUIRED_PORT)
         || !port_str.empty())
         {
             bool const valid_port(advgetopt::validator_integer::convert_string(port_str, port));
@@ -1424,8 +1558,8 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                 return;
             }
 
-            if(!get_allow(flag_t::PORT)
-            && !get_allow(flag_t::REQUIRED_PORT))
+            if(!get_allow(allow_t::ALLOW_PORT)
+            && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
             {
                 emit_error("Found a port (\""
                          + port_str
@@ -1443,7 +1577,11 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
             addr a(in);
             addr_range r;
             r.set_from(a);
-            result.push_back(r);
+            if((f_sort & SORT_NO_EMPTY) == 0
+            || !r.is_empty())
+            {
+                result.push_back(r);
+            }
         }
         else
         {
@@ -1458,7 +1596,11 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                 addr a(in6);
                 addr_range r;
                 r.set_from(a);
-                result.push_back(r);
+                if((f_sort & SORT_NO_EMPTY) == 0
+                || !r.is_empty())
+                {
+                    result.push_back(r);
+                }
             }
             else
             {
@@ -1773,7 +1915,7 @@ addr string_to_addr(
         p.set_protocol(protocol);
     }
 
-    p.set_allow(addr_parser::flag_t::MASK, mask);
+    p.set_allow(allow_t::ALLOW_MASK, mask);
 
     addr_range::vector_t result(p.parse(a));
 

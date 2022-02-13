@@ -1,3 +1,20 @@
+libaddr (1.0.25.0~bionic) bionic; urgency=high
+
+  * Implemented the sort so we can have IPv6 first, because we are expected
+    to give priority to IPv6 addresses.
+  * Added a sort flag to avoid having empty ranges returned.
+  * Added a function to compute the size of a valid CIDR mask.
+  * Added a function to convert the IP into an unsigned int128 value.
+  * Allow the match() function to return true if this IP is ANY.
+  * Added the is_next() and is_previous() functions.
+  * Renamed the addr_parser::flag_t as allow_t.
+  * Added an is_ipv4() on the range, if to & from are IPv4, it returns true.
+  * Added a from_cidr() function to convert an address with a mask into an
+    addr_range object.
+  * Added a function to marge two ranges if they overlap or are adjacent.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 13 Feb 2022 12:05:33 -0800
+
 libaddr (1.0.24.0~bionic) bionic; urgency=high
 
   * Removed the MULTI_ADDRESSES_COMMAS_AND_SPACES.

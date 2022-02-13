@@ -130,7 +130,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                     //
                     n = -n;
                 }
-                addr::addr_parser::flag_t const flag(static_cast<addr::addr_parser::flag_t>(n));
+                addr::allow_t const flag(static_cast<addr::allow_t>(n));
 
                 CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument);
                 CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument);
@@ -153,8 +153,8 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                         n = -n;
                     }
                 }
-                while(n < static_cast<int>(addr::addr_parser::flag_t::FLAG_max));
-                addr::addr_parser::flag_t const flag(static_cast<addr::addr_parser::flag_t>(n));
+                while(n < static_cast<int>(addr::allow_t::ALLOW_max));
+                addr::allow_t const flag(static_cast<addr::allow_t>(n));
 
                 CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, true), addr::addr_invalid_argument);
                 CATCH_REQUIRE_THROWS_AS(a.set_allow(flag, false), addr::addr_invalid_argument);
@@ -182,7 +182,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::REQUIRED_ADDRESS, true);
+            p.set_allow(addr::allow_t::ALLOW_REQUIRED_ADDRESS, true);
             addr::addr_range::vector_t ips(p.parse(""));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -202,7 +202,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             {
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
+                p.set_allow(addr::allow_t::ALLOW_REQUIRED_PORT, true);
                 addr::addr_range::vector_t ips(p.parse("1.2.3.4"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -217,8 +217,8 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             {
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
-                p.set_allow(addr::addr_parser::flag_t::REQUIRED_PORT, true);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_REQUIRED_PORT, true);
                 addr::addr_range::vector_t ips(p.parse("1.2.3.4"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -234,8 +234,8 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::PORT, false);
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::REQUIRED_PORT));
+            p.set_allow(addr::allow_t::ALLOW_PORT, false);
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_REQUIRED_PORT));
             addr::addr_range::vector_t ips(p.parse("1.2.3.4:123"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -283,7 +283,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 int const mask((rand() & 0xFF) + 1001);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(p.flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -301,7 +301,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 int const mask((rand() & 0xFF) + 33);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(p.flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -318,7 +318,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/localhost"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
@@ -333,7 +333,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/[1:2:3:4:5:6:7:8]"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -347,7 +347,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/1:2:3:4:5:6:7:8"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -724,20 +724,20 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
 
-            for(int idx(0); idx < static_cast<int>(addr::addr_parser::flag_t::FLAG_max); ++idx)
+            for(int idx(0); idx < static_cast<int>(addr::allow_t::ALLOW_max); ++idx)
             {
-                switch(static_cast<addr::addr_parser::flag_t>(idx))
+                switch(static_cast<addr::allow_t>(idx))
                 {
-                case addr::addr_parser::flag_t::ADDRESS:
-                case addr::addr_parser::flag_t::ADDRESS_LOOKUP:
-                case addr::addr_parser::flag_t::PORT:
+                case addr::allow_t::ALLOW_ADDRESS:
+                case addr::allow_t::ALLOW_ADDRESS_LOOKUP:
+                case addr::allow_t::ALLOW_PORT:
                     // only these are true by default
                     //
-                    CATCH_REQUIRE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
+                    CATCH_REQUIRE(p.get_allow(static_cast<addr::allow_t>(idx)));
                     break;
 
                 default:
-                    CATCH_REQUIRE_FALSE(p.get_allow(static_cast<addr::addr_parser::flag_t>(idx)));
+                    CATCH_REQUIRE_FALSE(p.get_allow(static_cast<addr::allow_t>(idx)));
                     break;
 
                 }
@@ -750,58 +750,58 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
 
             // by default these are set to false
             //
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // check setting MULTI_ADDRESSES_COMMAS to true
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_SPACES
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES, true);
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // add MULTI_PORTS_COMMAS
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS, true);
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS, true);
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS again
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // remove MULTI_ADDRESSES_SPACES
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, false);
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES, false);
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // back to MULTI_PORTS_COMMAS
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS, true);
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS, true);
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
 
             // add MULTI_ADDRESSES_COMMAS first now
             //
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            CATCH_REQUIRE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES));
-            CATCH_REQUIRE_FALSE(p.get_allow(addr::addr_parser::flag_t::MULTI_PORTS_COMMAS));
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            CATCH_REQUIRE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES));
+            CATCH_REQUIRE_FALSE(p.get_allow(addr::allow_t::ALLOW_MULTI_PORTS_COMMAS));
         }
 
         CATCH_SECTION("default address")
@@ -832,7 +832,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
             // specific address with a default
             {
                 addr::addr_parser p;
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("5.5.5.5");
                 CATCH_REQUIRE(p.get_default_address4() == "5.5.5.5");
@@ -856,7 +856,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
             // only a default address
             {
                 addr::addr_parser p;
-                p.set_allow(addr::addr_parser::flag_t::PORT, false);
+                p.set_allow(addr::allow_t::ALLOW_PORT, false);
                 p.set_protocol(IPPROTO_TCP);
                 p.set_default_address("5.5.5.5");
                 CATCH_REQUIRE(p.get_default_address4() == "5.5.5.5");
@@ -885,7 +885,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
             addr::addr_range::vector_t ips(p.parse("1.2.3.4:55,5.6.7.8,,,,10.11.12.99:77"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 3);
@@ -960,7 +960,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES, true);
             addr::addr_range::vector_t ips(p.parse("1.2.3.4:55 5.6.7.8   10.11.12.99:77"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 3);
@@ -1035,8 +1035,8 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_COMMAS, true);
-            p.set_allow(addr::addr_parser::flag_t::MULTI_ADDRESSES_SPACES, true);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES, true);
             addr::addr_range::vector_t ips(p.parse(" 1.2.3.4:55,, 5.6.7.8 , 10.11.12.99:77 "));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 3);
@@ -1114,7 +1114,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            p.set_allow(addr::allow_t::ALLOW_ADDRESS_LOOKUP, false);
             addr::addr_range::vector_t ips(p.parse("4.3.1.2:3003"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -1143,7 +1143,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            p.set_allow(addr::allow_t::ALLOW_ADDRESS_LOOKUP, false);
             addr::addr_range::vector_t ips(p.parse("www.example.com:4471"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -1155,7 +1155,7 @@ CATCH_TEST_CASE( "ipv4::address", "[ipv4]" )
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
-            p.set_allow(addr::addr_parser::flag_t::ADDRESS_LOOKUP, false);
+            p.set_allow(addr::allow_t::ALLOW_ADDRESS_LOOKUP, false);
             addr::addr_range::vector_t ips(p.parse("192.168.255.32:https"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
@@ -1283,7 +1283,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port)));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -1304,7 +1304,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
             int const port(rand() & 0xFFFF);
             addr::addr_parser p;
             p.set_protocol(proto);
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("172.18.5.91:" + std::to_string(port) + "/"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
@@ -1327,7 +1327,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port) + "/" + std::to_string(idx)));
                 CATCH_REQUIRE_FALSE(p.has_errors());
                 CATCH_REQUIRE(ips.size() == 1);
@@ -1360,7 +1360,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 // when specified as an IP, the mask can be absolutely anything
                 uint8_t mask[4];
                 for(int j(0); j < 4; ++j)
@@ -1398,7 +1398,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
                 // when specified as an IP, the mask can be absolutely anything
                 // (here the mask is a string an it will be parsed by the
                 // parser if required)
@@ -1450,7 +1450,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
                 int const port(rand() & 0xFFFF);
                 addr::addr_parser p;
                 p.set_protocol(proto);
-                p.set_allow(addr::addr_parser::flag_t::MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
 
                 // here we want a default and an IP with a specific mask
                 // to make sure that the specific mask has priority
@@ -1513,7 +1513,7 @@ CATCH_TEST_CASE( "ipv4::masks", "[ipv4]" )
         {
             int const port1(rand() & 0xFFFF);
             addr::addr_parser p;
-            p.set_allow(addr::addr_parser::flag_t::MASK, true);
+            p.set_allow(addr::allow_t::ALLOW_MASK, true);
 
             // parse the IP with a mask
             //

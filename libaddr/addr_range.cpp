@@ -157,6 +157,37 @@ bool addr_range::is_in(addr const & rhs) const
 }
 
 
+/** \brief Check whether this range is an IPv4 range.
+ *
+ * This function verifies whether this range represents an IPv6 range or
+ * an IPv4 range.
+ *
+ * If the range is not defined (no from and no to) then the function
+ * always returns false.
+ *
+ * \return true if the range represents an IPv4 address.
+ */
+bool addr_range::is_ipv4() const
+{
+    if(f_has_from && f_has_to)
+    {
+        return f_from.is_ipv4() && f_to.is_ipv4();
+    }
+
+    if(f_has_from)
+    {
+        return f_from.is_ipv4();
+    }
+
+    if(f_has_to)
+    {
+        return f_to.is_ipv4();
+    }
+
+    return false;
+}
+
+
 /** \brief Set 'from' address.
  *
  * This function saves the 'from' address in this range object.
@@ -255,6 +286,77 @@ addr const & addr_range::get_to() const
 }
 
 
+/** \brief Transform an address to a range.
+ *
+ * This function transforms an address (\p a) in a range.
+ *
+ * This is useful if you have a CIDR type of address (an address with a
+ * mask length defined along with it) and want to generate a range with
+ * it.
+ *
+ * The range is defined as (a & mask) for the "from" address and
+ * (a | ~mask) for the "to" address. If the mask is all 1s, then the
+ * resulting range is just (a).
+ *
+ * \exception addr_unsupported_as_range
+ * If the address cannot be transform into a range, this exception is raised.
+ * This happens if the mask is not just ending with 0s but 0s are found
+ * earlier.
+ *
+ * \param[in] a  The address to convert to a range.
+ */
+void addr_range::from_cidr(addr const & a)
+{
+    std::uint8_t mask[16];
+    a.get_mask(mask);
+    bool found(false);
+    sockaddr_in6 from = {};
+    a.get_ipv6(from);
+    sockaddr_in6 to(from);
+    for(std::size_t i(0); i < sizeof(mask); ++i)
+    {
+        std::uint8_t inverse = ~mask[i];
+
+        from.sin6_addr.s6_addr[i] &= mask[i];
+        to.sin6_addr.s6_addr[i] |= inverse;
+
+        if(found)
+        {
+            if(inverse != 0xFF)
+            {
+                throw addr_unsupported_as_range("unsupported mask for a range");
+            }
+        }
+        else
+        {
+            if(inverse != 0)
+            {
+                found = true;
+                switch(inverse)
+                {
+                case 0x01:
+                case 0x03:
+                case 0x07:
+                case 0x0F:
+                case 0x1F:
+                case 0x3F:
+                case 0x7F:
+                case 0xFF:
+                    break;
+
+                default:
+                    throw addr_unsupported_as_range("unsupported mask for a range");
+
+                }
+            }
+        }
+    }
+
+    set_from(from);
+    set_to(to);
+}
+
+
 /** \brief Compute a new range with the part that is shared between both inputs.
  *
  * This function computers a range which encompasses all the addresses found
@@ -269,6 +371,8 @@ addr const & addr_range::get_to() const
  * \param[in] rhs  The other range to compute the intersection with.
  *
  * \return The resulting intersection range.
+ *
+ * \sa is_empty()
  */
 addr_range addr_range::intersection(addr_range const & rhs) const
 {
@@ -276,6 +380,38 @@ addr_range addr_range::intersection(addr_range const & rhs) const
 
     result.set_from(f_from > rhs.f_from ? f_from : rhs.f_from);
     result.set_to  (f_to   < rhs.f_to   ? f_to   : rhs.f_to);
+
+    return result;
+}
+
+
+/** \brief Compute a new range with the union of two address ranges.
+ *
+ * This function checks whether the two ranges have any addresses in
+ * common or if they are just one after the other. If so, then it
+ * computes the union of both ranges. Otherwise it returns an empty
+ * range.
+ *
+ * \note
+ * If the `from` and `to` addresses of the range have a mask, it is
+ * ignored.
+ *
+ * \param[in] rhs  The other range to compute the intersection with.
+ *
+ * \return The resulting intersection range.
+ *
+ * \sa is_empty()
+ */
+addr_range addr_range::union_if_possible(addr_range const & rhs) const
+{
+    addr_range result;
+
+    if((f_from <= rhs.f_to || f_from.is_previous(rhs.f_to)
+    && (f_to >= rhs.f_from || f_to.is_next(rhs.f_from))))
+    {
+        result.set_from(f_from < rhs.f_from ? f_from : rhs.f_from);
+        result.set_from(f_to   > rhs.f_to   ? f_to   : rhs.f_to);
+    }
 
     return result;
 }
@@ -323,6 +459,122 @@ bool addr_range::match(addr const & address) const
         //
         return f_to.match(address);
     }
+}
+
+
+/** \brief Compare an address range against another.
+ *
+ * Comparing two address ranges against each other can return one of many
+ * possible results (See the compare_t enumeration).
+ *
+ * \param[in] rhs  The right hand side to compare against this range.
+ *
+ * \return One of the compare_t values.
+ */
+compare_t addr_range::compare(addr_range const & rhs) const
+{
+    // check for the empty case first
+    //
+    if(is_empty())
+    {
+        if(rhs.is_empty())
+        {
+            return compare_t::COMPARE_UNORDERED;
+        }
+
+        return compare_t::COMPARE_LAST;
+    }
+    else if(rhs.is_empty())
+    {
+        return compare_t::COMPARE_FIRST;
+    }
+
+    // IPv4 versus IPv6
+    //
+    if(is_ipv4())
+    {
+        if(!rhs.is_ipv4())
+        {
+            return compare_t::COMPARE_IPV4_VS_IPV6;
+        }
+    }
+    else if(rhs.is_ipv4())
+    {
+        return compare_t::COMPARE_IPV6_VS_IPV4;
+    }
+
+    // no overlap (lhs < rhs)
+    //
+    if(f_to < rhs.f_from)
+    {
+        if(f_to.is_next(rhs.f_from))
+        {
+            return compare_t::COMPARE_FOLLOWS;
+        }
+        return compare_t::COMPARE_SMALL_VS_LARGE;
+    }
+
+    // no overlap (lhs > rhs)
+    //
+    if(f_from > rhs.f_to)
+    {
+        if(f_to.is_previous(rhs.f_from))
+        {
+            return compare_t::COMPARE_FOLLOWING;
+        }
+        return compare_t::COMPARE_LARGE_VS_SMALL;
+    }
+
+    // overlap (lhs <= rhs)
+    //
+    if(f_from <= rhs.f_from
+    && f_to >= rhs.f_from)
+    {
+        if(f_to >= rhs.f_to)
+        {
+            if(f_from == rhs.f_from
+            && f_to == rhs.f_to)
+            {
+                return compare_t::COMPARE_EQUAL;
+            }
+            return compare_t::COMPARE_INCLUDED;
+        }
+        if(f_from == rhs.f_from)
+        {
+            return compare_t::COMPARE_INCLUDES;
+        }
+        return compare_t::COMPARE_OVERLAP_SMALL_VS_LARGE;
+    }
+
+    // overlap (lhs >= rhs)
+    //
+    if(f_to >= rhs.f_from
+    && f_to <= rhs.f_to)
+    {
+        if(f_from >= rhs.f_from)
+        {
+            // the previous block already captured this case
+            //
+            //if(f_from == rhs.f_from
+            //&& f_to == rhs.f_to)
+            //{
+            //    return compare_t::COMPARE_EQUAL;
+            //}
+
+            return compare_t::COMPARE_INCLUDES;
+        }
+        if(f_to == rhs.f_to)
+        {
+            return compare_t::COMPARE_INCLUDED;
+        }
+        return compare_t::COMPARE_OVERLAP_LARGE_VS_SMALL;
+    }
+
+    // no overlap
+    //
+    return f_to < rhs.f_from
+            ? compare_t::COMPARE_SMALLER
+            : compare_t::COMPARE_LARGER;
 }
 
 
