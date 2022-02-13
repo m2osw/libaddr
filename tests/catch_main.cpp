@@ -74,6 +74,15 @@ Catch::Clara::Parser add_command_line_options(Catch::Clara::Parser const & cli)
 }
 
 
+void cleanup()
+{
+    if(system("rm -rf socket-test*") != 0)
+    {
+        std::cerr << "error: test could not properly clean up socket files." << std::endl;
+    }
+}
+
+
 }
 // namespace
 
@@ -88,7 +97,7 @@ int main(int argc, char * argv[])
             , nullptr
             , &add_command_line_options
             , nullptr
-            , nullptr
+            , &cleanup
         );
 }
 
