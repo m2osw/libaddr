@@ -1293,7 +1293,7 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
     std::string address;
     std::string port_str;
 
-    // if there is an address extract it otherwise put the default
+    // remove the square brackets if present
     //
     if(!in.empty()
     && in[0] == '[')
@@ -1495,6 +1495,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                     // in most cases we do not get a protocol from
                     // the getaddrinfo() function...
                     a.set_protocol(addrlist->ai_protocol);
+                    a.set_hostname(address);
                     addr_range r;
                     r.set_from(a);
                     if((f_sort & SORT_NO_EMPTY) == 0
@@ -1517,6 +1518,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                 else
                 {
                     addr a(*reinterpret_cast<sockaddr_in6 *>(addrlist->ai_addr));
+                    a.set_hostname(address);
                     a.set_protocol(addrlist->ai_protocol);
                     addr_range r;
                     r.set_from(a);
@@ -1575,6 +1577,8 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
             memset(in.sin_zero, 0, sizeof(in.sin_zero)); // probably useless
 
             addr a(in);
+            a.set_hostname(address);
+            a.set_protocol(f_protocol);
             addr_range r;
             r.set_from(a);
             if((f_sort & SORT_NO_EMPTY) == 0
@@ -1594,6 +1598,8 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                 in6.sin6_scope_id = 0;
 
                 addr a(in6);
+                a.set_hostname(address);
+                a.set_protocol(f_protocol);
                 addr_range r;
                 r.set_from(a);
                 if((f_sort & SORT_NO_EMPTY) == 0

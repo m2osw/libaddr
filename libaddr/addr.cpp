@@ -582,6 +582,72 @@ int addr::get_mask_size() const
 }
 
 
+/** \brief Return the original hostname.
+ *
+ * When parsing an address with the addr::addr_parser::parse() function,
+ * the hostnames appearing in the input get transformed in IP addresses.
+ * It also saves the corresponding address in the hostname parameter
+ * of the address and it can be retrieved with this function.
+ *
+ * You can use the set_hostname() function if you would like to change
+ * this value.
+ *
+ * \note
+ * The parser saves the original address which means the hostname may
+ * actually be an IP address. You can check that with the
+ * is_hostname_an_ip() function.
+ *
+ * \return The original hostname.
+ *
+ * \sa set_hostname()
+ */
+std::string addr::get_hostname() const
+{
+    return f_hostname;
+}
+
+
+/** \brief Check whether the hostname is an IP address or not.
+ *
+ * Check whether the hostname represents a valid IP address (opposed to
+ * an actual domain name).
+ *
+ * \warning
+ * If you did not use the parser, the hostname is empty and therefore
+ * it is neither an IP nor a hostname. However, in this special case
+ * this function returns true.
+ *
+ * \return true if the hostname parameter represents an IP address.
+ */
+bool addr::is_hostname_an_ip() const
+{
+    if(f_hostname.empty())
+    {
+        // this is not a valid hostname, so return true
+        //
+        return true;
+    }
+
+    in6_addr ignore;
+    static_assert(sizeof(ignore) >= sizeof(in_addr));
+    return inet_pton(AF_INET, f_hostname.c_str(), &ignore) == 1
+        || inet_pton(AF_INET6, f_hostname.c_str(), &ignore) == 1;
+}
+
+
+/** \brief Get the family representing this IP address.
+ *
+ * This is either an IPv4, so AF_INET, or an IPv6, in which case the function
+ * returns AF_INET6. No other family is supported by the addr at the moment.
+ *
+ * \return One of AF_INET or AF_INET6.
+ */
+int addr::get_family() const
+{
+    return is_ipv4() ? AF_INET : AF_INET6;
+}
+
+
 /** \brief Check whether this address represents the ANY or NULL address.
  *
  * The IPv4 and IPv6 have an ANY address also called the default address
@@ -909,9 +975,9 @@ unsigned __int128 addr::ip_to_uint128() const
  */
 addr::network_type_t addr::get_network_type() const
 {
-    if(f_private_network_defined == network_type_t::NETWORK_TYPE_UNDEFINED)
+    if(f_private_network == network_type_t::NETWORK_TYPE_UNDEFINED)
     {
-        f_private_network_defined = network_type_t::NETWORK_TYPE_UNKNOWN;
+        f_private_network = network_type_t::NETWORK_TYPE_UNKNOWN;
 
         if(is_ipv4())
         {
@@ -926,30 +992,30 @@ addr::network_type_t addr::get_network_type() const
             || (host_ip & 0xFFF00000) == 0xAC100000         // 172.16.0.0/12
             || (host_ip & 0xFFFF0000) == 0xC0A80000)        // 192.168.0.0/16
             {
-                f_private_network_defined = network_type_t::NETWORK_TYPE_PRIVATE;
+                f_private_network = network_type_t::NETWORK_TYPE_PRIVATE;
             }
             else if((host_ip & 0xFFC00000) == 0x64400000)   // 100.64.0.0/10
             {
-                f_private_network_defined = network_type_t::NETWORK_TYPE_CARRIER;
+                f_private_network = network_type_t::NETWORK_TYPE_CARRIER;
             }
             else if((host_ip & 0xFFFF0000) == 0xA9FE0000)   // 169.254.0.0/16
             {
-                f_private_network_defined = network_type_t::NETWORK_TYPE_LINK_LOCAL; // i.e. DHCP
+                f_private_network = network_type_t::NETWORK_TYPE_LINK_LOCAL; // i.e. DHCP
             }
             else if((host_ip & 0xF0000000) == 0xE0000000)   // 224.0.0.0/4
             {
                 // there are many sub-groups on this one which are probably
                 // still in use...
                 //
-                f_private_network_defined = network_type_t::NETWORK_TYPE_MULTICAST;
+                f_private_network = network_type_t::NETWORK_TYPE_MULTICAST;
             }
             else if((host_ip & 0xFF000000) == 0x7F000000)   // 127.0.0.0/8
             {
-                f_private_network_defined = network_type_t::NETWORK_TYPE_LOOPBACK; // i.e. localhost
+                f_private_network = network_type_t::NETWORK_TYPE_LOOPBACK; // i.e. localhost
             }
             else if(host_ip == 0x00000000)
             {
-                f_private_network_defined = network_type_t::NETWORK_TYPE_ANY; // i.e. 0.0.0.0
+                f_private_network = network_type_t::NETWORK_TYPE_ANY; // i.e. 0.0.0.0
             }
         }
         else //if(is_ipv6()) -- if not IPv4, we have an IPv6
@@ -963,7 +1029,7 @@ addr::network_type_t addr::get_network_type() const
             && f_address.sin6_addr.s6_addr32[3] == 0)
             {
                 // this is the "any" IP address
-                f_private_network_defined = network_type_t::NETWORK_TYPE_ANY;
+                f_private_network = network_type_t::NETWORK_TYPE_ANY;
             }
             else
             {
@@ -971,12 +1037,12 @@ addr::network_type_t addr::get_network_type() const
 
                 if((prefix & 0xFF00) == 0xFD00)                 // fd00::/8
                 {
-                    f_private_network_defined = network_type_t::NETWORK_TYPE_PRIVATE;
+                    f_private_network = network_type_t::NETWORK_TYPE_PRIVATE;
                 }
                 else if((prefix & 0xFFC0) == 0xFE80    // fe80::/10
                      || (prefix & 0xFF0F) == 0xFF02)   // ffx2::/16
                 {
-                    f_private_network_defined = network_type_t::NETWORK_TYPE_LINK_LOCAL; // i.e. DHCP
+                    f_private_network = network_type_t::NETWORK_TYPE_LINK_LOCAL; // i.e. DHCP
                 }
                 else if((prefix & 0xFF0F) == 0xFF01    // ffx1::/16
                      || (f_address.sin6_addr.s6_addr32[0] == 0      // ::1
@@ -985,18 +1051,18 @@ addr::network_type_t addr::get_network_type() const
                       && f_address.sin6_addr.s6_addr16[6] == 0
                       && f_address.sin6_addr.s6_addr16[7] == htons(1)))
                 {
-                    f_private_network_defined = network_type_t::NETWORK_TYPE_LOOPBACK;
+                    f_private_network = network_type_t::NETWORK_TYPE_LOOPBACK;
                 }
                 else if((prefix & 0xFF00) == 0xFF00)   // ff00::/8
                 {
                     // this one must be after the link-local and loopback networks
-                    f_private_network_defined = network_type_t::NETWORK_TYPE_MULTICAST;
+                    f_private_network = network_type_t::NETWORK_TYPE_MULTICAST;
                 }
             }
         }
     }
 
-    return f_private_network_defined;
+    return f_private_network;
 }
 
 
@@ -1171,6 +1237,24 @@ int addr::bind(int s) const
     {
         return ::bind(s, reinterpret_cast<sockaddr const *>(&f_address), sizeof(sockaddr_in6));
     }
+}
+
+
+/** \brief Set the corresponding host.
+ *
+ * When parsing an address, we transform the hostnames to IP addresses.
+ *
+ * When connecting to a web server via TLS, you need to enter the SNI,
+ * which is the server name. To make it available, we use this function
+ * to save the hostname as is.
+ *
+ * \param[in] hostname  The name of the host to connect to.
+ *
+ * \sa get_host()
+ */
+void addr::set_hostname(std::string const & hostname)
+{
+    f_hostname = hostname;
 }
 
 
@@ -1583,7 +1667,7 @@ bool addr::operator >= (addr const & rhs) const
  */
 void addr::address_changed()
 {
-    f_private_network_defined = network_type_t::NETWORK_TYPE_UNDEFINED;
+    f_private_network = network_type_t::NETWORK_TYPE_UNDEFINED;
 }
 
 

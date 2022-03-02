@@ -130,6 +130,7 @@ public:
                                     addr(sockaddr_in const & in);
                                     addr(sockaddr_in6 const & in6);
 
+    void                            set_hostname(std::string const & hostname);
     void                            set_from_socket(int s, bool peer);
     void                            set_ipv4(sockaddr_in const & in);
     void                            set_ipv6(sockaddr_in6 const & in6);
@@ -139,6 +140,9 @@ public:
     void                            set_mask(uint8_t const * mask);
     void                            apply_mask();
 
+    std::string                     get_hostname() const;
+    bool                            is_hostname_an_ip() const;
+    int                             get_family() const;
     bool                            is_default() const;
     bool                            is_ipv4() const;
     void                            get_ipv4(sockaddr_in & in) const;
@@ -182,7 +186,8 @@ private:
     sockaddr_in6                    f_address = init_in6();
     uint8_t                         f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
     int                             f_protocol = IPPROTO_TCP;
-    mutable network_type_t          f_private_network_defined = network_type_t::NETWORK_TYPE_UNDEFINED;
+    mutable network_type_t          f_private_network = network_type_t::NETWORK_TYPE_UNDEFINED;
+    std::string                     f_hostname = std::string();
 };
 
 
