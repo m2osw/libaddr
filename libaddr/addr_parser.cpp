@@ -434,7 +434,7 @@ void addr_parser::set_protocol(std::string const & protocol)
         // not a protocol we support
         //
         throw addr_invalid_argument(
-                  std::string("unknown protocol \"")
+                  std::string("unknown protocol named \"")
                 + protocol
                 + "\", expected \"tcp\" or \"udp\".");
     }
@@ -475,7 +475,7 @@ void addr_parser::set_protocol(int const protocol)
 
     default:
         throw addr_invalid_argument(
-                  std::string("unknown protocol \"")
+                  std::string("unknown protocol number \"")
                 + std::to_string(protocol)
                 + "\", expected \"tcp\" or \"udp\".");
 
@@ -1494,7 +1494,10 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                     addr a(*reinterpret_cast<sockaddr_in *>(addrlist->ai_addr));
                     // in most cases we do not get a protocol from
                     // the getaddrinfo() function...
-                    a.set_protocol(addrlist->ai_protocol);
+                    if(addrlist->ai_protocol != -1)
+                    {
+                        a.set_protocol(addrlist->ai_protocol);
+                    }
                     a.set_hostname(address);
                     addr_range r;
                     r.set_from(a);
@@ -1519,7 +1522,10 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                 {
                     addr a(*reinterpret_cast<sockaddr_in6 *>(addrlist->ai_addr));
                     a.set_hostname(address);
-                    a.set_protocol(addrlist->ai_protocol);
+                    if(addrlist->ai_protocol != -1)
+                    {
+                        a.set_protocol(addrlist->ai_protocol);
+                    }
                     addr_range r;
                     r.set_from(a);
                     if((f_sort & SORT_NO_EMPTY) == 0
@@ -1578,7 +1584,10 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
 
             addr a(in);
             a.set_hostname(address);
-            a.set_protocol(f_protocol);
+            if(f_protocol != -1)
+            {
+                a.set_protocol(f_protocol);
+            }
             addr_range r;
             r.set_from(a);
             if((f_sort & SORT_NO_EMPTY) == 0
@@ -1599,7 +1608,10 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
 
                 addr a(in6);
                 a.set_hostname(address);
-                a.set_protocol(f_protocol);
+                if(f_protocol != -1)
+                {
+                    a.set_protocol(f_protocol);
+                }
                 addr_range r;
                 r.set_from(a);
                 if((f_sort & SORT_NO_EMPTY) == 0
