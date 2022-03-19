@@ -582,6 +582,23 @@ int addr::get_mask_size() const
 }
 
 
+/** \brief Return the interface name.
+ *
+ * It is possible to indicate an interface name along an address to make
+ * sure that this address is only used with that specific interface. If
+ * the interface does not support that address, then the bind() will
+ * fail.
+ *
+ * \return The interface name attached to this address or an empty string.
+ *
+ * \sa set_hostname()
+ */
+std::string addr::get_interface() const
+{
+    return f_interface;
+}
+
+
 /** \brief Return the original hostname.
  *
  * When parsing an address with the addr::addr_parser::parse() function,
@@ -1240,6 +1257,27 @@ int addr::bind(int s) const
 }
 
 
+/** \brief Set the interface on which to listen.
+ *
+ * When binding an AF_INET or AF_INET6, we can forcibly bind the socket
+ * to a specific interface. This means we won't be able to mistakingly
+ * open a port on the wrong interface.
+ *
+ * \warning
+ * This feature requires the service to bind its socket as root, which is
+ * a rather strange behavior. Services which are not running as root will
+ * ignore this parameter (try to use it and ignore the error).
+ *
+ * \param[in] interface  The name of the interface to bind to.
+ *
+ * \sa get_interface()
+ */
+void addr::set_interface(std::string const & interface)
+{
+    f_interface = interface;
+}
+
+
 /** \brief Set the corresponding host.
  *
  * When parsing an address, we transform the hostnames to IP addresses.
@@ -1250,7 +1288,7 @@ int addr::bind(int s) const
  *
  * \param[in] hostname  The name of the host to connect to.
  *
- * \sa get_host()
+ * \sa get_hostname()
  */
 void addr::set_hostname(std::string const & hostname)
 {
