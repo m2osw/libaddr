@@ -33,7 +33,7 @@
 
 // self
 //
-#include    "libaddr/addr_exception.h"
+#include    "libaddr/exception.h"
 #include    "libaddr/route.h"
 
 

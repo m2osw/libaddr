@@ -32,7 +32,7 @@
 // self
 //
 #include    "libaddr/addr_range.h"
-#include    "libaddr/addr_exception.h"
+#include    "libaddr/exception.h"
 
 
 // C++ library

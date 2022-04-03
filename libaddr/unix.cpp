@@ -32,7 +32,7 @@
 // self
 //
 #include    "libaddr/unix.h"
-#include    "libaddr/addr_exception.h"
+#include    "libaddr/exception.h"
 
 
 // snapdev lib

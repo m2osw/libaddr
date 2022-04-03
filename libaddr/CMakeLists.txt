@@ -75,9 +75,9 @@ install(
 install(
     FILES
         addr.h
-        addr_exception.h
         addr_parser.h
         addr_range.h
+        exception.h
         iface.h
         route.h
         unix.h

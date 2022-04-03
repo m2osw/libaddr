@@ -32,7 +32,7 @@
 // self
 //
 #include    "libaddr/addr_parser.h"
-#include    "libaddr/addr_exception.h"
+#include    "libaddr/exception.h"
 
 
 // advgetopt library
