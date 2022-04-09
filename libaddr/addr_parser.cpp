@@ -225,6 +225,38 @@ std::string const & addr_parser::get_default_address6() const
 }
 
 
+/** \brief Set the default port using a string.
+ *
+ * By default, you are expected to call the set_default_port() function
+ * with an integer. If you do not have a number for the port (which
+ * happens quite frequently) we offer a string version. The string is
+ * expected to be an exact integer between 0 and 65535 inclusive.
+ *
+ * The function will also accept -1 to reset the default port to
+ * the default (i.e. "no default port").
+ *
+ * \exception addr_invalid_argument
+ * When the input \p port_str is not a valid integer, this exception is
+ * raised.
+ *
+ * \param[in] port_str  The string to convert as a port.
+ */
+void addr_parser::set_default_port(std::string const & port_str)
+{
+    std::int64_t port(0);
+    if(!advgetopt::validator_integer::convert_string(port_str, port))
+    {
+        // TODO: add a lookup for string to port number via /etc/service
+        throw addr_invalid_argument(
+                  "Invalid port in \""
+                + port_str
+                + "\" (no service name lookup allowed).");
+    }
+
+    set_default_port(port);
+}
+
+
 /** \brief Define the default port.
  *
  * This function is used to define the default port to use in the address

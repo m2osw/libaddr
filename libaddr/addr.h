@@ -29,7 +29,7 @@
  * address.
  */
 
-// C++ library
+// C++
 //
 #include    <cstring>
 #include    <memory>
@@ -37,7 +37,7 @@
 #include    <vector>
 
 
-// C library
+// C
 //
 #include    <arpa/inet.h>
 

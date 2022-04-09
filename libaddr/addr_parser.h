@@ -81,6 +81,7 @@ public:
     std::string const &     get_default_address4() const;
     std::string const &     get_default_address6() const;
 
+    void                    set_default_port(std::string const & port);
     void                    set_default_port(int const port);
     int                     get_default_port() const;
 

@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME} SHARED
     iface.cpp
     route.cpp
     unix.cpp
+    validator_address.cpp
     version.cpp
 )
 
