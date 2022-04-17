@@ -41,7 +41,7 @@
 // libaddr library
 //
 #include    <libaddr/addr_parser.h>
-#include    <libaddr/addr_exception.h>
+#include    <libaddr/exception.h>
 #include    <libaddr/version.h>
 
 

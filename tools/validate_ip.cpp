@@ -58,7 +58,7 @@
 // libaddr lib
 //
 #include    "libaddr/addr.h"
-#include    "libaddr/addr_exception.h"
+#include    "libaddr/exception.h"
 #include    "libaddr/addr_parser.h"
 #include    "libaddr/version.h"
 
