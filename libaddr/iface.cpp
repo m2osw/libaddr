@@ -615,6 +615,52 @@ bool is_computer_interface_address(addr const & a)
 #endif
 
 
+/** \brief Check whether \p a represents an interface's broadcast address.
+ *
+ * The function first searches for the address among the interfaces
+ * available on this computer. If found, it then verifies that \p a
+ * represents the broadcasting address of that interface.
+ *
+ * \warning
+ * This test does not return true if the address is a multicase address
+ * (the 224.0.0.0/4 address range in IPv4) for two reasons: (1) you can
+ * always check that using the addr::get_network_type() function and
+ * (2) that address range is deprecated and should not really be used
+ * (although many service discovery on intranets still make heavy use
+ * of those IPs).
+ *
+ * \warning
+ * Some protected environment, such as Docker and SELinux, may prevent
+ * access to SO_BROADCAST. Often, though, Docker does not set the
+ * Broadcast address on their interface but it is still accessible. Either
+ * way, our applications will not detect a broadcast IP address if not
+ * properly set in the interface.
+ *
+ * \todo
+ * The current version does not cache anything so each call requires
+ * us to list the interfaces and search through the vector. We may want
+ * to look into a way to cache the data. The current version is that way
+ * for two reasons: (1) in most cases the list is checked only once, and
+ * (2) this way we can make sure to always test with the current set
+ * of IPs in the system. Long term service need that ability.
+ *
+ * \param[in] a  The address to check as a broadcast address.
+ *
+ * \return true if the address represents the broadcast address.
+ */
+bool is_broadcast_address(addr const & a)
+{
+    iface::pointer_t ptr(find_addr_interface(a, false));
+    if(ptr == nullptr)
+    {
+        return false;
+    }
+
+    return ptr->get_broadcast_address() == a;
+}
+
+
+
 }
 // namespace addr
 // vim: ts=4 sw=4 et

@@ -780,16 +780,16 @@ void addr::get_ipv6(sockaddr_in6 & in6) const
  *
  * The \p mode parameter defines what gets output.
  *
- * \li ip_string_t::IP_STRING_ONLY -- only the IP address
- * \li ip_string_t::IP_STRING_PORT -- the IP and port
- * \li ip_string_t::IP_STRING_MASK -- the IP and mask
- * \li ip_string_t::IP_STRING_ALL -- the IP, port, and mask
+ * \li ip_string_t::STRING_IP_ONLY -- only the IP address
+ * \li ip_string_t::STRING_IP_PORT -- the IP and port
+ * \li ip_string_t::STRING_IP_MASK -- the IP and mask
+ * \li ip_string_t::STRING_IP_ALL -- the IP, port, and mask
  *
- * The ip_string_t::IP_STRING_BRACKET is viewed as
- * ip_string_t::IP_STRING_ONLY.
+ * The ip_string_t::STRING_IP_BRACKETS is viewed as
+ * ip_string_t::STRING_IP_ONLY.
  *
- * The ip_string_t::IP_STRING_BRACKET_MASK is viewed as
- * ip_string_t::IP_STRING_MASK.
+ * The ip_string_t::STRING_IP_BRACKETS_MASK is viewed as
+ * ip_string_t::STRING_IP_MASK.
  *
  * \exception addr_invalid_state_exception
  * If the addr object does not currently represent an IPv4 then

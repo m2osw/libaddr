@@ -2001,8 +2001,8 @@ addr string_to_addr(
         }
     }
 
-    // at the movement we only can get a "to" so the following exceptions
-    // can't happen which is why we have an LCOV_EXCL_LINE
+    // at the moment, we can only get a "from" so the following exceptions
+    // just cannot happen, which is why we have an LCOV_EXCL_LINE
     //
     if(result[0].has_to()
     || result[0].is_range())

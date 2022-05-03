@@ -84,7 +84,8 @@ private:
 
 
 
-iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destination = true);
+iface::pointer_t    find_addr_interface(addr const & a, bool allow_default_destination = true);
+bool                is_broadcast_address(addr const & a);
 
 
 

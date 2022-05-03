@@ -171,10 +171,8 @@ void unix::set_un(struct sockaddr_un const & un)
         // the input could be missing it so we have to make sure by creating
         // a temp version of the name)
         //
-        char temp[sizeof(un.sun_path) + 1];
-        memcpy(temp, un.sun_path, sizeof(temp) - 1);
-        temp[sizeof(temp) - 1] = '\0';
-        set_file(un.sun_path);
+        std::size_t const len(strnlen(un.sun_path, sizeof(un.sun_path)));
+        set_file(std::string(un.sun_path, len));
     }
     else if(un.sun_path[1] != '\0')
     {
@@ -600,6 +598,10 @@ std::string unix::to_uri() const
     std::string result;
     result.reserve(125);
 
+    // TODO: this is incorrect, we would need the user to tell us what the
+    //       protocol name really is (i.e. in snapcommunicator, it would be
+    //       either "sc:" or "scu:" and not "unix:")
+    //
     result = "unix:";
 
     if(!is_unnamed())
