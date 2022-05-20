@@ -5,6 +5,7 @@ libaddr (1.0.29.0~bionic) bionic; urgency=high
   * Added an advgetopt validator for IP addresses.
   * Made sure headers all use <...> for #include.
   * Support attaching an interface to an address.
+  * Fixed compat to v10.
   * Cleaned up the cmake file.
 
  -- Alexis Wilke <alexis@m2osw.com>  Fri, 20 May 2022 07:15:47 -0700
