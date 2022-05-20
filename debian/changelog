@@ -1,3 +1,9 @@
+libaddr (1.0.30.0~bionic) bionic; urgency=high
+
+  * Removed cppthread as a dependency. It's not required.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 20 May 2022 07:32:39 -0700
+
 libaddr (1.0.29.0~bionic) bionic; urgency=high
 
   * Added a function to test an IP to know whether it's a broadcast IP.

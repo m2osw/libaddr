@@ -35,7 +35,6 @@ enable_language(CXX)
 #
 find_package(SnapCMakeModules REQUIRED)
 find_package(AdvGetOpt        REQUIRED)
-find_package(CppThread        REQUIRED)
 find_package(LibExcept        REQUIRED)
 find_package(LibUtf8          REQUIRED)
 find_package(SnapDev          REQUIRED)

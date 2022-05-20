@@ -51,11 +51,6 @@
 #include    "libaddr/validator_address.h"
 
 
-// cppthread
-//
-#include    <cppthread/log.h>
-
-
 // snapdev
 //
 #include    <snapdev/not_used.h>
