@@ -36,15 +36,15 @@
  * in the route table.
  */
 
+// addr lib
+//
+#include    <libaddr/route.h>
+
+
 // self
 //
 #include    "catch_main.h"
 
-
-
-// addr lib
-//
-#include    "libaddr/route.h"
 
 
 // C lib

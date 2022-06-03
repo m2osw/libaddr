@@ -40,15 +40,15 @@
  * and IPv6 tests along with other address tests.
  */
 
-// self
-//
-#include    "catch_main.h"
-
-
 // addr lib
 //
 #include    <libaddr/addr.h>
 #include    <libaddr/version.h>
+
+
+// self
+//
+#include    "catch_main.h"
 
 
 // last include

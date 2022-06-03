@@ -40,14 +40,14 @@
  * tests because internally the addr class implements an IPv6 object.
  */
 
-// self
-//
-#include    "catch_main.h"
-
-
 // addr lib
 //
 #include    <libaddr/iface.h>
+
+
+// self
+//
+#include    "catch_main.h"
 
 
 // last include

@@ -37,14 +37,14 @@
  * interfaces.
  */
 
-// self
-//
-#include    "catch_main.h"
-
-
 // addr lib
 //
 #include    <libaddr/iface.h>
+
+
+// self
+//
+#include    "catch_main.h"
 
 
 // C lib

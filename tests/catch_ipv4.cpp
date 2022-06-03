@@ -37,14 +37,14 @@
  * you mainly find the IPv4 side of things.
  */
 
-// self
-//
-#include    "catch_main.h"
-
-
 // addr lib
 //
 #include    <libaddr/iface.h>
+
+
+// self
+//
+#include    "catch_main.h"
 
 
 // last include

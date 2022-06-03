@@ -34,14 +34,14 @@
  * These tests verify that the Unix address functions as expected.
  */
 
-// self
-//
-#include    "catch_main.h"
-
-
 // addr lib
 //
 #include    <libaddr/unix.h>
+
+
+// self
+//
+#include    "catch_main.h"
 
 
 // libutf8 lib

@@ -55,15 +55,15 @@
  */
 
 
-// libaddr lib
+// libaddr
 //
-#include    "libaddr/addr.h"
-#include    "libaddr/exception.h"
-#include    "libaddr/addr_parser.h"
-#include    "libaddr/version.h"
+#include    <libaddr/addr.h>
+#include    <libaddr/exception.h>
+#include    <libaddr/addr_parser.h>
+#include    <libaddr/version.h>
 
 
-// advgetopt lib
+// advgetopt
 //
 #include    <advgetopt/exception.h>
 #include    <advgetopt/advgetopt.h>
@@ -71,18 +71,18 @@
 #include    <advgetopt/utils.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/not_used.h>
 
 
-// boost lib
+// boost
 //
 #include    <boost/algorithm/string/join.hpp>
 #include    <boost/preprocessor/stringize.hpp>
 
 
-// C++ lib
+// C++
 //
 #include    <iostream>
 
