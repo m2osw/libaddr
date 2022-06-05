@@ -6,8 +6,8 @@ Source: https://snapwebsites.org/project/libaddr
 License: MIT
 Disclaimer: This package is part of the Snap! C++ system. It is not a native Debian package.
 Copyright:
- Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+ Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 
 Files: CMakeLists.txt cmake/* debian/* dev/* doc/* src/* tests/*
-Copyright: Copyright (c) 2011-2021  Made to Order Software Corp.  All Rights Reserved
+Copyright: Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 License: MIT
