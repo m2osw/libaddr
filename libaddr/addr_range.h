@@ -63,6 +63,7 @@ public:
     addr &                          get_to();
     addr const &                    get_to() const;
     void                            from_cidr(addr const & range);
+    std::string                     to_string(addr::string_ip_t mode = addr::string_ip_t::STRING_IP_ALL) const;
 
     addr_range                      intersection(addr_range const & rhs) const;
     addr_range                      union_if_possible(addr_range const & rhs) const;

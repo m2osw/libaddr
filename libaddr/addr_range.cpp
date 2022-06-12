@@ -357,6 +357,30 @@ void addr_range::from_cidr(addr const & a)
 }
 
 
+std::string addr_range::to_string(addr::string_ip_t mode) const
+{
+    std::string result;
+
+    if(has_from() && has_to())
+    {
+        result = f_from.to_ipv4or6_string(mode);
+        result += '-';
+        result = f_to.to_ipv4or6_string(mode);
+    }
+    else if(has_from())
+    {
+        result = f_from.to_ipv4or6_string(mode);
+    }
+    else
+    {
+        result += '-';
+        result = f_to.to_ipv4or6_string(mode);
+    }
+
+    return result;
+}
+
+
 /** \brief Compute a new range with the part that is shared between both inputs.
  *
  * This function computers a range which encompasses all the addresses found

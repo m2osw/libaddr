@@ -45,12 +45,15 @@ enum class allow_t
     ALLOW_REQUIRED_ADDRESS,                 // address cannot be empty
     ALLOW_MULTI_ADDRESSES_COMMAS,           // IP:port/mask,IP:port/mask,...
     ALLOW_MULTI_ADDRESSES_SPACES,           // IP:port/mask IP:port/mask ...
+    ALLOW_MULTI_ADDRESSES_NEWLINES,         // IP:port/mask\nIP:port/mask\n...
     ALLOW_ADDRESS_LOOKUP,                   // whether DNS lookup is allowed
 
     ALLOW_PORT,                             // port
     ALLOW_REQUIRED_PORT,                    // port cannot be empty
 
     ALLOW_MASK,                             // mask
+
+    ALLOW_COMMENT,                          // if address starts with '#', it's a comment, ignore; useful with ALLOW_MULTI_ADDRESSES_NEWLINES
 
     // TODO: the following are not yet implemented
     ALLOW_MULTI_PORTS_SEMICOLONS,           // port1;port2;...

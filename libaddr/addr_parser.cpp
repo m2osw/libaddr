@@ -637,6 +637,8 @@ sort_t addr_parser::get_sort_order() const
  * separated by commas (prevents MULTI_PORTS_COMMAS)
  * \li `MULTI_ADDRESSES_SPACES` -- the input can have multiple addresses
  * separated by spaces
+ * \li `MULTI_ADDRESSES_NEWLINES` -- the input can have multiple addresses
+ * separated by newlines (one address:port per line)
  * \li `MULTI_PORTS_SEMICOLONS` -- the input can  have multiple ports
  * separated by semicolons _NOT IMPLEMENTED YET_
  * \li `MULTI_PORTS_COMMAS` -- the input can have multiple ports separated
@@ -646,9 +648,9 @@ sort_t addr_parser::get_sort_order() const
  * \li `ADDRESS_RANGE` -- the input supports address ranges (addr-addr) _NOT
  * IMPLEMENTED YET_
  *
- * The `MULTI_ADDRESSES_COMMAS` and `MULTI_ADDRESSES_SPACES` can be used
- * together in which case any number of both characters are accepted
- * between addresses.
+ * The `MULTI_ADDRESSES_COMMAS`, `MULTI_ADDRESSES_SPACES`, and
+ * `MULTI_ADDRESSES_NEWLINES` can be used together in which case any
+ * number of both characters are accepted between addresses.
  *
  * Note that the `MULTI_ADDRESSES_COMMAS` and `MULTI_PORTS_COMMAS` are
  * mutually exclusive. The last set_allow() counts as the one you are
@@ -857,14 +859,12 @@ void addr_parser::clear_errors()
  * ### Multiple Addresses
  *
  * Multiple addresses can be defined if at least one of the
- * `MULTI_ADDRESSES_COMMAS` or `MULTI_ADDRESSES_SPACES` allow
- * flags is set to true.
+ * `MULTI_ADDRESSES_COMMAS`, `MULTI_ADDRESSES_SPACES`, or
+ * `MULTI_ADDRESSES_NEWLINES` allow flags is set to true.
  *
- * Next comes `MULTI_ADDRESSES_COMMAS`: if set to true, addresses
- * must be separated by commas and spaces are not allowed.
- *
- * Finally we have `MULTI_ADDRESSES_SPACES`. If that one is true, then
- * addresses must be separated by spaces and commas are not allowed.
+ * The separator characters are limited to what is allowed. If all three
+ * flags are set, then all the characters are allowed and are viewed as
+ * valid address separators.
  *
  * ### Make Address Field Required
  *
@@ -900,6 +900,19 @@ void addr_parser::clear_errors()
  * IPv6 addresses instead of IPv4 (which is the current expected behavior
  * of your services and tools).
  *
+ * \todo
+ * The ALLOW_COMMENT currently gives the user a way to comment with any
+ * type of separator (commas, spaces or new lines). I think that in the
+ * following, everything after the # should be viewed as a comment. Right
+ * now, the 3rd IP:port is viewed as a valid entry:
+ * \todo
+ * \code
+ *     127.0.0.1,#10.0.0.1,192.168.0.1
+ * \endcode
+ * \todo
+ * So the result is: 127.0.0.1 and 192.168.0.1. Some day, though, that
+ * line would be viewed as just 127.0.0.1.
+ *
  * \param[in] in  The input string to be parsed.
  *
  * \return A vector of address ranges, see has_errors() to determine whether
@@ -911,44 +924,38 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
 {
     addr_range::vector_t result;
 
-    if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS)
-    && get_allow(allow_t::ALLOW_MULTI_ADDRESSES_SPACES))
+    std::string separators;
+    if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS))
     {
-        std::string const comma_space(", ");
-        std::string::size_type s(0);
-        while(s < in.length())
-        {
-            auto const it(std::find_first_of(in.begin() + s, in.end(), comma_space.begin(), comma_space.end()));
-            std::string::size_type const e(it == in.end() ? in.length() : it - in.begin());
-            if(e > s)
-            {
-                parse_cidr(in.substr(s, e - s), result);
-            }
-            s = e + 1;
-        }
+        separators += ',';
     }
-    else if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS)
-         || get_allow(allow_t::ALLOW_MULTI_ADDRESSES_SPACES))
+    if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_SPACES))
     {
-        char const sep(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS) ? ',' : ' ');
-        std::string::size_type s(0);
-        while(s < in.length())
-        {
-            std::string::size_type e(in.find(sep, s));
-            if(e == std::string::npos)
-            {
-                e = in.length();
-            }
-            if(e > s)
-            {
-                parse_cidr(in.substr(s, e - s), result);
-            }
-            s = e + 1;
-        }
+        separators += ' ';
+    }
+    if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_NEWLINES))
+    {
+        separators += '\n';
+    }
+
+    if(separators.empty())
+    {
+        parse_cidr(in, result);
     }
     else
     {
-        parse_cidr(in, result);
+        std::string::size_type s(0);
+        while(s < in.length())
+        {
+            auto const it(std::find_first_of(in.begin() + s, in.end(), separators.begin(), separators.end()));
+            std::string::size_type const e(it - in.begin());
+            if(e > s
+            && (!get_allow(allow_t::ALLOW_COMMENT) || in[s] != '#'))   // commented out line?
+            {
+                parse_cidr(in.substr(s, e - s), result);
+            }
+            s = e + 1;
+        }
     }
 
     if((f_sort & SORT_FULL) != 0)
