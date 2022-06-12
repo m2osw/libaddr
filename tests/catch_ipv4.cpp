@@ -257,7 +257,7 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
 
             for(int idx(0); idx < 25; ++idx)
             {
-                int port;
+                int port(0);
                 do
                 {
                     port = rand() ^ (rand() << 16);
@@ -265,10 +265,15 @@ CATCH_TEST_CASE( "ipv4::invalid_input", "[ipv4]" )
                 while(port >= -1 && port <= 65535); // -1 is valid here, it represents "no default port defined"
                 CATCH_REQUIRE_THROWS_AS(p.set_default_port(port), addr::addr_invalid_argument);
 
+                std::string const port_str(std::to_string(port));
+                CATCH_REQUIRE_THROWS_AS(p.set_default_port(port_str), addr::addr_invalid_argument);
+
                 // verify port unchanged
                 //
                 CATCH_REQUIRE(p.get_default_port() == default_port);
             }
+
+            CATCH_REQUIRE_THROWS_AS(p.set_default_port("not-a-number"), addr::addr_invalid_argument);
         }
     }
 
@@ -1223,10 +1228,18 @@ CATCH_TEST_CASE( "ipv4::ports", "[ipv4]" )
         {
             for(int idx(0); idx < 25; ++idx)
             {
-                uint16_t const port(rand());
+                std::uint16_t const port(rand());
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_default_port(port);
+                if((rand() & 1) == 0)
+                {
+                    p.set_default_port(port);
+                }
+                else
+                {
+                    std::string const port_str(std::to_string(static_cast<int>(port)));
+                    p.set_default_port(port_str);
+                }
                 CATCH_REQUIRE(p.get_default_port() == port);
                 addr::addr_range::vector_t ips(p.parse("5.5.5.5"));
                 CATCH_REQUIRE_FALSE(p.has_errors());
@@ -1247,10 +1260,18 @@ CATCH_TEST_CASE( "ipv4::ports", "[ipv4]" )
 
             for(int idx(0); idx < 25; ++idx)
             {
-                uint16_t const port(rand());
+                std::uint16_t const port(rand());
                 addr::addr_parser p;
                 p.set_protocol(IPPROTO_TCP);
-                p.set_default_port(port);
+                if((rand() & 1) == 0)
+                {
+                    p.set_default_port(port);
+                }
+                else
+                {
+                    std::string const port_str(std::to_string(static_cast<int>(port)));
+                    p.set_default_port(port_str);
+                }
                 CATCH_REQUIRE(p.get_default_port() == port);
                 addr::addr_range::vector_t ips(p.parse("5.5.5.5:"));
                 CATCH_REQUIRE_FALSE(p.has_errors());

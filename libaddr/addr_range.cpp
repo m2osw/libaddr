@@ -363,9 +363,13 @@ std::string addr_range::to_string(addr::string_ip_t mode) const
 
     if(has_from() && has_to())
     {
-        result = f_from.to_ipv4or6_string(mode);
+        std::string const from(f_from.to_ipv4or6_string(mode));
+        std::string const to(f_to.to_ipv4or6_string(mode));
+
+        result.reserve(from.length() + 1 + to.length());
+        result = from;
         result += '-';
-        result = f_to.to_ipv4or6_string(mode);
+        result = to;
     }
     else if(has_from())
     {
@@ -373,8 +377,60 @@ std::string addr_range::to_string(addr::string_ip_t mode) const
     }
     else
     {
+        std::string const to(f_to.to_ipv4or6_string(mode));
+
+        result.reserve(1 + to.length());
         result += '-';
         result = f_to.to_ipv4or6_string(mode);
+    }
+
+    return result;
+}
+
+
+/** \brief Concatenate all the ranges of a vector in a string.
+ *
+ * This function concatenate all the ranges of a vector in a string
+ * using \p separator as the character to separate each item.
+ *
+ * By default, the \p separator is set to the comma (,). The separator
+ * needs tobe set to a comma (,), a space ( ), or a newline (\\n) if
+ * you want to generate a string which the addr_parser() can handle
+ * innately.
+ *
+ * The \p separator parameter is a string allowing you to pass any
+ * Unicode character as the separator. It is still expected to be a
+ * single character although you could pass multiple.
+ *
+ * \param[in] ranges  The ranges to convert into a string.
+ * \param[in] mode  The mode used to output each range.
+ * \param[in] separator  The separator character.
+ */
+std::string addr_range::to_string(
+      vector_t const & ranges
+    , addr::string_ip_t mode
+    , std::string const & separator)
+{
+    std::string result;
+
+    // 15 is somewhat arbitrary, it is a full IPv4 address; a full IPv6
+    // address can be 39 characters (8 x 4 hex digits + 7 x 1 colons)
+    // but those are rarely full either
+    //
+    result.reserve(ranges.size() * (15 + separator.length()));
+
+    bool first(true);
+    for(auto const & r : ranges)
+    {
+        if(first)
+        {
+            first = false;
+        }
+        else
+        {
+            result += separator;
+        }
+        result += r.to_string(mode);
     }
 
     return result;

@@ -35,6 +35,12 @@
 #include    "libaddr/exception.h"
 
 
+// cppthread
+//
+#include    <cppthread/guard.h>
+#include    <cppthread/mutex.h>
+
+
 // snapdev
 //
 #include    <snapdev/int128_literal.h>
@@ -246,6 +252,42 @@ struct sockaddr_in6 {
 */
 
 
+namespace
+{
+
+
+/** \brief Whether the ostream index was allocated.
+ *
+ * This flag tells us whether we already allocated the ostream index or
+ * not. We want to allocate it exactly once.
+ *
+ * This allows our implementation works even when you use the feature
+ * before calling main().
+ */
+bool g_ostream_index_allocated = false;
+
+
+/** \brief The ostream index.
+ *
+ * This value represents the ostream index as returned by the
+ * std::ios_base::xalloc() function.
+ *
+ * You retrieve this value by calling the get_ostream_index() function
+ * to make sure it is safely allocated in a multithread environment before
+ * or after main() was called.
+ *
+ * \note
+ * There no default value. Although it looks like the C++ implementation
+ * under Linux returns 4 the first time we call xalloc(), this is an
+ * implementation detail. To know whether the index was allocated or not,
+ * we instead use the g_ostream_index_allocated flag.
+ */
+int g_ostream_index = 0;
+
+
+
+
+} // no name namespace
 
 
 
@@ -1709,6 +1751,26 @@ void addr::address_changed()
 }
 
 
+/** \brief Retrieve the ios_base index for the addr class.
+ *
+ * In order to allow for flags specific to the addr class in ostream
+ * functions, we need an index which this function supplies. The index
+ * is allocated whenever you first use one of the addr ostream functions.
+ *
+ * \return The unique ostream index for the addr class.
+ */
+int get_ostream_index()
+{
+    cppthread::guard lock(*cppthread::g_system_mutex);
+
+    if(!g_ostream_index_allocated)
+    {
+        g_ostream_index_allocated = true;
+        g_ostream_index = std::ios_base::xalloc();
+    }
+
+    return g_ostream_index;
+}
 
 
 }

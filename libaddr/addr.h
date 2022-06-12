@@ -32,7 +32,9 @@
 // C++
 //
 #include    <cstring>
+#include    <iostream>
 #include    <memory>
+#include    <set>
 #include    <string>
 #include    <vector>
 
@@ -119,6 +121,7 @@ public:
     };
 
     typedef std::shared_ptr<addr>   pointer_t;
+    typedef std::set<addr>          set_t;
     typedef std::vector<addr>       vector_t;
     typedef int                     socket_flag_t;
 
@@ -194,6 +197,234 @@ private:
 };
 
 
+
+/** \brief Set of flags attached to an ostream for an addr object.
+ *
+ * This structure holds data used to output an addr object in an ostream.
+ *
+ * The mode defines how each address is output (see addr::to_ipv4or6_string()).
+ *
+ * The separator is used whenever a vector or set of addresses is printed
+ * out.
+ */
+struct _ostream_info
+{
+    addr::string_ip_t   f_mode = addr::string_ip_t::STRING_IP_ALL;
+    std::string         f_sep = std::string(",");
+};
+
+/** \brief Retrieve the addr ostream index.
+ *
+ * Each class (or at least each project) can allocate a unique index that
+ * it later references when sending data to an ostream (or istream).
+ *
+ * At the moment, the index is allocated for the addr class specifically.
+ * If we extend the addr_range::vector_t to printing in an ostream as well,
+ * we can add support for the separator between each range.
+ */
+int get_ostream_index();
+
+
+/** \brief An intermediate structure to pass a new mode to ostream.
+ *
+ * This structure is used by the setaddrmode() function to update the
+ * address mode in this specific ostream.
+ *
+ * \sa setaddrmode()
+ */
+struct _setaddrmode
+{
+    addr::string_ip_t   f_mode;
+};
+
+
+/** \brief Change the address ostream mode to \p mode.
+ *
+ * The conversion of an address to a string uses the to_ipv4or6_string()
+ * function. That function accepts a mode parameter. By default, it is
+ * set to "all" (addr::addr::string_ip_t::STRING_IP_ALL). You can change
+ * the mode using this setaddrmode() function in your ostream:
+ *
+ * \code
+ *     std::cout << setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT)
+ *               << my_address
+ *               << std::endl;
+ * \endcode
+ *
+ * The most common is to use the addr::addr::string_ip_t::STRING_IP_PORT
+ * although any other value will work as expected (i.e. if you do not
+ * want to the port number and do not care about brackets around an IPv6,
+ * then the most basic addr::addr::string_ip_t::STRING_IP_ONLY can be
+ * used).
+ */
+inline _setaddrmode setaddrmode(addr::string_ip_t mode)
+{
+    return { mode };
+}
+
+
+/** \brief An intermediate structure to pass a new separator to ostream.
+ *
+ * This structure is used by the setaddrsep() function to update the
+ * address separator in this specific ostream.
+ *
+ * \sa setaddrsep()
+ */
+struct _setaddrsep
+{
+    std::string     f_sep;
+};
+
+
+/** \brief Change the address separator to \p sep.
+ *
+ * This function initializes a _setsep structure which can then be passed
+ * to an ostream in order to change the separator used to print between
+ * each address when writing a container of addresses to an ostream.
+ *
+ * The default separator is the comma (",").
+ *
+ * \code
+ *     std::cout << setaddrsep("\n") << addr_set << std::endl;
+ * \endcode
+ *
+ * \param[in] sep  The new separator to use to print a set of addresses.
+ */
+inline _setaddrsep setaddrsep(std::string const & sep)
+{
+    return { sep };
+}
+
+
+inline void basic_stream_event_callback(std::ios_base::event e, std::ios_base & out, int index)
+{
+    switch(e)
+    {
+    case std::ios_base::erase_event:
+        delete static_cast<_ostream_info *>(out.pword(index));
+        break;
+
+    case std::ios_base::copyfmt_event:
+        {
+            _ostream_info * info(static_cast<_ostream_info *>(out.pword(index)));
+            if(info != nullptr)
+            {
+                out.pword(index) = new _ostream_info(*info);
+            }
+        }
+        break;
+
+    default:
+        // ignore imbue; we have nothing to do with the locale
+        break;
+
+    }
+}
+
+
+/** \brief Change the current address mode.
+ *
+ * This ostream extension function allows you to change the address mode
+ * using the setaddrmode() function.
+ *
+ * \sa setaddrmode()
+ */
+template<typename _CharT, typename _Traits>
+inline std::basic_ostream<_CharT, _Traits> &
+operator << (std::basic_ostream<_CharT, _Traits> & out, _setaddrmode mode)
+{
+    int const index(get_ostream_index());
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(index)));
+    if(info == nullptr)
+    {
+        info = new _ostream_info;
+        out.pword(index) = info;
+        out.register_callback(basic_stream_event_callback, index);
+    }
+    info->f_mode = mode.f_mode;
+    return out;
+}
+
+
+/** \brief Change the current address separator.
+ *
+ * The address containers (vector/set) can be printed with an ostream. This
+ * parameter defines which separator to use between each address.
+ *
+ * The addresses are separated by commas by default.
+ *
+ * \sa setaddrsep()
+ */
+template<typename _CharT, typename _Traits>
+inline std::basic_ostream<_CharT, _Traits> &
+operator << (std::basic_ostream<_CharT, _Traits> & out, _setaddrsep sep)
+{
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
+    if(info == nullptr)
+    {
+        info = new _ostream_info;
+        out.pword(get_ostream_index()) = info;
+    }
+    info->f_sep = sep.f_sep;
+    return out;
+}
+
+
+/** \brief Output an address in your stream.
+ *
+ * This function outputs the specified address in your output stream.
+ *
+ * \param[in,out] out  The output stream where the address is written.
+ * \param[in] address  The address to output in the stream.
+ *
+ * \return The reference to out for chaining.
+ */
+template<typename _CharT, typename _Traits>
+inline std::basic_ostream<_CharT, _Traits> &
+operator << (std::basic_ostream<_CharT, _Traits> & out, addr const & address)
+{
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
+    if(info == nullptr)
+    {
+        out << address.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL);
+    }
+    else
+    {
+        out << address.to_ipv4or6_string(info->f_mode);
+    }
+    return out;
+}
+
+
+template<typename _CharT, typename _Traits, typename _ContainerT>
+inline typename std::enable_if<
+          std::is_same<_ContainerT, addr::vector_t>::value
+                || std::is_same<_ContainerT, addr::set_t>::value
+        , std::basic_ostream<_CharT, _Traits>>::type &
+operator << (std::basic_ostream<_CharT, _Traits> & out, _ContainerT const & addresses)
+{
+    std::string sep(",");
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
+    if(info != nullptr)
+    {
+        sep = info->f_sep;
+    }
+
+    bool first(true);
+    for(auto const & a : addresses)
+    {
+        if(first)
+        {
+            first = false;
+        }
+        else
+        {
+            out << sep;
+        }
+        out << a;
+    }
+    return out;
+}
 
 
 
@@ -271,6 +502,7 @@ inline bool operator >= (in6_addr const & a, in6_addr const & b)
 {
     return memcmp(&a, &b, sizeof(in6_addr)) >= 0;
 }
+
 
 
 // vim: ts=4 sw=4 et

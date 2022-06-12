@@ -3,6 +3,9 @@ libaddr (1.0.31.0~bionic) bionic; urgency=high
   * Added support for newlines between addresses.
   * Added support for a '#' comment introducer (along the newline feature).
   * Added the to_string() on the addr_range class.
+  * Added the to_string() for the addr_range::vector_t type.
+  * Added support for ostream << operator including manip like parameters.
+  * Added test to verify the input port as string.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 Jun 2022 21:19:18 -0700
 
