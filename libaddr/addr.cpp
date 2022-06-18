@@ -44,6 +44,7 @@
 // snapdev
 //
 #include    <snapdev/int128_literal.h>
+#include    <snapdev/not_reached.h>
 
 
 // C++ library
@@ -376,6 +377,11 @@ void addr::set_ipv4(sockaddr_in const & in)
  *
  * This function changes the port of this address to \p port.
  *
+ * When setting the port to 0 and then binding this address, the port will
+ * then automatically be assigned by the network stack. This is useful
+ * to create UDP connections that work both ways. In that case, the client
+ * should set its port to 0 before calling bind().
+ *
  * \exception addr_invalid_argument
  * This exception is raised whenever the \p port parameter is set to
  * an invalid number (negative or larger than 65535.)
@@ -384,7 +390,7 @@ void addr::set_ipv4(sockaddr_in const & in)
  */
 void addr::set_port(int port)
 {
-    if(port > 65535 
+    if(port > 65535
     || port < 0)
     {
         throw addr_invalid_argument("port to set_port() cannot be out of the allowed range [0..65535].");
@@ -734,6 +740,96 @@ bool addr::is_default() const
 }
 
 
+/** \brief Check whether the address is a LAN IP.
+ *
+ * For some connections, you may want to prevent them on a WAN connection
+ * (i.e. public network such as the Internet).
+ *
+ * This function checks whether the IP represents the Private network
+ * (i.e. 10.x.x.x, 192.16.x.x, etc.) or the Loopback (127.x.x.x).
+ *
+ * Note that by default the special IPs are not viewed as LAN IPs. These
+ * are used in very specific circumstances and are not likely to be used
+ * in a configuration file where an administrator could enter such an IP.
+ * For this reason, this function returns false by default for those IP
+ * addresses. To include those addresses, set the \p include_all flag
+ * to true.
+ *
+ * \note
+ * Of course, the function works with IPv4 and IPv6 addresses. The
+ * examples above only show IPv4 IPs as these are well known.
+ *
+ * \param[in] include_all  Also view carrier, link local, and multicast as
+ * LAN connections and return true in those cases too.
+ *
+ * \return true if the IP represents a LAN IP.
+ */
+bool addr::is_lan(bool include_all) const
+{
+    network_type_t const type(get_network_type());
+
+    if(type == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE
+    || type == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
+    {
+        return true;
+    }
+
+    if(!include_all)
+    {
+        return false;
+    }
+
+    switch(type)
+    {
+    case network_type_t::NETWORK_TYPE_CARRIER:
+    case network_type_t::NETWORK_TYPE_LINK_LOCAL:
+    case network_type_t::NETWORK_TYPE_MULTICAST:
+        return true;
+
+    default:
+        return false;
+
+    }
+
+    snapdev::NOT_REACHED();
+}
+
+
+/** \brief Check wether the IP address represents a WAN IP.
+ *
+ * This function returns true if the IP address represents a WAN or public
+ * IP address. Addresses that are considered PUBLIC (a.k.a. "unknown") are
+ * considerd WAN IPs and thus this function returns true in that case.
+ *
+ * Further, when the \p include_default flag is set to true (which is the
+ * default) the IP can be the ANY address (0.0.0.0 or ::). If you do not
+ * want to allow the ANY address (safer, but required the client to know
+ * of your address) then make sure to set that flag to false.
+ *
+ * \param[in] include_default  Whether the ANY address is viewed as a WAN
+ * address for this test.
+ *
+ * \return true if the IP address represents a public IP.
+ */
+bool addr::is_wan(bool include_default) const
+{
+    network_type_t const type(get_network_type());
+
+    if(type == network_type_t::NETWORK_TYPE_PUBLIC)
+    {
+        return true;
+    }
+
+    if(include_default
+    && type == network_type_t::NETWORK_TYPE_ANY)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+
 /** \brief Check whether this address represents an IPv4 address.
  *
  * The IPv6 format supports embedding IPv4 addresses. This function
@@ -1014,6 +1110,21 @@ unsigned __int128 addr::ip_to_uint128() const
 #pragma GCC diagnostic pop
 
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+void addr::ip_from_uint128(unsigned __int128 u)
+{
+    std::size_t idx(sizeof(f_address.sin6_addr.s6_addr));
+    while(idx > 0)
+    {
+        --idx;
+        f_address.sin6_addr.s6_addr[idx] = static_cast<std::remove_all_extents_t<decltype(f_address.sin6_addr.s6_addr)>>(u);
+        u >>= 8;
+    }
+}
+#pragma GCC diagnostic pop
+
+
 /** \brief Determine the type of network this IP represents.
  *
  * The IP address may represent various type of networks. This
@@ -1277,10 +1388,49 @@ int addr::connect(int s) const
  *
  * This function works for TCP and UDP servers.
  *
- * If the IP address represents an IPv4 addressm then the bind() is done
+ * If the IP address represents an IPv4 address, then the bind() is done
  * with an IPv4 address and not the IPv6 as it is stored.
  *
+ * It is possible to set the port to 0 in which case the network stack
+ * will automatically assign a port number to our service. This is
+ * particularly useful when dealing with UDP sockets since both sides
+ * act like clients and servers, only the client should not have a
+ * predefined port. This is where you use a port of 0. At the time
+ * the function returns, the port assigned by the system will be written
+ * to the addr object by the set_from_socket() function. If you want to
+ * reuse the same addr object for another bind(), make sure to reset
+ * the port if required in your situation.
+ *
  * \param[in] s  The socket to bind to this address.
+ *
+ * \return 0 if the bind() succeeded, -1 on errors
+ */
+int addr::bind(int s)
+{
+    // call the const version which just binds
+    int const r(const_cast<addr const *>(this)->bind(s));
+
+    // if the bind() worked and the port is 0, then use the
+    // set_from_socket() to determine the auto-assigned port
+    //
+    if(r == 0
+    && get_port() == 0)
+    {
+        set_from_socket(s, false);
+    }
+
+    return r;
+}
+
+
+/** \brief Bind your socket to this address.
+ *
+ * The constant version of the bind() function does not modify your address.
+ * If you used port 0, it will remain port 0. You can see obtain the port
+ * with which your address is bound by calling a function such as the
+ * set_from_socket() on a different address object.
+ *
+ * \param[in] s  The socket to attach this address to.
  *
  * \return 0 if the bind() succeeded, -1 on errors
  */
@@ -1346,8 +1496,8 @@ void addr::set_hostname(std::string const & hostname)
  *
  * The other side is called the _peer name_.
  *
- * You side is called the _socket name_ (i.e. the IP address of your computer,
- * representing the interface used to perform that connection.)
+ * Your side is called the _socket name_ (i.e. the IP address of your
+ * computer, representing the interface used to perform that connection).
  *
  * If you call this function with \p peer set to false then you get the
  * address and port from your side. If you set \p peer to true,
@@ -1734,6 +1884,75 @@ bool addr::operator > (addr const & rhs) const
 bool addr::operator >= (addr const & rhs) const
 {
     return f_address.sin6_addr >= rhs.f_address.sin6_addr;
+}
+
+
+addr & addr::operator ++ ()
+{
+    ip_from_uint128(ip_to_uint128() + 1);
+    return *this;
+}
+
+
+addr addr::operator ++ (int)
+{
+    addr result(*this);
+    ip_from_uint128(ip_to_uint128() + 1);
+    return result;
+}
+
+
+addr & addr::operator -- ()
+{
+    ip_from_uint128(ip_to_uint128() - 1);
+    return *this;
+}
+
+
+addr addr::operator -- (int)
+{
+    addr result(*this);
+    ip_from_uint128(ip_to_uint128() - 1);
+    return result;
+}
+
+
+addr addr::operator + (int offset) const
+{
+    addr result(*this);
+    result.ip_from_uint128(ip_to_uint128() + offset);
+    return result;
+}
+
+
+addr addr::operator - (int offset) const
+{
+    addr result(*this);
+    result.ip_from_uint128(ip_to_uint128() - offset);
+    return result;
+}
+
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+__int128 addr::operator - (addr const & rhs) const
+{
+    return static_cast<__int128>(ip_to_uint128() - rhs.ip_to_uint128());
+}
+#pragma GCC diagnostic push
+
+
+addr & addr::operator += (int offset)
+{
+    ip_from_uint128(ip_to_uint128() + offset);
+    return *this;
+}
+
+
+addr & addr::operator -= (int offset)
+{
+    ip_from_uint128(ip_to_uint128() - offset);
+    return *this;
 }
 
 

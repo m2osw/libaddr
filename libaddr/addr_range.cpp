@@ -357,6 +357,68 @@ void addr_range::from_cidr(addr const & a)
 }
 
 
+addr::vector_t addr_range::to_addresses(std::size_t limit) const
+{
+    addr::vector_t result;
+
+    if(size() > limit)
+    {
+        throw out_of_range("too many addresses in this range: "
+            + std::to_string(size())
+            + " > "
+            + std::to_string(limit));
+    }
+
+    if(has_from()
+    && has_to())
+    {
+        addr a(f_from);
+        do
+        {
+            result.push_back(a);
+            ++a;
+        }
+        while(a <= f_to);
+    }
+    else if(has_from())
+    {
+        result.push_back(f_from);
+    }
+    else if(has_to())
+    {
+        result.push_back(f_to);
+    }
+
+    return result;
+}
+
+
+addr::vector_t addr_range::to_addresses(vector_t ranges, std::size_t limit)
+{
+    std::size_t total_size(0);
+    for(auto const & r : ranges)
+    {
+        total_size += r.size();
+    }
+    if(total_size > limit)
+    {
+        throw out_of_range("too many addresses in this range: "
+            + std::to_string(total_size)
+            + " > "
+            + std::to_string(limit));
+    }
+
+    addr::vector_t result;
+    for(auto const & r : ranges)
+    {
+        addr::vector_t const v(r.to_addresses(limit));
+        result.insert(result.end(), v.begin(), v.end());
+    }
+
+    return result;
+}
+
+
 std::string addr_range::to_string(addr::string_ip_t mode) const
 {
     std::string result;
@@ -434,6 +496,24 @@ std::string addr_range::to_string(
     }
 
     return result;
+}
+
+
+std::size_t addr_range::size() const
+{
+    if(has_from()
+    && has_to())
+    {
+        return f_to - f_from;
+    }
+
+    if(!has_from()
+    && !has_to())
+    {
+        return 0;
+    }
+
+    return 1;
 }
 
 

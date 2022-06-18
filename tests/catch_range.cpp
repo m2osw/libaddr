@@ -1,6 +1,7 @@
 // Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 //
-// Project: https://snapwebsites.org/project/libaddr
+// https://snapwebsites.org/project/libaddr
+// contact@m2osw.com
 //
 // Permission is hereby granted, free of charge, to any
 // person obtaining a copy of this software and
@@ -51,13 +52,13 @@
 
 
 
-CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
+CATCH_TEST_CASE("ipv4::range", "[ipv4]")
 {
     CATCH_GIVEN("addr_range()")
     {
         addr::addr_range range;
 
-        CATCH_SECTION("verify defaults")
+        CATCH_START_SECTION("addr_range: verify defaults")
         {
             addr::addr a;
 
@@ -95,8 +96,9 @@ CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
             CATCH_REQUIRE_THROWS_AS(range.is_in(other), addr::addr_invalid_state);
             CATCH_REQUIRE_THROWS_AS(r.is_in(other), addr::addr_invalid_state);
         }
+        CATCH_END_SECTION()
 
-        CATCH_SECTION("test normal range (from <= to)")
+        CATCH_START_SECTION("addr_range: test normal range (from <= to)")
         {
             addr::addr a;
             addr::addr other;
@@ -260,8 +262,9 @@ CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
                 CATCH_REQUIRE(range.is_in(i));
             }
         }
+        CATCH_END_SECTION()
 
-        CATCH_SECTION("test empty range (from > to)")
+        CATCH_START_SECTION("addr_range: test empty range (from > to)")
         {
             addr::addr a;
             addr::addr other;
@@ -425,11 +428,12 @@ CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
                 CATCH_REQUIRE_FALSE(range.is_in(i));
             }
         }
+        CATCH_END_SECTION()
     }
 
     CATCH_GIVEN("compute intersection of two ranges")
     {
-        CATCH_SECTION("two ranges that overlap")
+        CATCH_START_SECTION("addr_range: two ranges that overlap")
         {
             // from is set to 10.1.0.0
             struct sockaddr_in f1in = sockaddr_in();
@@ -500,8 +504,9 @@ CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
             CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.2.0.0");
             CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
         }
+        CATCH_END_SECTION()
 
-        CATCH_SECTION("two ranges that do not overlap")
+        CATCH_START_SECTION("addr_range: two ranges that do not overlap")
         {
             // from is set to 10.1.0.0
             struct sockaddr_in f1in = sockaddr_in();
@@ -582,10 +587,9 @@ CATCH_TEST_CASE( "ipv4::range", "[ipv4]" )
             CATCH_REQUIRE(addr::address_match_ranges(rlist, t1));
             CATCH_REQUIRE(addr::address_match_ranges(rlist, t2));
         }
+        CATCH_END_SECTION()
     }
 }
-
-
 
 
 

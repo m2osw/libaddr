@@ -149,6 +149,8 @@ public:
     bool                            is_hostname_an_ip() const;
     int                             get_family() const;
     bool                            is_default() const;
+    bool                            is_lan(bool include_all = false) const;
+    bool                            is_wan(bool include_default = true) const;
     bool                            is_ipv4() const;
     void                            get_ipv4(sockaddr_in & in) const;
     void                            get_ipv6(sockaddr_in6 & in6) const;
@@ -158,6 +160,7 @@ public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     unsigned __int128               ip_to_uint128() const;
+    void                            ip_from_uint128(unsigned __int128 u);
 #pragma GCC diagnostic pop
 
     network_type_t                  get_network_type() const;
@@ -165,6 +168,7 @@ public:
 
     int                             create_socket(socket_flag_t flags) const;
     int                             connect(int s) const;
+    int                             bind(int s);
     int                             bind(int s) const;
     std::string                     get_name() const;
     std::string                     get_service() const;
@@ -182,6 +186,18 @@ public:
     bool                            operator <= (addr const & rhs) const;
     bool                            operator >  (addr const & rhs) const;
     bool                            operator >= (addr const & rhs) const;
+    addr &                          operator ++ ();
+    addr                            operator ++ (int);
+    addr &                          operator -- ();
+    addr                            operator -- (int);
+    addr                            operator + (int offset) const;
+    addr                            operator - (int offset) const;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    __int128                        operator - (addr const & rhs) const;
+#pragma GCC diagnostic push
+    addr &                          operator += (int offset);
+    addr &                          operator -= (int offset);
 
 private:
     void                            address_changed();

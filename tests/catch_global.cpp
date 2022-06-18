@@ -1,6 +1,7 @@
 // Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
 //
-// Project: https://snapwebsites.org/project/libaddr
+// https://snapwebsites.org/project/libaddr
+// contact@m2osw.com
 //
 // Permission is hereby granted, free of charge, to any
 // person obtaining a copy of this software and
@@ -40,7 +41,7 @@
  * and IPv6 tests along with other address tests.
  */
 
-// addr lib
+// addr
 //
 #include    <libaddr/addr.h>
 #include    <libaddr/version.h>
@@ -61,10 +62,14 @@
 
 CATCH_TEST_CASE( "version", "[global]" )
 {
-    CATCH_REQUIRE(addr::get_version_major() == LIBADDR_VERSION_MAJOR);
-    CATCH_REQUIRE(addr::get_version_minor() == LIBADDR_VERSION_MINOR);
-    CATCH_REQUIRE(addr::get_version_patch() == LIBADDR_VERSION_PATCH);
-    CATCH_REQUIRE(std::string(addr::get_version_string()) == std::string(LIBADDR_VERSION_STRING));
+    CATCH_START_SECTION("version: verify runtime vs compile time versions")
+    {
+        CATCH_REQUIRE(addr::get_version_major() == LIBADDR_VERSION_MAJOR);
+        CATCH_REQUIRE(addr::get_version_minor() == LIBADDR_VERSION_MINOR);
+        CATCH_REQUIRE(addr::get_version_patch() == LIBADDR_VERSION_PATCH);
+        CATCH_REQUIRE(std::string(addr::get_version_string()) == std::string(LIBADDR_VERSION_STRING));
+    }
+    CATCH_END_SECTION()
 }
 
 

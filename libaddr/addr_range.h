@@ -63,16 +63,20 @@ public:
     addr &                          get_to();
     addr const &                    get_to() const;
     void                            from_cidr(addr const & range);
+    addr::vector_t                  to_addresses(std::size_t limit = 1000) const;
     std::string                     to_string(addr::string_ip_t mode = addr::string_ip_t::STRING_IP_ALL) const;
     static std::string              to_string(
                                           vector_t const & ranges
                                         , addr::string_ip_t mode = addr::string_ip_t::STRING_IP_ALL
                                         , std::string const & separator = std::string(","));
 
+    std::size_t                     size() const;
     addr_range                      intersection(addr_range const & rhs) const;
     addr_range                      union_if_possible(addr_range const & rhs) const;
     bool                            match(addr const & address) const;
     compare_t                       compare(addr_range const & rhs) const;
+
+    static addr::vector_t           to_addresses(vector_t ranges, std::size_t limit = 1000);
 
 private:
     bool                            f_has_from = false;

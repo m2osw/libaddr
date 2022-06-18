@@ -1,33 +1,32 @@
-/* test_addr_routes.cpp
- * Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
- *
- * Project: https://snapwebsites.org/project/libaddr
- *
- * Permission is hereby granted, free of charge, to any
- * person obtaining a copy of this software and
- * associated documentation files (the "Software"), to
- * deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom
- * the Software is furnished to do so, subject to the
- * following conditions:
- *
- * The above copyright notice and this permission notice
- * shall be included in all copies or substantial
- * portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
- * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
- * LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
- * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// Copyright (c) 2011-2022  Made to Order Software Corp.  All Rights Reserved
+//
+// https://snapwebsites.org/project/libaddr
+// contact@m2osw.com
+//
+// Permission is hereby granted, free of charge, to any
+// person obtaining a copy of this software and
+// associated documentation files (the "Software"), to
+// deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify,
+// merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom
+// the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice
+// shall be included in all copies or substantial
+// portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+// ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+// LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+// EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 /** \file
  * \brief Verify the route class a little further.
@@ -36,7 +35,7 @@
  * in the route table.
  */
 
-// addr lib
+// libaddr
 //
 #include    <libaddr/route.h>
 
@@ -47,7 +46,7 @@
 
 
 
-// C lib
+// C
 //
 #include    <net/if.h>
 #include    <net/route.h>
@@ -66,7 +65,7 @@ CATCH_TEST_CASE("ipv4::routes", "[ipv4]")
         addr::route::vector_t routes(addr::route::get_ipv4_routes());
         addr::route::vector_t routes_without_default;
 
-        CATCH_SECTION("verify list")
+        CATCH_START_SECTION("routes: verify list")
         {
             CATCH_REQUIRE_FALSE(routes.empty()); // at least the default route
 
@@ -118,11 +117,13 @@ CATCH_TEST_CASE("ipv4::routes", "[ipv4]")
             CATCH_REQUIRE(found_default);
             CATCH_REQUIRE(found_gateway);
         }
+        CATCH_END_SECTION()
 
-        CATCH_SECTION("verify a search without a default route")
+        CATCH_START_SECTION("routes: verify a search without a default route")
         {
             CATCH_REQUIRE(find_default_route(routes_without_default) == nullptr);
         }
+        CATCH_END_SECTION()
     }
 }
 

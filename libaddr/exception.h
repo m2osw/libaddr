@@ -39,6 +39,8 @@ namespace addr
 
 DECLARE_MAIN_EXCEPTION(addr_error);
 
+DECLARE_OUT_OF_RANGE(out_of_range);
+
 DECLARE_EXCEPTION(addr_error, addr_unsupported_as_range);
 DECLARE_EXCEPTION(addr_error, addr_invalid_argument);
 DECLARE_EXCEPTION(addr_error, addr_invalid_state);

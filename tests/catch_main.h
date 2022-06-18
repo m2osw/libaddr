@@ -38,7 +38,7 @@
  */
 
 
-// libaddr library
+// libaddr
 //
 #include    <libaddr/addr_parser.h>
 #include    <libaddr/exception.h>
@@ -50,7 +50,7 @@
 #include    <catch2/snapcatch2.hpp>
 
 
-// C++ library
+// C++
 //
 #include    <string>
 #include    <cstring>
@@ -59,7 +59,7 @@
 #include    <sstream>
 
 
-// C library
+// C
 //
 #include    <unistd.h>
 #include    <limits.h>

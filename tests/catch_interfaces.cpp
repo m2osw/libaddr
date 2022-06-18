@@ -37,7 +37,7 @@
  * interfaces.
  */
 
-// addr lib
+// addr
 //
 #include    <libaddr/iface.h>
 
@@ -47,7 +47,7 @@
 #include    "catch_main.h"
 
 
-// C lib
+// C
 //
 #include    <net/if.h>
 
@@ -64,7 +64,7 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
     {
         addr::iface::vector_t list(addr::iface::get_local_addresses());
 
-        CATCH_SECTION("verify list")
+        CATCH_START_SECTION("verify list")
         {
             CATCH_REQUIRE_FALSE(list.empty()); // at least "lo"
 
@@ -105,6 +105,7 @@ std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().ge
                 }
             }
         }
+        CATCH_END_SECTION()
     }
 }
 
