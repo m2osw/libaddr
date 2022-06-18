@@ -970,7 +970,7 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
                         int const bits(get_mask_size());
                         if(bits == -1)
                         {
-                            result << buf; // TODO: convert to simple number if possible
+                            result << buf;
                         }
                         else
                         {
