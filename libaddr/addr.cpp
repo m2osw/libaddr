@@ -967,7 +967,19 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
                     if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) != nullptr)
                     {
                         result << "/";
-                        result << buf; // TODO: convert to simple number if possible
+                        int const bits(get_mask_size());
+                        if(bits == -1)
+                        {
+                            result << buf; // TODO: convert to simple number if possible
+                        }
+                        else
+                        {
+                            if(bits < 96)
+                            {
+                                throw addr_unexpected_mask("mask is not valid for an IPv4 address");
+                            }
+                            result << (bits - 96);
+                        }
                     }
                 }
                 return result.str();
@@ -1043,14 +1055,22 @@ std::string addr::to_ipv6_string(string_ip_t mode) const
             if(inet_ntop(AF_INET6, f_mask, buf, sizeof(buf)) != nullptr)
             {
                 result << "/";
-                if(include_brackets)
+                int const bits(get_mask_size());
+                if(bits == -1)
                 {
-                    result << "[";
+                    if(include_brackets)
+                    {
+                        result << "[";
+                    }
+                    result << buf;
+                    if(include_brackets)
+                    {
+                        result << "]";
+                    }
                 }
-                result << buf; // TODO: convert to simple number if possible
-                if(include_brackets)
+                else
                 {
-                    result << "]";
+                    result << bits;
                 }
             }
         }

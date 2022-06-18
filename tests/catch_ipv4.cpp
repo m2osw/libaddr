@@ -470,9 +470,9 @@ CATCH_TEST_CASE("ipv4::address_defaults", "[ipv4][ipv6]")
             CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == "::");
             CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == "[::]");
             CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT)          == "[::]:0");
-            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
-            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
-            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/128");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/128");
+            CATCH_REQUIRE(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/128");
         }
         CATCH_END_SECTION()
 
@@ -481,9 +481,9 @@ CATCH_TEST_CASE("ipv4::address_defaults", "[ipv4][ipv6]")
             CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == "::");
             CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == "[::]");
             CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_PORT)          == "[::]:0");
-            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
-            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
-            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_MASK)          == "::/128");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == "[::]/128");
+            CATCH_REQUIRE(a.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL)           == "[::]:0/128");
         }
         CATCH_END_SECTION()
 
@@ -643,9 +643,9 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)          == ip);
                 CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS)      == ip);
                 CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_PORT)          == ip + ":" + port_str);
-                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK)          == ip + "/255.255.255.255"); // will change to 32 at some point
-                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == ip + "/255.255.255.255");
-                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL)           == ip + ":" + port_str + "/255.255.255.255");
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK)          == ip + "/32");
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == ip + "/32");
+                CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL)           == ip + ":" + port_str + "/32");
             }
         }
         CATCH_END_SECTION()
@@ -1435,7 +1435,7 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f.is_ipv4());
             CATCH_REQUIRE(f.get_family() == AF_INET);
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
-            std::string result("172.19.6.91:" + std::to_string(port) + "/255.255.255.255");
+            std::string result("172.19.6.91:" + std::to_string(port) + "/32");
             CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.get_port() == port);
@@ -1460,7 +1460,7 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f.is_ipv4());
             CATCH_REQUIRE(f.get_family() == AF_INET);
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
-            std::string result("172.18.5.91:" + std::to_string(port) + "/255.255.255.255");
+            std::string result("172.18.5.91:" + std::to_string(port) + "/32");
             CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.get_port() == port);
@@ -1487,16 +1487,16 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
                 CATCH_REQUIRE(f.is_ipv4());
                 CATCH_REQUIRE(f.get_family() == AF_INET);
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
-                uint64_t const mask(std::numeric_limits<uint64_t>::max() << (32 - idx));
-                std::string mask_str(
-                          std::to_string((mask >> 24) & 255)
-                        + "."
-                        + std::to_string((mask >> 16) & 255)
-                        + "."
-                        + std::to_string((mask >>  8) & 255)
-                        + "."
-                        + std::to_string((mask >>  0) & 255));
-                std::string result("172.17.3.91:" + std::to_string(port) + "/" + mask_str);
+                //uint64_t const mask(std::numeric_limits<uint64_t>::max() << (32 - idx));
+                //std::string mask_str(
+                //          std::to_string((mask >> 24) & 255)
+                //        + "."
+                //        + std::to_string((mask >> 16) & 255)
+                //        + "."
+                //        + std::to_string((mask >>  8) & 255)
+                //        + "."
+                //        + std::to_string((mask >>  0) & 255));
+                std::string result("172.17.3.91:" + std::to_string(port) + "/" + std::to_string(idx));
                 CATCH_REQUIRE(f.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
@@ -1723,8 +1723,8 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f1.is_ipv4());
             CATCH_REQUIRE(f1.get_family() == AF_INET);
             CATCH_REQUIRE_FALSE(f1.get_family() == AF_INET6);
-            CATCH_REQUIRE(f1.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/255.255.0.0");
-            CATCH_REQUIRE(f1.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/255.255.0.0");
+            CATCH_REQUIRE(f1.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/16");
+            CATCH_REQUIRE(f1.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.0.0:" + std::to_string(port1) + "/16");
             CATCH_REQUIRE(f1.get_port() == port1);
             CATCH_REQUIRE(f1.get_protocol() == proto);
             CATCH_REQUIRE(f1.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
@@ -1742,8 +1742,8 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f2.is_ipv4());
             CATCH_REQUIRE(f2.get_family() == AF_INET);
             CATCH_REQUIRE_FALSE(f2.get_family() == AF_INET6);
-            CATCH_REQUIRE(f2.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/255.255.255.255");
-            CATCH_REQUIRE(f2.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/255.255.255.255");
+            CATCH_REQUIRE(f2.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/32");
+            CATCH_REQUIRE(f2.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port2) + "/32");
             CATCH_REQUIRE(f2.get_port() == port2);
             CATCH_REQUIRE(f2.get_protocol() == proto);
             CATCH_REQUIRE(f2.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
@@ -1761,8 +1761,8 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f3.is_ipv4());
             CATCH_REQUIRE(f3.get_family() == AF_INET);
             CATCH_REQUIRE_FALSE(f3.get_family() == AF_INET6);
-            CATCH_REQUIRE(f3.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/255.255.0.0");
-            CATCH_REQUIRE(f3.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/255.255.0.0");
+            CATCH_REQUIRE(f3.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/16");
+            CATCH_REQUIRE(f3.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ALL) == "192.168.5.36:" + std::to_string(port3) + "/16");
             CATCH_REQUIRE(f3.get_port() == port3);
             CATCH_REQUIRE(f3.get_protocol() == proto);
             CATCH_REQUIRE(f3.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
