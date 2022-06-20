@@ -44,6 +44,7 @@
 // snapdev
 //
 #include    <snapdev/int128_literal.h>
+#include    <snapdev/math.h>
 #include    <snapdev/not_reached.h>
 
 
@@ -630,6 +631,32 @@ int addr::get_mask_size() const
 }
 
 
+/** \brief Check whether the mask makes sense for an IPv4 address.
+ *
+ * When converting a mask to a string, it has to be compatible with
+ * an IPv4 if the address is an IPv4 otherwise that mask makes no
+ * sense.
+ *
+ * For the mask to be a valid IPv4 address, the get_mask_size()
+ * function must return 96 or more. This function is a simplification
+ * which verifies that (nearly) as fast as possible.
+ *
+ * \return true if the mask can be used by an IPv4, false otherwise.
+ */
+bool addr::is_mask_ipv4_compatible() const
+{
+    for(std::size_t i(0); i < sizeof(f_mask) - 4; ++i)
+    {
+        if(f_mask[i] != 255)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
 /** \brief Return the interface name.
  *
  * It is possible to indicate an interface name along an address to make
@@ -966,6 +993,11 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
                     in.s_addr = htonl((f_mask[12] << 24) | (f_mask[13] << 16) | (f_mask[14] << 8) | f_mask[15]);
                     if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) != nullptr)
                     {
+                        if(!is_mask_ipv4_compatible())
+                        {
+                            throw addr_unexpected_mask("mask is not valid for an IPv4 address");
+                        }
+
                         result << "/";
                         int const bits(get_mask_size());
                         if(bits == -1)
@@ -974,10 +1006,6 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
                         }
                         else
                         {
-                            if(bits < 96)
-                            {
-                                throw addr_unexpected_mask("mask is not valid for an IPv4 address");
-                            }
                             result << (bits - 96);
                         }
                     }
@@ -1907,52 +1935,203 @@ bool addr::operator >= (addr const & rhs) const
 }
 
 
+/** \brief Compute the next IP address.
+ *
+ * This function adds one to this IP address. In many cases, this may have
+ * no meaning. It is, however, useful to go through all the IP addresses
+ * of a range.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \return A reference to this addr object.
+ */
 addr & addr::operator ++ ()
 {
-    ip_from_uint128(ip_to_uint128() + 1);
+    using namespace snapdev::literals;
+
+    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), 1_uint128));
     return *this;
 }
 
 
+/** \brief Compute the next IP address.
+ *
+ * This function adds one to this IP address and returns a copy of the result.
+ * In many cases, this may have no meaning. It is, however, useful to go
+ * through all the IP addresses of a range.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \return A copy of this addr object representing the next IP address.
+ */
 addr addr::operator ++ (int)
 {
+    using namespace snapdev::literals;
+
     addr result(*this);
-    ip_from_uint128(ip_to_uint128() + 1);
+    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), 1_uint128));
     return result;
 }
 
 
+/** \brief Compute the previous IP address.
+ *
+ * This function subtracts one to this IP address. In many cases, this may
+ * have no meaning. It is, however, useful to go through all the IP addresses
+ * of a range.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \return A reference to this addr object.
+ */
 addr & addr::operator -- ()
 {
-    ip_from_uint128(ip_to_uint128() - 1);
+    using namespace snapdev::literals;
+
+    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -1_uint128));
     return *this;
 }
 
 
+/** \brief Compute the previous IP address.
+ *
+ * This function subtracts one from this IP address and returns a copy of
+ * the result. In many cases, this may have no meaning. It is, however,
+ * useful to go through all the IP addresses of a range starting from the
+ * end of the range.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \return A copy of this addr object representing the next IP address.
+ */
 addr addr::operator -- (int)
 {
+    using namespace snapdev::literals;
+
     addr result(*this);
-    ip_from_uint128(ip_to_uint128() - 1);
+    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -1_uint128));
     return result;
 }
 
 
+/** \brief Add an offset to this IP address.
+ *
+ * This function adds the specified \p offset to this IP address. In many
+ * cases, this may have no meaning. It can be useful to compute a range of
+ * IP addresses.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \param[in] offset  The offset to add to this IP address.
+ *
+ * \return A copy of this addr object plus the specified \p offset.
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 addr addr::operator + (int offset) const
 {
     addr result(*this);
-    result.ip_from_uint128(ip_to_uint128() + offset);
+    result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
     return result;
 }
+#pragma GCC diagnostic pop
 
 
+/** \brief Subtract an offset to this IP address.
+ *
+ * This function subtracts the specified \p offset to this IP address. In many
+ * cases, this may have no meaning. It can be useful to compute a range of
+ * IP addresses.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \param[in] offset  The offset to subtract from this IP address.
+ *
+ * \return A copy of this addr object minus the specified \p offset.
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 addr addr::operator - (int offset) const
 {
     addr result(*this);
-    result.ip_from_uint128(ip_to_uint128() - offset);
+    result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -static_cast<unsigned __int128>(offset)));
     return result;
 }
+#pragma GCC diagnostic pop
 
 
+/** \brief Compute the distance between two IP addresses.
+ *
+ * This function computes the distance between two IP addresses. This distance
+ * defines the size of a range of addresses (i.e. "to - from + 1").
+ *
+ * In case of a from/to range distance, the difference will always be positive
+ * if you do:
+ *
+ * \code
+ *     __int128 distance = r.get_to() - r.get_from() + 1;
+ * \endcode
+ *
+ * However, the distance can be negative when the right handside is a larger
+ * address than the left handside.
+ *
+ * \warning
+ * The function returns a signed __int128 number. This means a large `to`
+ * minus a small `from` can result in an invalid distance (i.e. an overflow
+ * can occur).
+ *
+ * \param[in] rhs  The right handside address to subtract from this address.
+ *
+ * \return The difference between this address and \p rhs.
+ */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 __int128 addr::operator - (addr const & rhs) const
@@ -1962,18 +2141,66 @@ __int128 addr::operator - (addr const & rhs) const
 #pragma GCC diagnostic push
 
 
+/** \brief Add an offset to this IP address.
+ *
+ * This function adds the specified \p offset to this IP address. In many
+ * cases, this may have no meaning. It can be useful to compute a range of
+ * IP addresses or compute the next or previous address with a step other
+ * than 1.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \param[in] offset  The offset to add to this IP address.
+ *
+ * \return A reference to this IP address.
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 addr & addr::operator += (int offset)
 {
-    ip_from_uint128(ip_to_uint128() + offset);
+    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
     return *this;
 }
+#pragma GCC diagnostic pop
 
 
+/** \brief Subtract an offset to this IP address.
+ *
+ * This function subtracts the specified \p offset to this IP address. In many
+ * cases, this may have no meaning. It can be useful to compute a range of
+ * IP addresses or compute the next or previous address with a step other
+ * than -1.
+ *
+ * \warning
+ * The function does not check wether the address is an IPv4 or IPv6. It
+ * manages the address as one large 128 bit number.
+ *
+ * \note
+ * The addresses do not wrap around. So the default address (all 0's) is not
+ * just after the address with all f's. That also means there is no next
+ * address after the all f's address and there is no previous address before
+ * all 0's.
+ *
+ * \param[in] offset  The offset to add to this IP address.
+ *
+ * \return A reference to this IP address.
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 addr & addr::operator -= (int offset)
 {
-    ip_from_uint128(ip_to_uint128() - offset);
+    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -static_cast<unsigned __int128>(offset)));
     return *this;
 }
+#pragma GCC diagnostic pop
 
 
 /** \brief Mark that the address changed.

@@ -176,6 +176,7 @@ public:
     int                             get_protocol() const;
     void                            get_mask(uint8_t * mask) const;
     int                             get_mask_size() const;
+    bool                            is_mask_ipv4_compatible() const;
 
     bool                            match(addr const & ip, bool any = false) const;
     bool                            is_next(addr const & a) const;

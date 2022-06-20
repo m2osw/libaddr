@@ -577,6 +577,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             CATCH_REQUIRE(f.get_port() == 0);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE_FALSE(f.is_lan());
+            CATCH_REQUIRE_FALSE(f.is_lan(true));
+            CATCH_REQUIRE_FALSE(f.is_lan(false));
+            CATCH_REQUIRE(f.is_wan());
+            CATCH_REQUIRE(f.is_wan(true));
+            CATCH_REQUIRE(f.is_wan(false));
             uint8_t mask[16] = {};
             f.get_mask(mask);
             for(int idx(0); idx < 16; ++idx)
@@ -610,6 +616,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             CATCH_REQUIRE(f.get_port() == 0);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE_FALSE(f.is_lan());
+            CATCH_REQUIRE_FALSE(f.is_lan(true));
+            CATCH_REQUIRE_FALSE(f.is_lan(false));
+            CATCH_REQUIRE(f.is_wan());
+            CATCH_REQUIRE(f.is_wan(true));
+            CATCH_REQUIRE(f.is_wan(false));
         }
         CATCH_END_SECTION()
 
@@ -639,6 +651,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
 
             // only a default address
@@ -665,6 +683,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -696,6 +720,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             CATCH_REQUIRE(f.get_port() == 5093);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE_FALSE(f.is_lan());
+            CATCH_REQUIRE_FALSE(f.is_lan(true));
+            CATCH_REQUIRE_FALSE(f.is_lan(false));
+            CATCH_REQUIRE(f.is_wan());
+            CATCH_REQUIRE(f.is_wan(true));
+            CATCH_REQUIRE(f.is_wan(false));
             uint8_t mask[16] = {};
             f.get_mask(mask);
             for(int idx(0); idx < 16; ++idx)
@@ -826,6 +856,12 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -855,6 +891,12 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1410,6 +1452,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 CATCH_REQUIRE(a.is_default());
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
                 CATCH_REQUIRE(a.get_network_type_string() == "Any");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE_FALSE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE(a.is_wan());
+                CATCH_REQUIRE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
 
             // make sure that if any byte is set to non-zero it is not
@@ -1439,6 +1487,16 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
 
                 CATCH_REQUIRE(a.get_network_type() != addr::addr::network_type_t::NETWORK_TYPE_ANY);
                 CATCH_REQUIRE(a.get_network_type_string() != "Any");
+
+                // the generated address will not include an IPv4 so I think
+                // this will remain true, always
+                //
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE_FALSE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE(a.is_wan());
+                CATCH_REQUIRE(a.is_wan(true));
+                CATCH_REQUIRE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1464,6 +1522,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 CATCH_REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1489,6 +1553,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
                 CATCH_REQUIRE(a.get_network_type_string() == "Local Link");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1514,6 +1584,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
                 CATCH_REQUIRE(a.get_network_type_string() == "Local Link");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1546,6 +1622,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_MULTICAST);
                 CATCH_REQUIRE(a.get_network_type_string() == "Multicast");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1571,6 +1653,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1596,6 +1684,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
 
                 // try again from a string to confirm
                 //
@@ -1609,6 +1703,12 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 a.set_ipv6(*reinterpret_cast<sockaddr_in6 *>(addrlist->ai_addr));
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
                 freeaddrinfo(addrlist);
             }
         }

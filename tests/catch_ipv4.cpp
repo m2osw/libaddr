@@ -456,6 +456,12 @@ CATCH_TEST_CASE("ipv4::address_defaults", "[ipv4][ipv6]")
             CATCH_REQUIRE(a.is_default());
             CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
             CATCH_REQUIRE(a.get_network_type_string() == "Any");
+            CATCH_REQUIRE_FALSE(a.is_lan());
+            CATCH_REQUIRE_FALSE(a.is_lan(true));
+            CATCH_REQUIRE_FALSE(a.is_lan(false));
+            CATCH_REQUIRE(a.is_wan());
+            CATCH_REQUIRE(a.is_wan(true));
+            CATCH_REQUIRE_FALSE(a.is_wan(false));
         }
         CATCH_END_SECTION()
 
@@ -646,6 +652,17 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_MASK)          == ip + "/32");
                 CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) == ip + "/32");
                 CATCH_REQUIRE(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL)           == ip + ":" + port_str + "/32");
+
+                // if the mask is not a valid IPv4 mask, then we get an exception
+                //
+                std::uint8_t invalid_mask[16] = { 255, 255 };
+                a.set_mask(invalid_mask);
+                CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL), addr::addr_unexpected_mask);
+                invalid_mask[3] = 255;
+                a.set_mask(invalid_mask);
+                CATCH_REQUIRE_THROWS_AS(a.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ALL), addr::addr_unexpected_mask);
+                std::uint8_t const reset_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
+                a.set_mask(reset_mask);
             }
         }
         CATCH_END_SECTION()
@@ -708,6 +725,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
             CATCH_REQUIRE(f.get_port() == 0);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE_FALSE(f.is_lan());
+            CATCH_REQUIRE_FALSE(f.is_lan(true));
+            CATCH_REQUIRE_FALSE(f.is_lan(false));
+            CATCH_REQUIRE(f.is_wan());
+            CATCH_REQUIRE(f.is_wan(true));
+            CATCH_REQUIRE(f.is_wan(false));
             uint8_t mask[16] = {};
             f.get_mask(mask);
             for(int idx(0); idx < 16; ++idx)
@@ -872,6 +895,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
             CATCH_REQUIRE(f.get_port() == 0);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE_FALSE(f.is_lan());
+            CATCH_REQUIRE_FALSE(f.is_lan(true));
+            CATCH_REQUIRE_FALSE(f.is_lan(false));
+            CATCH_REQUIRE(f.is_wan());
+            CATCH_REQUIRE(f.is_wan(true));
+            CATCH_REQUIRE(f.is_wan(false));
         }
         CATCH_END_SECTION()
 
@@ -901,6 +930,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
 
             // only a default address
@@ -927,6 +962,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -961,6 +1002,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 55);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -984,6 +1031,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1007,6 +1060,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 77);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1043,6 +1102,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 55);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1066,6 +1131,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1089,6 +1160,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 77);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1126,6 +1203,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 55);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1149,6 +1232,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1172,6 +1261,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == 77);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
                 f.get_mask(mask);
                 for(int idx(0); idx < 16; ++idx)
                 {
@@ -1207,6 +1302,12 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
             CATCH_REQUIRE(f.get_port() == 3003);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+            CATCH_REQUIRE_FALSE(f.is_lan());
+            CATCH_REQUIRE_FALSE(f.is_lan(true));
+            CATCH_REQUIRE_FALSE(f.is_lan(false));
+            CATCH_REQUIRE(f.is_wan());
+            CATCH_REQUIRE(f.is_wan(true));
+            CATCH_REQUIRE(f.is_wan(false));
             uint8_t mask[16] = {};
             f.get_mask(mask);
             for(int idx(0); idx < 16; ++idx)
@@ -1306,6 +1407,12 @@ CATCH_TEST_CASE("ipv4::ports", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1337,6 +1444,12 @@ CATCH_TEST_CASE("ipv4::ports", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1375,6 +1488,12 @@ CATCH_TEST_CASE("ipv4::ports", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
 
             for(int idx(0); idx < 25; ++idx)
@@ -1409,6 +1528,12 @@ CATCH_TEST_CASE("ipv4::ports", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -1441,6 +1566,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f.get_port() == port);
             CATCH_REQUIRE(f.get_protocol() == proto);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f.is_lan());
+            CATCH_REQUIRE(f.is_lan(true));
+            CATCH_REQUIRE(f.is_lan(false));
+            CATCH_REQUIRE_FALSE(f.is_wan());
+            CATCH_REQUIRE_FALSE(f.is_wan(true));
+            CATCH_REQUIRE_FALSE(f.is_wan(false));
             CATCH_REQUIRE(f.get_mask_size() == 128);
         }
         CATCH_END_SECTION()
@@ -1466,6 +1597,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f.get_port() == port);
             CATCH_REQUIRE(f.get_protocol() == proto);
             CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f.is_lan());
+            CATCH_REQUIRE(f.is_lan(true));
+            CATCH_REQUIRE(f.is_lan(false));
+            CATCH_REQUIRE_FALSE(f.is_wan());
+            CATCH_REQUIRE_FALSE(f.is_wan(true));
+            CATCH_REQUIRE_FALSE(f.is_wan(false));
             CATCH_REQUIRE(f.get_mask_size() == 128);
         }
         CATCH_END_SECTION()
@@ -1502,6 +1639,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
                 CATCH_REQUIRE(f.get_mask_size() == 96 + idx);
             }
         }
@@ -1571,6 +1714,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
 
                 // above we made sure that the mask was not just a number so
                 // here we should always get -1
@@ -1621,6 +1770,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
                 uint8_t verify_mask[16];
                 f.get_mask(verify_mask);
                 for(int j(0); j < 16 - 4; ++j)
@@ -1691,6 +1846,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
                 uint8_t verify_mask[16];
                 f.get_mask(verify_mask);
                 for(int j(0); j < 16 - 4; ++j)
@@ -1728,6 +1889,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f1.get_port() == port1);
             CATCH_REQUIRE(f1.get_protocol() == proto);
             CATCH_REQUIRE(f1.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f1.is_lan());
+            CATCH_REQUIRE(f1.is_lan(true));
+            CATCH_REQUIRE(f1.is_lan(false));
+            CATCH_REQUIRE_FALSE(f1.is_wan());
+            CATCH_REQUIRE_FALSE(f1.is_wan(true));
+            CATCH_REQUIRE_FALSE(f1.is_wan(false));
 
             // reuse parser
             //
@@ -1747,6 +1914,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f2.get_port() == port2);
             CATCH_REQUIRE(f2.get_protocol() == proto);
             CATCH_REQUIRE(f2.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f2.is_lan());
+            CATCH_REQUIRE(f2.is_lan(true));
+            CATCH_REQUIRE(f2.is_lan(false));
+            CATCH_REQUIRE_FALSE(f2.is_wan());
+            CATCH_REQUIRE_FALSE(f2.is_wan(true));
+            CATCH_REQUIRE_FALSE(f2.is_wan(false));
 
             // 3rd with a mask along the full IP
             //
@@ -1766,6 +1939,12 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
             CATCH_REQUIRE(f3.get_port() == port3);
             CATCH_REQUIRE(f3.get_protocol() == proto);
             CATCH_REQUIRE(f3.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
+            CATCH_REQUIRE(f3.is_lan());
+            CATCH_REQUIRE(f3.is_lan(true));
+            CATCH_REQUIRE(f3.is_lan(false));
+            CATCH_REQUIRE_FALSE(f3.is_wan());
+            CATCH_REQUIRE_FALSE(f3.is_wan(true));
+            CATCH_REQUIRE_FALSE(f3.is_wan(false));
 
             // just a side test
             //
@@ -1775,14 +1954,14 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
 
             // check whether p1 matches p2 and vice versa
             //
-            CATCH_REQUIRE(f1.match(f2));          // f2 & mask1 == f1
-            CATCH_REQUIRE(f1.match(f3));          // f3 & mask1 == f1
+            CATCH_REQUIRE(f1.match(f2));          // f2 & mask1 == f1 & mask1
+            CATCH_REQUIRE(f1.match(f3));          // f3 & mask1 == f1 & mask1
 
-            CATCH_REQUIRE_FALSE(f2.match(f1));    // f1 & mask2 != f2
-            CATCH_REQUIRE(f2.match(f3));          // f3 & mask2 == f2  (because f2 == f3 anyway)
+            CATCH_REQUIRE_FALSE(f2.match(f1));    // f1 & mask2 != f2 & mask2
+            CATCH_REQUIRE(f2.match(f3));          // f3 & mask2 == f2 & mask2  (because f2 == f3 anyway)
 
-            CATCH_REQUIRE(f3.match(f1));          // f1 & mask3 == f3
-            CATCH_REQUIRE(f3.match(f2));          // f2 & mask3 == f3
+            CATCH_REQUIRE(f3.match(f1));          // f1 & mask3 == f3 & mask3
+            CATCH_REQUIRE(f3.match(f2));          // f2 & mask3 == f3 & mask3
 
             f3.apply_mask();
 
@@ -1792,12 +1971,21 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
 
             // re-run the match() calls with f3 since it changed...
             //
-            CATCH_REQUIRE(f1.match(f3));          // f3 & mask1 == f1
+            CATCH_REQUIRE(f1.match(f3));          // f3 & mask1 == f1 & mask1
 
-            CATCH_REQUIRE_FALSE(f2.match(f3));    // f3 & mask2 == f2  (because f2 != f3 anymore)
+            CATCH_REQUIRE_FALSE(f2.match(f3));    // f3 & mask2 == f2 & mask2  (because f2 != f3 anymore)
 
-            CATCH_REQUIRE(f3.match(f1));          // f1 & mask3 == f3
-            CATCH_REQUIRE(f3.match(f2));          // f2 & mask3 == f3
+            CATCH_REQUIRE(f3.match(f1));          // f1 & mask3 == f3 & mask3
+            CATCH_REQUIRE(f3.match(f2));          // f2 & mask3 == f3 & mask3
+
+            addr::addr fa; // by default an address is ANY and it matches everything
+            CATCH_REQUIRE(fa.match(f1, true));
+            CATCH_REQUIRE(fa.match(f2, true));
+            CATCH_REQUIRE(fa.match(f3, true));
+            std::uint8_t const verify_match[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
+            std::uint8_t any_mask[16] = {};
+            fa.get_mask(any_mask);
+            CATCH_REQUIRE(memcmp(verify_match, any_mask, 16) == 0);
         }
         CATCH_END_SECTION()
     }
@@ -1967,6 +2155,12 @@ CATCH_TEST_CASE("ipv4::protocol", "[ipv4]")
                     CATCH_REQUIRE(f.get_port() == 0);
                     //CATCH_REQUIRE(f.get_protocol() == ...); -- may be TCP, UDP, IP
                     CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                    CATCH_REQUIRE(f.is_lan());
+                    CATCH_REQUIRE(f.is_lan(true));
+                    CATCH_REQUIRE(f.is_lan(false));
+                    CATCH_REQUIRE_FALSE(f.is_wan());
+                    CATCH_REQUIRE_FALSE(f.is_wan(true));
+                    CATCH_REQUIRE_FALSE(f.is_wan(false));
                 }
                 else
                 {
@@ -1977,6 +2171,12 @@ CATCH_TEST_CASE("ipv4::protocol", "[ipv4]")
                     CATCH_REQUIRE(f.get_port() == 0);
                     //CATCH_REQUIRE(f.get_protocol() == ...); -- may be TCP, UDP, IP
                     CATCH_REQUIRE(f.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                    CATCH_REQUIRE(f.is_lan());
+                    CATCH_REQUIRE(f.is_lan(true));
+                    CATCH_REQUIRE(f.is_lan(false));
+                    CATCH_REQUIRE_FALSE(f.is_wan());
+                    CATCH_REQUIRE_FALSE(f.is_wan(true));
+                    CATCH_REQUIRE_FALSE(f.is_wan(false));
                 }
             }
         }
@@ -2004,6 +2204,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
 
             CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_ANY);
             CATCH_REQUIRE(a.get_network_type_string() == "Any");
+            CATCH_REQUIRE_FALSE(a.is_lan());
+            CATCH_REQUIRE_FALSE(a.is_lan(true));
+            CATCH_REQUIRE_FALSE(a.is_lan(false));
+            CATCH_REQUIRE(a.is_wan());
+            CATCH_REQUIRE(a.is_wan(true));
+            CATCH_REQUIRE_FALSE(a.is_wan(false));
         }
         CATCH_END_SECTION()
 
@@ -2025,6 +2231,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 CATCH_REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -2047,6 +2259,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 CATCH_REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -2069,6 +2287,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE);
                 CATCH_REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -2091,6 +2315,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_CARRIER);
                 CATCH_REQUIRE(a.get_network_type_string() == "Carrier");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -2113,6 +2343,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
                 CATCH_REQUIRE(a.get_network_type_string() == "Local Link");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -2135,6 +2371,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_MULTICAST);
                 CATCH_REQUIRE(a.get_network_type_string() == "Multicast");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
 
                 // make sure no interface uses that IP
                 //
@@ -2161,6 +2403,12 @@ CATCH_TEST_CASE("ipv4::network_type", "[ipv4]")
                 a.set_ipv4(in);
                 CATCH_REQUIRE(a.get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK);
                 CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(a.is_lan());
+                CATCH_REQUIRE(a.is_lan(true));
+                CATCH_REQUIRE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
             }
         }
         CATCH_END_SECTION()
@@ -2208,7 +2456,7 @@ CATCH_TEST_CASE("ipv4::network", "[ipv4]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("addr/addr_paser: create a server, but do not test it (yet)...")
+        CATCH_START_SECTION("addr/addr_parser: create a server (bind), but do not test it (yet)...")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("127.0.0.1:49999"));
@@ -2223,7 +2471,7 @@ CATCH_TEST_CASE("ipv4::network", "[ipv4]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("addr/addr_parser: connect with TCP to 127.0.0.1")
+        CATCH_START_SECTION("addr/addr_parser: connect() with TCP to 127.0.0.1")
         {
             if(SNAP_CATCH2_NAMESPACE::g_tcp_port != -1)
             {
@@ -2280,7 +2528,7 @@ CATCH_TEST_CASE("ipv4::network", "[ipv4]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("addr/addr_parser: connect with UDP to 127.0.0.1")
+        CATCH_START_SECTION("addr/addr_parser: connect() with UDP to 127.0.0.1:53 which fails")
         {
             addr::addr_parser p;
             p.set_protocol("udp");
@@ -2292,9 +2540,47 @@ CATCH_TEST_CASE("ipv4::network", "[ipv4]")
             CATCH_REQUIRE(s >= 0);
             std::shared_ptr<int> auto_free(&s, socket_deleter);
 
+            // addr::connect() does not support UDP
+            //
             CATCH_REQUIRE(a.connect(s) == -1);
 
-            // get socket info from the other side (peer == true)
+            addr::addr b;
+            CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_error);
+            CATCH_REQUIRE_FALSE(b.is_ipv4());
+            CATCH_REQUIRE_FALSE(b.get_family() == AF_INET);
+            CATCH_REQUIRE(b.get_family() == AF_INET6);
+            CATCH_REQUIRE(b.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "::");
+            CATCH_REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::");
+            CATCH_REQUIRE(b.get_port() == 0);
+
+            addr::addr c;
+            c.set_from_socket(s, false);
+            CATCH_REQUIRE(c.is_ipv4());
+            CATCH_REQUIRE(c.get_family() == AF_INET);
+            CATCH_REQUIRE_FALSE(c.get_family() == AF_INET6);
+            CATCH_REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "0.0.0.0");
+            CATCH_REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "0.0.0.0");
+            CATCH_REQUIRE(c.get_port() == 0);
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("addr/addr_parser: bind() with UDP to 127.0.0.1:<auto> (as a \"client\") which works")
+        {
+            addr::addr_parser p;
+            p.set_protocol("udp");
+            addr::addr_range::vector_t ips(p.parse("127.0.0.1"));
+            CATCH_REQUIRE(ips.size() >= 1);
+
+            addr::addr & a(ips[0].get_from());
+            int s(a.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC));// | addr::addr::SOCKET_FLAG_REUSE));
+            CATCH_REQUIRE(s >= 0);
+            std::shared_ptr<int> auto_free(&s, socket_deleter);
+
+            // succeeds, but the port is not known
+            //
+            CATCH_REQUIRE(a.bind(s) == 0);
+
+            // this is a UDP socket, there is no other side so we get ANY
             //
             addr::addr b;
             CATCH_REQUIRE_THROWS_AS(b.set_from_socket(s, true), addr::addr_io_error);
@@ -2303,28 +2589,27 @@ CATCH_TEST_CASE("ipv4::network", "[ipv4]")
             CATCH_REQUIRE(b.get_family() == AF_INET6);
             CATCH_REQUIRE(b.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "::");
             CATCH_REQUIRE(b.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "::");
-
-            // in this case we know what the port is since we specified
-            // that when connecting
-            //
             CATCH_REQUIRE(b.get_port() == 0);
 
-            // now try this side (peer == false)
+            // now try this side (peer == false) and again it is "any"
+            // since it failed connecting
             //
             addr::addr c;
             c.set_from_socket(s, false);
             CATCH_REQUIRE(c.is_ipv4());
             CATCH_REQUIRE(c.get_family() == AF_INET);
             CATCH_REQUIRE_FALSE(c.get_family() == AF_INET6);
-            CATCH_REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "0.0.0.0");
-            CATCH_REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "0.0.0.0");
+            CATCH_REQUIRE(c.to_ipv4_string(addr::addr::string_ip_t::STRING_IP_ONLY)    == "127.0.0.1");
+            CATCH_REQUIRE(c.to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY) == "127.0.0.1");
 
-            // we cannot be sure of the port, there is a range we could
-            // test better (more constraining) but for this test is
-            // certainly does not matter much; it has to be more than
-            // 1023, though
+            // if this worked, the port is > 1023 (it was auto-allocated)
             //
-            CATCH_REQUIRE(c.get_port() == 0);
+            CATCH_REQUIRE(c.get_port() > 1023);
+
+            // since the a.bind() is expected to read that port, it should
+            // equal the one in `a`
+            //
+            CATCH_REQUIRE(a.get_port() == c.get_port());
         }
         CATCH_END_SECTION()
     }
