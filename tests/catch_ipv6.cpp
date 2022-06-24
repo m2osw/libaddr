@@ -41,7 +41,7 @@
  * tests because internally the addr class implements an IPv6 object.
  */
 
-// addr lib
+// addr
 //
 #include    <libaddr/iface.h>
 
@@ -51,10 +51,18 @@
 #include    "catch_main.h"
 
 
+// snapdev
+//
+#include    <snapdev/int128_literal.h>
+#include    <snapdev/ostream_int128.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
 
+
+using namespace snapdev::literals;
 
 
 
@@ -433,6 +441,80 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     {
         addr::addr a;
 
+        CATCH_START_SECTION("ipv6::addr: default is 128 bit set to zero")
+        {
+            CATCH_REQUIRE(a.ip_to_uint128() == 0_uint128);
+
+            // any address is not the next/previous of itself, even 0
+            CATCH_REQUIRE_FALSE(a.is_next(a));
+            CATCH_REQUIRE_FALSE(a.is_previous(a));
+
+            // first address -N is still the first address
+            //
+            addr::addr b(a);
+            CATCH_REQUIRE(a == b);
+            b--;
+            CATCH_REQUIRE(a == b);
+            --b;
+            CATCH_REQUIRE(a == b);
+            for(int idx(0); idx < 10; ++idx)
+            {
+                b -= rand() % 0xFFFF;
+                CATCH_REQUIRE(a == b);
+
+                addr::addr c(b - rand() % 0xFFFF);
+                CATCH_REQUIRE(a == c);
+            }
+
+            __int128 diff(a - b);
+            CATCH_REQUIRE(diff == 0_int128);
+        }
+        CATCH_END_SECTION();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+        CATCH_START_SECTION("ipv6::addr: verify last IPv6 address")
+        {
+            CATCH_REQUIRE(a.ip_to_uint128() == 0_uint128);
+
+            struct sockaddr_in6 in6 = sockaddr_in6();
+            in6.sin6_family = AF_INET6;
+            in6.sin6_port = htons(rand());
+            in6.sin6_addr.s6_addr32[0] = 0xFFFFFFFF;
+            in6.sin6_addr.s6_addr32[1] = 0xFFFFFFFF;
+            in6.sin6_addr.s6_addr32[2] = 0xFFFFFFFF;
+            in6.sin6_addr.s6_addr32[3] = 0xFFFFFFFF;
+            a.set_ipv6(in6);
+
+            // any address is not the next/previous of itself, even "-1"
+            CATCH_REQUIRE_FALSE(a.is_next(a));
+            CATCH_REQUIRE_FALSE(a.is_previous(a));
+
+            // last address +N is still the last address
+            //
+            addr::addr b(a);
+            CATCH_REQUIRE(a == b);
+            b++;
+            CATCH_REQUIRE(a == b);
+            ++b;
+            CATCH_REQUIRE(a == b);
+            for(int idx(0); idx < 10; ++idx)
+            {
+                b += rand() % 0xFFFF;
+                CATCH_REQUIRE(a == b);
+
+                addr::addr c(b + rand() % 0xFFFF);
+                CATCH_REQUIRE(a == c);
+            }
+
+            __int128 diff(a - b);
+            CATCH_REQUIRE(diff == 0_int128);
+        }
+        CATCH_END_SECTION();
+#pragma GCC diagnostic pop
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
         CATCH_START_SECTION("ipv6::addr: set_ipv6() / get_ipv6()")
         {
             for(int idx(0); idx < 10; ++idx)
@@ -449,9 +531,28 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 in6.sin6_addr.s6_addr16[6] = rand();
                 in6.sin6_addr.s6_addr16[7] = rand();
 
-                // verify network type
+                unsigned __int128 address(0_uint128);
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 0]) << 120;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 1]) << 112;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 2]) << 104;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 3]) <<  96;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 4]) <<  88;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 5]) <<  80;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 6]) <<  72;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 7]) <<  64;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 8]) <<  56;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[ 9]) <<  48;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[10]) <<  40;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[11]) <<  32;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[12]) <<  24;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[13]) <<  16;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[14]) <<   8;
+                address |= static_cast<unsigned __int128>(in6.sin6_addr.s6_addr[15]) <<   0;
+
+                // set the address
                 //
                 a.set_ipv6(in6);
+                CATCH_REQUIRE(a.ip_to_uint128() == address);
 
                 // test constructor
                 //
@@ -465,9 +566,91 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 a.set_ipv6(in6);
                 a.get_ipv6(out6);
                 CATCH_REQUIRE(memcmp(&out6, &in6, sizeof(struct sockaddr_in)) == 0);
+                CATCH_REQUIRE(a.ip_to_uint128() == address);
+
+                struct sockaddr_in6 in6b = sockaddr_in6();
+                in6b.sin6_family = AF_INET6;
+                in6b.sin6_port = htons(rand());
+                in6b.sin6_addr.s6_addr16[0] = rand();
+                in6b.sin6_addr.s6_addr16[1] = rand();
+                in6b.sin6_addr.s6_addr16[2] = rand();
+                in6b.sin6_addr.s6_addr16[3] = rand();
+                in6b.sin6_addr.s6_addr16[4] = rand();
+                in6b.sin6_addr.s6_addr16[5] = rand();
+                in6b.sin6_addr.s6_addr16[6] = rand();
+                in6b.sin6_addr.s6_addr16[7] = rand();
+
+                unsigned __int128 new_address(0_uint128);
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 0]) << 120;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 1]) << 112;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 2]) << 104;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 3]) <<  96;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 4]) <<  88;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 5]) <<  80;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 6]) <<  72;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 7]) <<  64;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 8]) <<  56;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[ 9]) <<  48;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[10]) <<  40;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[11]) <<  32;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[12]) <<  24;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[13]) <<  16;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[14]) <<   8;
+                new_address |= static_cast<unsigned __int128>(in6b.sin6_addr.s6_addr[15]) <<   0;
+
+                a.ip_from_uint128(new_address);
+                CATCH_REQUIRE(a.ip_to_uint128() == new_address);
+
+                if(new_address >= 10)
+                {
+                    addr::addr const e(a + -10);
+                    CATCH_REQUIRE(e.ip_to_uint128() == new_address - 10);
+
+                    addr::addr f(a);
+                    f += -10;
+                    CATCH_REQUIRE(e.ip_to_uint128() == new_address - 10);
+                }
+                if(new_address <= 0xffffffffffffffffffffffffffffffff_uint128 - 10)
+                {
+                    addr::addr const e(a - -10);
+                    CATCH_REQUIRE(e.ip_to_uint128() == new_address + 10);
+
+                    addr::addr f(a);
+                    f -= -10;
+                    CATCH_REQUIRE(e.ip_to_uint128() == new_address + 10);
+                }
+
+                struct sockaddr_in6 in6c(in6b);
+                for(int p(16); p > 0; )
+                {
+                    --p;
+                    ++in6c.sin6_addr.s6_addr[p];
+                    if(in6c.sin6_addr.s6_addr[p] != 0)
+                    {
+                        break;
+                    }
+                }
+
+                addr::addr const c(in6c);
+                CATCH_REQUIRE(a.is_next(c));
+
+                struct sockaddr_in6 in6d(in6b);
+                for(int p(16); p > 0; )
+                {
+                    --p;
+                    --in6d.sin6_addr.s6_addr[p];
+                    if(in6d.sin6_addr.s6_addr[p] != 0xFF)
+                    {
+                        break;
+                    }
+                }
+
+                addr::addr const d(in6d);
+                CATCH_REQUIRE(a.is_previous(d));
             }
         }
         CATCH_END_SECTION()
+#pragma GCC diagnostic pop
 
         CATCH_START_SECTION("ipv6::addr: set_ipv6() check to_ipv6_string()")
         {
@@ -625,7 +808,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: address, not port allowed")
+        CATCH_START_SECTION("ipv6::addr: address, no port allowed")
         {
             // specific address with a default
             {

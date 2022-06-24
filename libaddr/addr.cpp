@@ -2012,7 +2012,7 @@ addr & addr::operator -- ()
 {
     using namespace snapdev::literals;
 
-    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -1_uint128));
+    ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), 1_uint128));
     return *this;
 }
 
@@ -2041,7 +2041,7 @@ addr addr::operator -- (int)
     using namespace snapdev::literals;
 
     addr result(*this);
-    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -1_uint128));
+    ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), 1_uint128));
     return result;
 }
 
@@ -2071,7 +2071,14 @@ addr addr::operator -- (int)
 addr addr::operator + (int offset) const
 {
     addr result(*this);
-    result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
+    if(offset < 0)
+    {
+        result.ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), static_cast<unsigned __int128>(static_cast<unsigned int>(-offset))));
+    }
+    else
+    {
+        result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
+    }
     return result;
 }
 #pragma GCC diagnostic pop
@@ -2102,7 +2109,14 @@ addr addr::operator + (int offset) const
 addr addr::operator - (int offset) const
 {
     addr result(*this);
-    result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -static_cast<unsigned __int128>(offset)));
+    if(offset < 0)
+    {
+        result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(static_cast<unsigned int>(-offset))));
+    }
+    else
+    {
+        result.ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
+    }
     return result;
 }
 #pragma GCC diagnostic pop
@@ -2111,7 +2125,7 @@ addr addr::operator - (int offset) const
 /** \brief Compute the distance between two IP addresses.
  *
  * This function computes the distance between two IP addresses. This distance
- * defines the size of a range of addresses (i.e. "to - from + 1").
+ * can be used to define the size of a range of addresses (i.e. "to - from + 1").
  *
  * In case of a from/to range distance, the difference will always be positive
  * if you do:
@@ -2166,7 +2180,14 @@ __int128 addr::operator - (addr const & rhs) const
 #pragma GCC diagnostic ignored "-Wpedantic"
 addr & addr::operator += (int offset)
 {
-    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
+    if(offset < 0)
+    {
+        ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), static_cast<unsigned __int128>(static_cast<unsigned int>(-offset))));
+    }
+    else
+    {
+        ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
+    }
     return *this;
 }
 #pragma GCC diagnostic pop
@@ -2197,7 +2218,14 @@ addr & addr::operator += (int offset)
 #pragma GCC diagnostic ignored "-Wpedantic"
 addr & addr::operator -= (int offset)
 {
-    ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), -static_cast<unsigned __int128>(offset)));
+    if(offset < 0)
+    {
+        ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(static_cast<unsigned int>(-offset))));
+    }
+    else
+    {
+        ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
+    }
     return *this;
 }
 #pragma GCC diagnostic pop
