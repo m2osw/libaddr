@@ -655,219 +655,258 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
         CATCH_START_SECTION("ipv6::addr: set_ipv6() check to_ipv6_string()")
         {
-            std::map<addr::addr::string_ip_t, std::string> addr_vec;
-            addr::addr::vector_t addresses;
-            for(int idx(0); idx < 10; ++idx)
+            std::vector<char const *> locales = {
+                "en_US.utf8",
+                "fr_FR.utf8",
+                "ja_JP.utf8",
+                "zh_SG.utf8",
+            };
+            for(auto const & l : locales)
             {
-                struct sockaddr_in6 in6 = sockaddr_in6();
-                in6.sin6_family = AF_INET6;
-                in6.sin6_port = htons(rand());
-                for(int j(0); j < 8; ++j)
+                std::locale const loc(l);
+
+                std::map<addr::addr::string_ip_t, std::string> addr_vec;
+                addr::addr::vector_t addresses;
+                for(int idx(0); idx < 10; ++idx)
                 {
-                    // avoid any zeroes so that way we do not have
-                    // to handle the "::" syntax
-                    do
+                    struct sockaddr_in6 in6 = sockaddr_in6();
+                    in6.sin6_family = AF_INET6;
+                    in6.sin6_port = htons(rand());
+                    for(int j(0); j < 8; ++j)
                     {
-                        in6.sin6_addr.s6_addr16[j] = rand();
+                        // avoid any zeroes so that way we do not have
+                        // to handle the "::" syntax
+                        do
+                        {
+                            in6.sin6_addr.s6_addr16[j] = rand();
+                        }
+                        while(in6.sin6_addr.s6_addr16[j] == 0);
                     }
-                    while(in6.sin6_addr.s6_addr16[j] == 0);
+
+                    std::stringstream ip_buf;
+                    ip_buf << std::hex
+                           << ntohs(in6.sin6_addr.s6_addr16[0])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[1])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[2])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[3])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[4])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[5])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[6])
+                           << ":"
+                           << ntohs(in6.sin6_addr.s6_addr16[7]);
+                    std::string const ip(ip_buf.str());
+
+                    std::string port_str(std::to_string(static_cast<int>(htons(in6.sin6_port))));
+
+                    // check IPv6 as a string
+                    //
+                    a.set_ipv6(in6);
+                    addresses.push_back(a);
+                    CATCH_REQUIRE(a.get_str_port() == port_str);
+                    {
+                        std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY));
+                        if(addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY] != std::string())
+                        {
+                            addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY] += ",";
+                        }
+                        addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY] += str;
+                        CATCH_REQUIRE(str == ip);
+                    }
+                    {
+                        std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS));
+                        if(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS] != std::string())
+                        {
+                            addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS] += ",";
+                        }
+                        addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS] += str;
+                        CATCH_REQUIRE(str == "[" + ip + "]");
+                    }
+                    {
+                        std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT));
+                        if(addr_vec[addr::addr::string_ip_t::STRING_IP_PORT] != std::string())
+                        {
+                            addr_vec[addr::addr::string_ip_t::STRING_IP_PORT] += ",";
+                        }
+                        addr_vec[addr::addr::string_ip_t::STRING_IP_PORT] += str;
+                        CATCH_REQUIRE(str == "[" + ip + "]:" + port_str);
+                    }
+                    {
+                        std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_MASK));
+                        if(addr_vec[addr::addr::string_ip_t::STRING_IP_MASK] != std::string())
+                        {
+                            addr_vec[addr::addr::string_ip_t::STRING_IP_MASK] += ",";
+                        }
+                        addr_vec[addr::addr::string_ip_t::STRING_IP_MASK] += str;
+                        CATCH_REQUIRE(str == ip + "/128");
+                    }
+                    {
+                        std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK));
+                        if(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK] != std::string())
+                        {
+                            addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK] += ",";
+                        }
+                        addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK] += str;
+                        CATCH_REQUIRE(str == "[" + ip + "]/128");
+                    }
+                    {
+                        std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ALL));
+                        if(addr_vec[addr::addr::string_ip_t::STRING_IP_ALL] != std::string())
+                        {
+                            addr_vec[addr::addr::string_ip_t::STRING_IP_ALL] += ",";
+                        }
+                        addr_vec[addr::addr::string_ip_t::STRING_IP_ALL] += str;
+                        CATCH_REQUIRE(str == "[" + ip + "]:" + port_str + "/128");
+                    }
+
+                    // the ostream functions
+                    {
+                        std::stringstream ss;
+                        ss << a; // mode defaults to ALL
+                        CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ONLY) << a;
+                        CATCH_REQUIRE(ss.str() == ip);
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS) << a;
+                        CATCH_REQUIRE(ss.str() == "[" + ip + "]");
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT) << a;
+                        CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str);
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_MASK) << a;
+                        CATCH_REQUIRE(ss.str() == ip + "/128");
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) << a;
+                        CATCH_REQUIRE(ss.str() == "[" + ip + "]/128");
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ALL) << a;
+                        CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
+                    }
+                    {
+                        std::stringstream ss;
+                        ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT);
+                        ss.copyfmt(std::cout); // we did not change the mode of std::cout so here we expect STRING_IP_ALL after the copy
+                        ss << a;
+                        CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
+                    }
+                    {
+                        std::stringstream sss;
+                        std::stringstream ssd;
+                        sss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT);
+                        ssd << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS);
+                        ssd.copyfmt(sss);
+                        ssd << a;
+                        CATCH_REQUIRE(ssd.str() == "[" + ip + "]:" + port_str);
+                    }
                 }
 
-                std::stringstream ip_buf;
-                ip_buf << std::hex
-                       << ntohs(in6.sin6_addr.s6_addr16[0])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[1])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[2])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[3])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[4])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[5])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[6])
-                       << ":"
-                       << ntohs(in6.sin6_addr.s6_addr16[7]);
-                std::string const ip(ip_buf.str());
-
-                std::string port_str(std::to_string(static_cast<int>(htons(in6.sin6_port))));
-
-                // check IPv6 as a string
-                //
-                a.set_ipv6(in6);
-                addresses.push_back(a);
-                CATCH_REQUIRE(a.get_str_port() == port_str);
-                {
-                    std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ONLY));
-                    if(addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY] != std::string())
-                    {
-                        addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY] += ",";
-                    }
-                    addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY] += str;
-                    CATCH_REQUIRE(str == ip);
-                }
-                {
-                    std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS));
-                    if(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS] != std::string())
-                    {
-                        addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS] += ",";
-                    }
-                    addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS] += str;
-                    CATCH_REQUIRE(str == "[" + ip + "]");
-                }
-                {
-                    std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_PORT));
-                    if(addr_vec[addr::addr::string_ip_t::STRING_IP_PORT] != std::string())
-                    {
-                        addr_vec[addr::addr::string_ip_t::STRING_IP_PORT] += ",";
-                    }
-                    addr_vec[addr::addr::string_ip_t::STRING_IP_PORT] += str;
-                    CATCH_REQUIRE(str == "[" + ip + "]:" + port_str);
-                }
-                {
-                    std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_MASK));
-                    if(addr_vec[addr::addr::string_ip_t::STRING_IP_MASK] != std::string())
-                    {
-                        addr_vec[addr::addr::string_ip_t::STRING_IP_MASK] += ",";
-                    }
-                    addr_vec[addr::addr::string_ip_t::STRING_IP_MASK] += str;
-                    CATCH_REQUIRE(str == ip + "/128");
-                }
-                {
-                    std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK));
-                    if(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK] != std::string())
-                    {
-                        addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK] += ",";
-                    }
-                    addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK] += str;
-                    CATCH_REQUIRE(str == "[" + ip + "]/128");
-                }
-                {
-                    std::string const str(a.to_ipv6_string(addr::addr::string_ip_t::STRING_IP_ALL));
-                    if(addr_vec[addr::addr::string_ip_t::STRING_IP_ALL] != std::string())
-                    {
-                        addr_vec[addr::addr::string_ip_t::STRING_IP_ALL] += ",";
-                    }
-                    addr_vec[addr::addr::string_ip_t::STRING_IP_ALL] += str;
-                    CATCH_REQUIRE(str == "[" + ip + "]:" + port_str + "/128");
-                }
-
-                // the ostream functions
                 {
                     std::stringstream ss;
-                    ss << a; // mode defaults to ALL
-                    CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
+                    ss << addresses;
+                    ss.imbue(loc);
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_ALL]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ONLY) << a;
-                    CATCH_REQUIRE(ss.str() == ip);
+                    ss.imbue(loc);
+                    ss << addr::setaddrsep(" ");
+                    ss.imbue(loc);
+                    ss << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_ALL], {{",", " "}}));
+                    CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS) << a;
-                    CATCH_REQUIRE(ss.str() == "[" + ip + "]");
+                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ONLY);
+                    ss.imbue(loc);
+                    ss << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT) << a;
-                    CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str);
+                    ss << addr::setaddrsep("|") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ONLY) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY], {{",", "|"}}));
+                    CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_MASK) << a;
-                    CATCH_REQUIRE(ss.str() == ip + "/128");
+                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) << a;
-                    CATCH_REQUIRE(ss.str() == "[" + ip + "]/128");
+                    ss << addr::setaddrsep(";") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS], {{",", ";"}}));
+                    CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ALL) << a;
-                    CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
+                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_PORT]);
                 }
-            }
-
-            {
-                std::stringstream ss;
-                ss << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_ALL]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep(" ") << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_ALL], {{",", " "}}));
-                CATCH_REQUIRE(ss.str() == expected);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ONLY) << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep("|") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ONLY) << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_ONLY], {{",", "|"}}));
-                CATCH_REQUIRE(ss.str() == expected);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS) << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep(";") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS) << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS], {{",", ";"}}));
-                CATCH_REQUIRE(ss.str() == expected);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT) << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_PORT]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep("+") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT) << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_PORT], {{",", "+"}}));
-                CATCH_REQUIRE(ss.str() == expected);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_MASK) << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_MASK]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep(", ") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_MASK) << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_MASK], {{",", ", "}}));
-                CATCH_REQUIRE(ss.str() == expected);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep("$") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK], {{",", "$"}}));
-                CATCH_REQUIRE(ss.str() == expected);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ALL) << addresses;
-                CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_ALL]);
-            }
-            {
-                std::stringstream ss;
-                ss << addr::setaddrsep("\n") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ALL) << addresses;
-                std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_ALL], {{",", "\n"}}));
-                CATCH_REQUIRE(ss.str() == expected);
+                {
+                    std::stringstream ss;
+                    ss << addr::setaddrsep("+") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT);
+                    ss.imbue(loc);
+                    ss << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_PORT], {{",", "+"}}));
+                    CATCH_REQUIRE(ss.str() == expected);
+                }
+                {
+                    std::stringstream ss;
+                    ss.imbue(loc);
+                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_MASK) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_MASK]);
+                }
+                {
+                    std::stringstream ss;
+                    ss << addr::setaddrsep(", ") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_MASK) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_MASK], {{",", ", "}}));
+                    CATCH_REQUIRE(ss.str() == expected);
+                }
+                {
+                    std::stringstream ss;
+                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK]);
+                }
+                {
+                    std::stringstream ss;
+                    ss << addr::setaddrsep("$") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_BRACKETS_MASK], {{",", "$"}}));
+                    CATCH_REQUIRE(ss.str() == expected);
+                }
+                {
+                    std::stringstream ss;
+                    ss << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ALL);
+                    ss.imbue(loc);
+                    ss << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::addr::string_ip_t::STRING_IP_ALL]);
+                }
+                {
+                    std::stringstream ss;
+                    ss.imbue(loc);
+                    ss << addr::setaddrsep("\n") << addr::setaddrmode(addr::addr::string_ip_t::STRING_IP_ALL) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::addr::string_ip_t::STRING_IP_ALL], {{",", "\n"}}));
+                    CATCH_REQUIRE(ss.str() == expected);
+                }
             }
         }
         CATCH_END_SECTION()
