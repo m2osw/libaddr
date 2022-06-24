@@ -983,7 +983,7 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
                 || mode == string_ip_t::STRING_IP_ALL)
                 {
                     result << ":";
-                    result << ntohs(f_address.sin6_port);
+                    result << get_port();
                 }
                 if(mode == string_ip_t::STRING_IP_MASK
                 || mode == string_ip_t::STRING_IP_BRACKETS_MASK
@@ -1071,7 +1071,7 @@ std::string addr::to_ipv6_string(string_ip_t mode) const
         || mode == string_ip_t::STRING_IP_ALL)
         {
             result << ":";
-            result << ntohs(f_address.sin6_port);
+            result << get_port();
         }
 
         // got a mask?
@@ -1678,7 +1678,7 @@ std::string addr::get_name() const
  */
 std::string addr::get_service() const
 {
-    if(f_address.sin6_port == 0)
+    if(get_port() == 0)
     {
         return std::string();
     }
@@ -1715,6 +1715,18 @@ std::string addr::get_service() const
 int addr::get_port() const
 {
     return ntohs(f_address.sin6_port);
+}
+
+
+/** \brief Retrieve the port.
+ *
+ * This function retrieves the port of the IP address in host order.
+ *
+ * \return The port defined along this address as a string.
+ */
+std::string addr::get_str_port() const
+{
+    return std::to_string(get_port());
 }
 
 

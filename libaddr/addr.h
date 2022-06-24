@@ -173,6 +173,7 @@ public:
     std::string                     get_name() const;
     std::string                     get_service() const;
     int                             get_port() const;
+    std::string                     get_str_port() const;
     int                             get_protocol() const;
     void                            get_mask(uint8_t * mask) const;
     int                             get_mask_size() const;
@@ -319,6 +320,7 @@ inline void basic_stream_event_callback(std::ios_base::event e, std::ios_base & 
     {
     case std::ios_base::erase_event:
         delete static_cast<_ostream_info *>(out.pword(index));
+        out.pword(index) = nullptr;
         break;
 
     case std::ios_base::copyfmt_event:
@@ -326,7 +328,8 @@ inline void basic_stream_event_callback(std::ios_base::event e, std::ios_base & 
             _ostream_info * info(static_cast<_ostream_info *>(out.pword(index)));
             if(info != nullptr)
             {
-                out.pword(index) = new _ostream_info(*info);
+                _ostream_info * new_info(new _ostream_info(*info));
+                out.pword(index) = new_info;
             }
         }
         break;
@@ -376,11 +379,13 @@ template<typename _CharT, typename _Traits>
 inline std::basic_ostream<_CharT, _Traits> &
 operator << (std::basic_ostream<_CharT, _Traits> & out, _setaddrsep sep)
 {
-    _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
+    int const index(get_ostream_index());
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(index)));
     if(info == nullptr)
     {
         info = new _ostream_info;
-        out.pword(get_ostream_index()) = info;
+        out.pword(index) = info;
+        out.register_callback(basic_stream_event_callback, index);
     }
     info->f_sep = sep.f_sep;
     return out;
