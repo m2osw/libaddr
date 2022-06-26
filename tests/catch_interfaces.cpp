@@ -76,15 +76,15 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
 
                 switch(i.get_address().get_network_type())
                 {
-                case addr::addr::network_type_t::NETWORK_TYPE_PRIVATE:
-                case addr::addr::network_type_t::NETWORK_TYPE_PUBLIC:
-                case addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK:
-                case addr::addr::network_type_t::NETWORK_TYPE_LINK_LOCAL:
+                case addr::network_type_t::NETWORK_TYPE_PRIVATE:
+                case addr::network_type_t::NETWORK_TYPE_PUBLIC:
+                case addr::network_type_t::NETWORK_TYPE_LOOPBACK:
+                case addr::network_type_t::NETWORK_TYPE_LINK_LOCAL:
                     break;
 
                 default:
 std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().get_network_type()) << "\n";
-                    CATCH_REQUIRE(i.get_address().get_network_type() == addr::addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                    CATCH_REQUIRE(i.get_address().get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
                     break;
 
                 }

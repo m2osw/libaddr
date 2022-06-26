@@ -47,11 +47,13 @@ enum class allow_t
     ALLOW_MULTI_ADDRESSES_SPACES,           // IP:port/mask IP:port/mask ...
     ALLOW_MULTI_ADDRESSES_NEWLINES,         // IP:port/mask\nIP:port/mask\n...
     ALLOW_ADDRESS_LOOKUP,                   // whether DNS lookup is allowed
+    ALLOW_ADDRESS_RANGE,                    // IP-IP:port/mask
 
     ALLOW_PORT,                             // port
-    ALLOW_REQUIRED_PORT,                    // port cannot be empty
+    ALLOW_REQUIRED_PORT,                    // port must be defined
 
     ALLOW_MASK,                             // mask
+    ALLOW_ADDRESS_MASK,                     // mask like an address (opposed to just a number, which is the only new valid version)
 
     ALLOW_COMMENT,                          // if address starts with '#', it's a comment, ignore; useful with ALLOW_MULTI_ADDRESSES_NEWLINES
 
@@ -59,7 +61,6 @@ enum class allow_t
     ALLOW_MULTI_PORTS_SEMICOLONS,           // port1;port2;...
     ALLOW_MULTI_PORTS_COMMAS,               // port1,port2,...
     ALLOW_PORT_RANGE,                       // port1-port2
-    ALLOW_ADDRESS_RANGE,                    // IP-IP
 
     ALLOW_max
 };
@@ -71,7 +72,7 @@ constexpr sort_t const                      SORT_NO             = 0x0000;       
 constexpr sort_t const                      SORT_IPV6_FIRST     = 0x0001;       // put IPv6 first (IPv6, IPv4, empty)
 constexpr sort_t const                      SORT_IPV4_FIRST     = 0x0002;       // put IPv4 first (IPv4, IPv6, empty)
 constexpr sort_t const                      SORT_FULL           = 0x0004;       // sort IPs between each others (default keep in order found)
-constexpr sort_t const                      SORT_MERGE          = 0x0008 | SORT_FULL; // merge ranges which support a union (implies SORT_FULL)
+constexpr sort_t const                      SORT_MERGE          = 0x0008;       // merge ranges which support a union (implies SORT_FULL)
 constexpr sort_t const                      SORT_NO_EMPTY       = 0x0010;       // remove empty entries
 
 
@@ -112,10 +113,12 @@ public:
     addr_range::vector_t    parse(std::string const & in);
 
 private:
+    void                    parse_address_range(std::string const & in, addr_range::vector_t & result);
     void                    parse_cidr(std::string const & in, addr_range::vector_t & result);
     void                    parse_address(std::string const & in, std::string const & mask, addr_range::vector_t & result);
     void                    parse_address4(std::string const & in, addr_range::vector_t & result);
-    void                    parse_address6(std::string const & in, addr_range::vector_t & result);
+    void                    parse_address6(std::string const & in, std::size_t const colons, addr_range::vector_t & result);
+    void                    parse_address_range_port(std::string const & addresses, std::string const & port_str, addr_range::vector_t & result, bool ipv6);
     void                    parse_address_port(std::string address, std::string port_str, addr_range::vector_t & result, bool ipv6);
     void                    parse_mask(std::string const & mask, addr & cidr);
 

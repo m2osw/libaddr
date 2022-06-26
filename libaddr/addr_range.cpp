@@ -35,9 +35,15 @@
 #include    "libaddr/exception.h"
 
 
-// C++ library
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+
+
+// C++
 //
 #include    <algorithm>
+#include    <cassert>
 
 
 // last include
@@ -75,6 +81,26 @@ bool addr_range::has_from() const
 bool addr_range::has_to() const
 {
     return f_has_to;
+}
+
+
+/** \brief Check whether the range has at least a "from" or a "to".
+ *
+ * We have several functions to check ranges. This one returns true
+ * if at least one of has_from() or has_to() would return true.
+ *
+ * A defined range can be ordered (see the compare() function).
+ *
+ * For an addr_range object to be a defined range, both, the
+ * has_from() and has_to() have to return true, which the
+ * compare() function doesn't require (i.e. the compare can
+ * compare two "from" addresses).
+ *
+ * \return true if at least one of "from" or "to" is defined.
+ */
+bool addr_range::is_defined() const
+{
+    return f_has_from || f_has_to;
 }
 
 
@@ -286,6 +312,21 @@ addr const & addr_range::get_to() const
 }
 
 
+/** \brief Swap the "from" and "to" addresses.
+ *
+ * If you want to cut some slack to your users and detect that "from > to"
+ * then you can call this function to fix the range.
+ *
+ * It can also be used to make a "from" only range a "to" only range
+ * and vice versa.
+ */
+void addr_range::swap_from_to()
+{
+    std::swap(f_from, f_to);
+    std::swap(f_has_from, f_has_to);
+}
+
+
 /** \brief Transform an address to a range.
  *
  * This function transforms an address (\p a) in a range.
@@ -300,63 +341,47 @@ addr const & addr_range::get_to() const
  *
  * \exception addr_unsupported_as_range
  * If the address cannot be transform into a range, this exception is raised.
- * This happens if the mask is not just ending with 0s but 0s are found
- * earlier.
+ * This happens if the mask is not just ending with 0s (i.e. the mask cannot
+ * be represented by just a number).
  *
  * \param[in] a  The address to convert to a range.
  */
 void addr_range::from_cidr(addr const & a)
 {
-    std::uint8_t mask[16];
-    a.get_mask(mask);
-    bool found(false);
-    sockaddr_in6 from = {};
-    a.get_ipv6(from);
-    sockaddr_in6 to(from);
-    for(std::size_t i(0); i < sizeof(mask); ++i)
+    if(a.get_mask_size() == -1)
     {
-        std::uint8_t inverse = ~mask[i];
-
-        from.sin6_addr.s6_addr[i] &= mask[i];
-        to.sin6_addr.s6_addr[i] |= inverse;
-
-        if(found)
-        {
-            if(inverse != 0xFF)
-            {
-                throw addr_unsupported_as_range("unsupported mask for a range");
-            }
-        }
-        else
-        {
-            if(inverse != 0)
-            {
-                found = true;
-                switch(inverse)
-                {
-                case 0x01:
-                case 0x03:
-                case 0x07:
-                case 0x0F:
-                case 0x1F:
-                case 0x3F:
-                case 0x7F:
-                case 0xFF:
-                    break;
-
-                default:
-                    throw addr_unsupported_as_range("unsupported mask for a range");
-
-                }
-            }
-        }
+        throw addr_unsupported_as_range("unsupported mask for a range");
     }
 
-    set_from(from);
-    set_to(to);
+    f_has_from = true;
+    f_has_to = true;
+
+    f_from = a;
+    f_to = a;
+
+    f_from.apply_mask();
+    f_to.apply_mask(true);
 }
 
 
+/** \brief Transform a range in a vector of separate addresses.
+ *
+ * This function goes through a range and transforms it in a set of addresses.
+ * This a range can be really large, this function has a limit which can
+ * be used to very much limit the results (i.e. to 1000, for example).
+ *
+ * This is useful to determine all the addresses and attempt connecting
+ * to all of them separately.
+ *
+ * \exception out_of_range
+ * If the range represents more than \p limit addresses, then this
+ * exception is raised. Note that with IPv6, the number of addresses
+ * can be really large.
+ *
+ * \param[in] limit  The maximum number of addresses accepted.
+ *
+ * \return The vector of addresses representing this range.
+ */
 addr::vector_t addr_range::to_addresses(std::size_t limit) const
 {
     addr::vector_t result;
@@ -419,31 +444,82 @@ addr::vector_t addr_range::to_addresses(vector_t ranges, std::size_t limit)
 }
 
 
-std::string addr_range::to_string(addr::string_ip_t mode) const
+/** \brief Transform the range into a string.
+ *
+ * This function converts this range in a string.
+ *
+ * If the range is not defined (is_range() returns false) or if it is
+ * empty (from > to), then the function returns the string:
+ *
+ * \code
+ *     "<empty address range>"
+ * \endcode
+ *
+ * Otherwise, it returns the range as two addresses separated by a dash
+ * character.
+ *
+ * The mode works the same way here as it does in the
+ * addr::to_ipv4or6_string() function.
+ *
+ * If the range is only composed of a "from" address, then only that one
+ * address is output.
+ *
+ * If the range is only composed of a "to" address, then the output starts
+ * with a dash (-) and then the "to" address.
+ *
+ * \param[in] mode  The mode used to generate the address.
+ *
+ * \return The range or the "<empty address range>" string.
+ */
+std::string addr_range::to_string(string_ip_t mode) const
 {
+    if(is_empty()
+    || (!has_from() && !has_to()))
+    {
+        return std::string("<empty address range>");
+    }
+
     std::string result;
 
     if(has_from() && has_to())
     {
-        std::string const from(f_from.to_ipv4or6_string(mode));
+        string_ip_t from_mode(string_ip_t::STRING_IP_BRACKETS);
+        switch(mode)
+        {
+        case string_ip_t::STRING_IP_ONLY:
+        case string_ip_t::STRING_IP_MASK:
+            from_mode = string_ip_t::STRING_IP_ONLY;
+            break;
+
+        default:
+            // already defined
+            break;
+
+        }
+
+        // WARNING: we are assuming that the from & to data has the same
+        //          port information (which should be the case if you used
+        //          the parser)
+        //
+        std::string const from(f_from.to_ipv4or6_string(from_mode));
         std::string const to(f_to.to_ipv4or6_string(mode));
 
         result.reserve(from.length() + 1 + to.length());
         result = from;
         result += '-';
-        result = to;
+        result += to;
     }
     else if(has_from())
     {
         result = f_from.to_ipv4or6_string(mode);
     }
-    else
+    else //if(has_to()) -- this is the only other possible case, no need to test
     {
         std::string const to(f_to.to_ipv4or6_string(mode));
 
         result.reserve(1 + to.length());
         result += '-';
-        result = f_to.to_ipv4or6_string(mode);
+        result += f_to.to_ipv4or6_string(mode);
     }
 
     return result;
@@ -470,7 +546,7 @@ std::string addr_range::to_string(addr::string_ip_t mode) const
  */
 std::string addr_range::to_string(
       vector_t const & ranges
-    , addr::string_ip_t mode
+    , string_ip_t mode
     , std::string const & separator)
 {
     std::string result;
@@ -499,12 +575,33 @@ std::string addr_range::to_string(
 }
 
 
+/** \brief Compute the number of addresses this range represents.
+ *
+ * The size() function calculates the size of the range. We currently
+ * support three possibilities:
+ *
+ * 1. from & to are defined, the result is "to - from + 1"
+ * 2. the range is empty, the result is 0
+ * 3. the range only has a from or a to, the result is 1
+ *
+ * \note
+ * The function returns an std::size_t, the maximum possible range
+ * would require 128 bits. It is expected that the function won't
+ * be used with such large ranges which are anyway not going to be
+ * useful in the real world.
+ *
+ * \return The size of this range.
+ */
 std::size_t addr_range::size() const
 {
     if(has_from()
     && has_to())
     {
-        return f_to - f_from;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+        return std::min(static_cast<unsigned __int128>(f_to - f_from + 1)
+                    , static_cast<unsigned __int128>(std::numeric_limits<std::size_t>::max()));
+#pragma GCC diagnostic pop
     }
 
     if(!has_from()
@@ -545,20 +642,19 @@ addr_range addr_range::intersection(addr_range const & rhs) const
 }
 
 
-/** \brief Compute a new range with the union of two address ranges.
+/** \brief Compute a new range representing the union of two address ranges.
  *
- * This function checks whether the two ranges have any addresses in
- * common or if they are just one after the other. If so, then it
- * computes the union of both ranges. Otherwise it returns an empty
- * range.
+ * This function checks whether this range and the \p rhs range have any
+ * addresses in common or if they are just one after the other. If so,
+ * it computes the union of both ranges. Otherwise it returns a non-range
+ * object (i.e. an addr_range which is_range() predicate returns false).
  *
  * \note
- * If the `from` and `to` addresses of the range have a mask, it is
- * ignored.
+ * The masks are ignored.
  *
  * \param[in] rhs  The other range to compute the intersection with.
  *
- * \return The resulting intersection range.
+ * \return The resulting union range or no range (use is_range() on result).
  *
  * \sa is_empty()
  */
@@ -566,11 +662,36 @@ addr_range addr_range::union_if_possible(addr_range const & rhs) const
 {
     addr_range result;
 
-    if((f_from <= rhs.f_to || f_from.is_previous(rhs.f_to)
-    && (f_to >= rhs.f_from || f_to.is_next(rhs.f_from))))
+    if(!is_defined()
+    && !rhs.is_defined())
     {
-        result.set_from(f_from < rhs.f_from ? f_from : rhs.f_from);
-        result.set_from(f_to   > rhs.f_to   ? f_to   : rhs.f_to);
+        return result;
+    }
+
+    addr const & lhs_from(f_has_from     ? f_from     : f_to);
+    addr const & lhs_to  (f_has_to       ? f_to       : f_from);
+    addr const & rhs_from(rhs.f_has_from ? rhs.f_from : rhs.f_to);
+    addr const & rhs_to  (rhs.f_has_to   ? rhs.f_to   : rhs.f_from);
+
+    if((lhs_from <= rhs_to && lhs_to >= rhs_from)
+    || (lhs_to >= rhs_from && lhs_from <= rhs_to)
+    || lhs_from.is_previous(rhs_to)
+    || lhs_to.is_next(rhs_from))
+    {
+        addr const & from(lhs_from < rhs_from ? lhs_from : rhs_from);
+        addr const & to  (lhs_to   > rhs_to   ? lhs_to   : rhs_to);
+
+        if(is_range()
+        || rhs.is_range()
+        || from != to)
+        {
+            result.set_from(from);
+            result.set_to(to);
+        }
+        else
+        {
+            result.set_from(from);
+        }
     }
 
     return result;
@@ -624,17 +745,81 @@ bool addr_range::match(addr const & address) const
 
 /** \brief Compare an address range against another.
  *
- * Comparing two address ranges against each other can return one of many
- * possible results (See the compare_t enumeration).
+ * This function compares two address ranges against each other and return
+ * a compare_t value representing the result.
+ *
+ * * COMPARE_EQUAL -- lhs == rhs
+ * * COMPARE_SMALLER -- lhs < rhs
+ * * COMPARE_LARGER -- lhs > rhs
+ * * COMPARE_OVERLAP_SMALL_VS_LARGE -- lhs is before rhs with an overlap
+ * * COMPARE_OVERLAP_LARGE_VS_SMALL -- rhs is before lhs with an overlap
+ * * COMPARE_INCLUDED -- rhs is included in lhs
+ * * COMPARE_INCLUDES -- lhs is included in rhs
+ * * COMPARE_PRECEDES -- lhs is just before rhs
+ * * COMPARE_FOLLOWS -- lhs is just after rhs
+ * * COMPARE_FIRST -- lhs is defined, rhs is empty
+ * * COMPARE_LAST -- lhs is empty, rhs is defined
+ * * COMPARE_IPV4_VS_IPV6 -- lhs is an IPv4, rhs an IPv6, not used if mixed is true
+ * * COMPARE_IPV6_VS_IPV4 -- lhs is an IPv6, rhs an IPv4, not used if mixed is true
+ * * COMPARE_UNORDERED -- lhs and rhs are both empty or are undefined
+ *
+ * Note that if you have one of the inputs which is not a valid range
+ * (i.e. the is_range() function return false) then the function
+ * always returns COMPARE_UNORDERED. This is different from the
+ * is_empty() predicate where if one is empty and not the other,
+ * then you can get COMPARE_FIRST or COMPARE_LAST.
+ *
+ * By default the function separates IPv6 and IPv4 addresses. If you want
+ * to group IPv6 and IPv4 separately, set the \p mixed flag to true. That
+ * means you get the COMPARE_IPV4_VS_IPV6 and COMPARE_IPV6_VS_IPV4 results
+ * if the input IPs are mixed and that allows you to group IPv6 first and
+ * then IPv4 or vice versa (the addr_parser does that for you with the
+ * SORT_IPV6_FIRST and the SORT_IPV4_FIRST).
+ *
+ * Here is a graphical representation of the first 9 cases:
+ *
+ * \code
+ *                        Ranges                          Results
+ *   LHS:
+ *                  |----------------|
+ *
+ *   RHS:
+ *                  |----------------|                   Equal (LHS == RHS)
+ *     |----|                                            Larger (LHS > RHS)
+ *                                       |-----|         Smaller (LHS < RHS)
+ *     |-----------|                                     Follows (LHS.from == RHS.to + 1)
+ *                                    |-----------|      Precedes (LHS.to + 1 == RHS.from)
+ *
+ *                  |----------|                         Included (LHS.from <= RHS.from && LHS.to >= RHS.to && LHS != RHS)
+ *                      |----------|
+ *                        |----------|
+ *
+ *         |---------------------------------|           Includes (LHS.from > RHS.from && LHS.to < RHS.to)
+ *                  |------------------------|
+ *         |-------------------------|
+ *
+ *                         |----------------------|      Small vs Large (LHS.from <= RHS.from && LHS.to < RHS.to)
+ *                  |-----------------------------|
+ *
+ *   |-----------------------|                           Large vs Small (LHS.from > RHS.from && LHS.to >= RHS.to)
+ *   |-------------------------------|
+ * \endcode
  *
  * \param[in] rhs  The right hand side to compare against this range.
+ * \param[in] mixed  Whether IPv4 and IPv6 are compared as is (false) or not.
  *
  * \return One of the compare_t values.
  */
-compare_t addr_range::compare(addr_range const & rhs) const
+compare_t addr_range::compare(addr_range const & rhs, bool mixed) const
 {
     // check for the empty case first
     //
+    if(!is_defined()
+    || !rhs.is_defined())
+    {
+        return compare_t::COMPARE_UNORDERED;
+    }
+
     if(is_empty())
     {
         if(rhs.is_empty())
@@ -651,90 +836,120 @@ compare_t addr_range::compare(addr_range const & rhs) const
 
     // IPv4 versus IPv6
     //
-    if(is_ipv4())
+    if(!mixed)
     {
-        if(!rhs.is_ipv4())
+        if(is_ipv4())
         {
-            return compare_t::COMPARE_IPV4_VS_IPV6;
+            if(!rhs.is_ipv4())
+            {
+                return compare_t::COMPARE_IPV4_VS_IPV6;
+            }
+        }
+        else if(rhs.is_ipv4())
+        {
+            return compare_t::COMPARE_IPV6_VS_IPV4;
         }
     }
-    else if(rhs.is_ipv4())
-    {
-        return compare_t::COMPARE_IPV6_VS_IPV4;
-    }
+
+    // the f_to is often undefined, although the f_from may be undefined
+    // too, so here we copy the values in order for our compares below to
+    // work as expected
+    //
+    // note: the is_defined() already verified that at least one of the
+    //       two (f_from or f_to) is defined
+    //
+    addr const & lhs_from(f_has_from     ? f_from     : f_to);
+    addr const & lhs_to  (f_has_to       ? f_to       : f_from);
+    addr const & rhs_from(rhs.f_has_from ? rhs.f_from : rhs.f_to);
+    addr const & rhs_to  (rhs.f_has_to   ? rhs.f_to   : rhs.f_from);
 
     // no overlap (lhs < rhs)
     //
-    if(f_to < rhs.f_from)
+    if(lhs_to < rhs_from)
     {
-        if(f_to.is_next(rhs.f_from))
+        if(lhs_to.is_next(rhs_from))
         {
-            return compare_t::COMPARE_FOLLOWS;
+            return compare_t::COMPARE_PRECEDES;
         }
-        return compare_t::COMPARE_SMALL_VS_LARGE;
+        return compare_t::COMPARE_SMALLER;
     }
 
     // no overlap (lhs > rhs)
     //
-    if(f_from > rhs.f_to)
+    if(lhs_from > rhs_to)
     {
-        if(f_to.is_previous(rhs.f_from))
+        if(lhs_from.is_previous(rhs_to))
         {
-            return compare_t::COMPARE_FOLLOWING;
+            return compare_t::COMPARE_FOLLOWS;
         }
-        return compare_t::COMPARE_LARGE_VS_SMALL;
+        return compare_t::COMPARE_LARGER;
     }
 
     // overlap (lhs <= rhs)
     //
-    if(f_from <= rhs.f_from
-    && f_to >= rhs.f_from)
+    if(lhs_from <= rhs_from)
     {
-        if(f_to >= rhs.f_to)
+        if(lhs_to >= rhs_to)
         {
-            if(f_from == rhs.f_from
-            && f_to == rhs.f_to)
+            if(lhs_from == rhs_from
+            && lhs_to == rhs_to)
             {
                 return compare_t::COMPARE_EQUAL;
             }
             return compare_t::COMPARE_INCLUDED;
         }
-        if(f_from == rhs.f_from)
+        if(lhs_from == rhs_from)
         {
             return compare_t::COMPARE_INCLUDES;
         }
         return compare_t::COMPARE_OVERLAP_SMALL_VS_LARGE;
     }
 
+    assert(lhs_to >= rhs_from);
+
     // overlap (lhs >= rhs)
     //
-    if(f_to >= rhs.f_from
-    && f_to <= rhs.f_to)
+    if(lhs_to <= rhs_to)
     {
-        if(f_from >= rhs.f_from)
-        {
-            // the previous block already captured this case
-            //
-            //if(f_from == rhs.f_from
-            //&& f_to == rhs.f_to)
-            //{
-            //    return compare_t::COMPARE_EQUAL;
-            //}
-
-            return compare_t::COMPARE_INCLUDES;
-        }
-        if(f_to == rhs.f_to)
-        {
-            return compare_t::COMPARE_INCLUDED;
-        }
-        return compare_t::COMPARE_OVERLAP_LARGE_VS_SMALL;
+        return compare_t::COMPARE_INCLUDES;
     }
 
-    // no overlap
-    //
-    return f_to < rhs.f_from
-            ? compare_t::COMPARE_SMALLER
-            : compare_t::COMPARE_LARGER;
+    return compare_t::COMPARE_OVERLAP_LARGE_VS_SMALL;
+}
+
+
+/** \brief Compare for smaller or larger.
+ *
+ * The `<` operator is used to sort a vector of address range.
+ *
+ * Note that it is not a solid order operator in the event some of your
+ * ranges are not properly defined (i.e. has_from() and has_to() both
+ * return false).
+ *
+ * \warning
+ * This compare sorts IPv4 and IPv6 addresses in a mixed manner.
+ *
+ * \param[in] rhs  The right hand side range to compare against this.
+ *
+ * \return true if this range is considered smaller than \p rhs
+ */
+bool addr_range::operator < (addr_range const & rhs) const
+{
+    switch(compare(rhs, true))
+    {
+    case compare_t::COMPARE_SMALLER:
+    case compare_t::COMPARE_OVERLAP_SMALL_VS_LARGE:
+    case compare_t::COMPARE_INCLUDED:
+    //case compare_t::COMPARE_IPV6_VS_IPV4: -- not necessary, v4/v6 are sorted against each other
+    case compare_t::COMPARE_PRECEDES:
+    case compare_t::COMPARE_FIRST:
+        return true;
+
+    default:
+        return false;
+
+    }
+    snapdev::NOT_REACHED();
 }
 
 
@@ -762,8 +977,6 @@ bool address_match_ranges(addr_range::vector_t ranges, addr const & address)
 
     return it != ranges.end();
 }
-
-
 
 
 }

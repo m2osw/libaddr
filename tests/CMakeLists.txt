@@ -37,9 +37,11 @@ if(SnapCatch2_FOUND)
         catch_interfaces.cpp
         catch_ipv4.cpp
         catch_ipv6.cpp
+        catch_log_for_test.cpp
         catch_range.cpp
         catch_routes.cpp
         catch_unix.cpp
+        catch_validator.cpp
     )
 
     # The reference to the src folder is required by the internal test

@@ -123,8 +123,8 @@ int main(int argc, char * argv[])
               << static_cast<int>(mask[14]) << "."
               << static_cast<int>(mask[15]);
             std::cout << std::left << std::setw( 8) << r->get_interface_name()
-                      << std::left << std::setw(16) << r->get_destination_address().to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY)
-                      << std::left << std::setw(16) << r->get_gateway_address().to_ipv4or6_string(addr::addr::string_ip_t::STRING_IP_ONLY)
+                      << std::left << std::setw(16) << r->get_destination_address().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY)
+                      << std::left << std::setw(16) << r->get_gateway_address().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY)
                       << std::left << std::setw( 8) << r->flags_to_string()
                       << std::left << std::setw( 8) << r->get_reference_count()
                       << std::left << std::setw( 8) << r->get_use()

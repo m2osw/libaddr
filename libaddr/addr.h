@@ -71,7 +71,7 @@ constexpr sockaddr_in6 init_in6()
  * This enumeration includes compare results between IP addresses.
  *
  * The results can also be used by the addr_range class which explains
- * the range like results.
+ * the possible range like results.
  */
 enum class compare_t
 {
@@ -82,44 +82,44 @@ enum class compare_t
     COMPARE_OVERLAP_LARGE_VS_SMALL,         // rhs is before lhs with an overlap
     COMPARE_INCLUDED,                       // rhs is included in lhs
     COMPARE_INCLUDES,                       // lhs is included in rhs
-    COMPARE_IPV4_VS_IPV6,                   // lhs is an IPv4, rhs an IPv6
-    COMPARE_IPV6_VS_IPV4,                   // lhs is an IPv6, rhs an IPv4
-    COMPARE_SMALL_VS_LARGE,                 // lhs is smaller than rhs
-    COMPARE_LARGE_VS_SMALL,                 // lhs is larger than rhs
-    COMPARE_FOLLOWS,                        // rhs is just after lhs
-    COMPARE_FOLLOWING,                      // lhs is just after rhs
+    COMPARE_PRECEDES,                       // lhs is just before rhs
+    COMPARE_FOLLOWS,                        // lhs is just after rhs
     COMPARE_FIRST,                          // lhs is defined, rhs is empty
     COMPARE_LAST,                           // lhs is empty, rhs is defined
-    COMPARE_UNORDERED,                      // lhs and rhs are both empty
+    COMPARE_IPV4_VS_IPV6,                   // lhs is an IPv4, rhs an IPv6
+    COMPARE_IPV6_VS_IPV4,                   // lhs is an IPv6, rhs an IPv4
+    COMPARE_UNORDERED,                      // lhs and rhs are both empty or are not ranges
+};
+
+
+enum class network_type_t
+{
+    NETWORK_TYPE_UNDEFINED,
+    NETWORK_TYPE_PRIVATE,
+    NETWORK_TYPE_CARRIER,
+    NETWORK_TYPE_LINK_LOCAL,
+    NETWORK_TYPE_MULTICAST,
+    NETWORK_TYPE_LOOPBACK,
+    NETWORK_TYPE_ANY,
+    NETWORK_TYPE_UNKNOWN,
+    NETWORK_TYPE_PUBLIC = NETWORK_TYPE_UNKNOWN  // we currently do not distinguish public and unknown
+};
+
+
+enum class string_ip_t
+{
+    STRING_IP_ONLY,
+    STRING_IP_BRACKETS,         // IPv6 only
+    STRING_IP_PORT,             // in IPv6, includes brackets
+    STRING_IP_MASK,
+    STRING_IP_BRACKETS_MASK,    // IPv6 only
+    STRING_IP_ALL
 };
 
 
 class addr
 {
 public:
-    enum class network_type_t
-    {
-        NETWORK_TYPE_UNDEFINED,
-        NETWORK_TYPE_PRIVATE,
-        NETWORK_TYPE_CARRIER,
-        NETWORK_TYPE_LINK_LOCAL,
-        NETWORK_TYPE_MULTICAST,
-        NETWORK_TYPE_LOOPBACK,
-        NETWORK_TYPE_ANY,
-        NETWORK_TYPE_UNKNOWN,
-        NETWORK_TYPE_PUBLIC = NETWORK_TYPE_UNKNOWN  // we currently do not distinguish public and unknown
-    };
-
-    enum class string_ip_t
-    {
-        STRING_IP_ONLY,
-        STRING_IP_BRACKETS,         // IPv6 only
-        STRING_IP_PORT,             // in IPv6, includes brackets
-        STRING_IP_MASK,
-        STRING_IP_BRACKETS_MASK,    // IPv6 only
-        STRING_IP_ALL
-    };
-
     typedef std::shared_ptr<addr>   pointer_t;
     typedef std::set<addr>          set_t;
     typedef std::vector<addr>       vector_t;
@@ -142,7 +142,8 @@ public:
     void                            set_protocol(char const * protocol);
     void                            set_protocol(int protocol);
     void                            set_mask(uint8_t const * mask);
-    void                            apply_mask();
+    void                            set_mask_count(int mask_size);
+    void                            apply_mask(bool inversed = false);
 
     std::string                     get_interface() const;
     std::string                     get_hostname() const;
@@ -227,7 +228,7 @@ private:
  */
 struct _ostream_info
 {
-    addr::string_ip_t   f_mode = addr::string_ip_t::STRING_IP_ALL;
+    string_ip_t         f_mode = string_ip_t::STRING_IP_ALL;
     std::string         f_sep = std::string(",");
 };
 
@@ -252,7 +253,7 @@ int get_ostream_index();
  */
 struct _setaddrmode
 {
-    addr::string_ip_t   f_mode;
+    string_ip_t   f_mode;
 };
 
 
@@ -260,22 +261,22 @@ struct _setaddrmode
  *
  * The conversion of an address to a string uses the to_ipv4or6_string()
  * function. That function accepts a mode parameter. By default, it is
- * set to "all" (addr::addr::string_ip_t::STRING_IP_ALL). You can change
+ * set to "all" (addr::string_ip_t::STRING_IP_ALL). You can change
  * the mode using this setaddrmode() function in your ostream:
  *
  * \code
- *     std::cout << setaddrmode(addr::addr::string_ip_t::STRING_IP_PORT)
+ *     std::cout << setaddrmode(addr::string_ip_t::STRING_IP_PORT)
  *               << my_address
  *               << std::endl;
  * \endcode
  *
- * The most common is to use the addr::addr::string_ip_t::STRING_IP_PORT
+ * The most common is to use the addr::string_ip_t::STRING_IP_PORT
  * although any other value will work as expected (i.e. if you do not
  * want to the port number and do not care about brackets around an IPv6,
- * then the most basic addr::addr::string_ip_t::STRING_IP_ONLY can be
+ * then the most basic addr::string_ip_t::STRING_IP_ONLY can be
  * used).
  */
-inline _setaddrmode setaddrmode(addr::string_ip_t mode)
+inline _setaddrmode setaddrmode(string_ip_t mode)
 {
     return { mode };
 }
@@ -408,7 +409,7 @@ operator << (std::basic_ostream<_CharT, _Traits> & out, addr const & address)
     _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
     if(info == nullptr)
     {
-        out << address.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL);
+        out << address.to_ipv4or6_string(string_ip_t::STRING_IP_ALL);
     }
     else
     {

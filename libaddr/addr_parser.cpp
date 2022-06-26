@@ -27,6 +27,66 @@
  *
  * This function is used to parse IP addresses from a string to a
  * vector of ranges.
+ *
+ * The type of addresses support is really wide:
+ *
+ * * <domain name> -- if allowed to do a lookup
+ * * <ipv4> -- an IPv4 with syntax x.x.x.x
+ * * <ipv6> -- an IPv6 with syntax x:x:x:...:x
+ * * <port> -- a decimal number from 0 to 65535
+ * * <mask> -- a number from 0 to 128 or an <ipv4> or an <ipv6>
+ * * <ip>-<ip> -- a range of <ipv4> or <ipv6> addresses
+ *
+ * The port is separated from the address by a colon (:). For IPv6, this means
+ * the IPv6 address itself must be defined between square brackets as in
+ * `[x:x:...:x]`.
+ *
+ * The `<mask>` appears after a slash (/). It is expected to be a number
+ * from 0 to 128 (0 to 32 for IPv4 addresses). It can be written as an
+ * address only if the ALLOW_ADDRESS_MASK flag is set to true.
+ *
+ * \code
+ * start: ips
+ *
+ * ips: domain port mask
+ *    | port mask
+ *    | ip port mask
+ *    | ip '-' ip port mask
+ *    | ip '-' port mask
+ *    | '-' ip port mask
+ *
+ * ip: '[' ipv6 ']'
+ *   | ipv6
+ *   | ipv4
+ *
+ * ipv4: number '.' number '.' number '.' number
+ *
+ * ipv6: hex
+ *     | ':'
+ *     | ipv6 ipv6
+ *
+ * port: <empty>
+ *     | ':' number
+ *
+ * mask: <empty>
+ *     | '/' number
+ *     | '/' ip
+ *
+ * number: number number
+ *       | '0' | '1' | '2' | ... | '9'
+ *
+ * hex: hex hex
+ *    | number
+ *    | 'a' | 'b' | ... | 'f'
+ *    | 'A' | 'B' | ... | 'F'
+ *
+ * domain: domain domain
+ *       | number
+ *       | 'a' | 'b' | ... | 'z'
+ *       | 'A' | 'B' | ... | 'Z'
+ *       | '.' | '-'
+ *       | UTF8_CHARACTER (most domain system do not support all UTF-8)
+ * \endcode
  */
 
 // self
@@ -320,6 +380,16 @@ int addr_parser::get_default_port() const
  *
  * \code
  *      parser.set_allow(parser.allow_t::ALLOW_MASK, true);
+ *      parser.set_default_mask("16");  // IPv4 is 0 to 32
+ *      parser.set_default_mask("48");  // IPv6 is 0 to 128
+ * \endcode
+ *
+ * If you want to allow the old syntax (i.e. the mask as an IP address
+ * instead of just a number), make sure to also allow that:
+ *
+ * \code
+ *      parser.set_allow(parser.allow_t::ALLOW_MASK, true);
+ *      parser.set_allow(parser.allow_t::ALLOW_ADDRESS_MASK, true);
  *      parser.set_default_mask("255.255.0.0");
  *      parser.set_default_mask("[ffff:ffff:ffff::]");
  * \endcode
@@ -340,6 +410,26 @@ int addr_parser::get_default_port() const
  * you attempt to parse an input string that does not include a mask and
  * the default gets used.
  *
+ * \warning
+ * This function accepts address like values as the default mask. This
+ * generates an error if no mask is defined by the user and you did not
+ * do:
+ *
+ * \code
+ *     parser.set_allow(addr::allow_t::ALLOW_ADDRESS_MASK, true);
+ * \endcode
+ *
+ * \exception addr_invalid_argument
+ * An IPv6 address that start with a '[' must end with a ']'. If only one
+ * of these characters appears in the string, then it is an error and this
+ * exception is raised.
+ *
+ * \todo
+ * The mask accepts a simple number from 0 to 128. This function is not
+ * capable of understand whether a smaller number (0 to 32) is an IPv4
+ * or an IPv6 mask. At the moment, small numbers are viewed as an IPv4
+ * mask.
+ *
  * \todo
  * Add a check of the default mask when it gets set so we can throw on
  * errors and that way it is much more likely that programmers can fix
@@ -354,25 +444,46 @@ void addr_parser::set_default_mask(std::string const & mask)
     {
         f_default_mask4.clear();
         f_default_mask6.clear();
+        return;
     }
-    else if(mask[0] == '[')
+
+    bool const front_ipv6(mask.front() == '[');
+    bool const back_ipv6(mask.back() == ']');
+    if(front_ipv6 && back_ipv6)
     {
         // remove the '[' and ']'
         //
-        if(mask.back() != ']')
-        {
-            throw addr_invalid_argument("an IPv6 mask starting with '[' must end with ']'.");
-        }
         f_default_mask6 = mask.substr(1, mask.length() - 2);
+        return;
     }
-    else if(mask.find(':') != std::string::npos)
+
+    if(front_ipv6 || back_ipv6)
+    {
+        throw addr_invalid_argument("an IPv6 mask starting with '[' must end with ']' and vice versa.");
+    }
+
+    if(mask.find(':') != std::string::npos)
     {
         f_default_mask6 = mask;
+        return;
     }
-    else
+
+    std::int64_t m(0);
+    bool const valid(advgetopt::validator_integer::convert_string(mask, m));
+    if(valid)
     {
-        f_default_mask4 = mask;
+        if(m < 0 || m > 128)
+        {
+            throw addr_invalid_argument("a mask number must be between 0 and 128.");
+        }
+        if(m > 32)
+        {
+            f_default_mask6 = mask;
+            return;
+        }
     }
+
+    f_default_mask4 = mask;
 }
 
 
@@ -428,12 +539,10 @@ std::string const & addr_parser::get_default_mask6() const
 
 /** \brief Set the protocol to use to filter addresses.
  *
- * This function sets the protocol as one of the following:
- *
- * \li "ip" -- only return IP address supporting the IP protocol
- * (this is offered because getaddrinfo() may return such IP addresses.)
- * \li "tcp" -- only return IP address supporting TCP
- * \li "udp" -- only return IP address supporting UDP
+ * This function sets the protocol. The accepted names are defined in
+ * the /etc/protocols file. In most cases, we support "tcp" and
+ * "udp". Other transfer protocols may work too, but we have not
+ * tested them.
  *
  * Any other value is refused. To reset the protocol to the default,
  * which is "do not filter by protocol", call the clear_protocol().
@@ -449,27 +558,23 @@ std::string const & addr_parser::get_default_mask6() const
  */
 void addr_parser::set_protocol(std::string const & protocol)
 {
-    if(protocol == "ip")
+    char buf[1024];
+    protoent p = {};
+    protoent * ptr(&p);
+    if(getprotobyname_r(
+              protocol.c_str()
+            , &p
+            , buf
+            , sizeof(buf)
+            , &ptr) != 0
+    || ptr == nullptr)
     {
-        f_protocol = IPPROTO_IP;
-    }
-    else if(protocol == "tcp")
-    {
-        f_protocol = IPPROTO_TCP;
-    }
-    else if(protocol == "udp")
-    {
-        f_protocol = IPPROTO_UDP;
-    }
-    else
-    {
-        // not a protocol we support
-        //
         throw addr_invalid_argument(
-                  std::string("unknown protocol named \"")
+                  "unknown protocol named \""
                 + protocol
-                + "\", expected \"tcp\" or \"udp\".");
+                + "\", expected \"tcp\" or \"udp\" or another name from /etc/protocols.");
     }
+    f_protocol = p.p_proto;
 }
 
 
@@ -958,21 +1063,47 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
         }
     }
 
-    if((f_sort & SORT_FULL) != 0)
+    // run a normal sort first then attempt a merge if requested
+    //
+    if((f_sort & (SORT_FULL | SORT_MERGE)) != 0)
     {
-        std::sort(
+        std::stable_sort(result.begin(), result.end());
+    }
+
+    if((f_sort & SORT_MERGE) != 0)
+    {
+        std::size_t max(result.size());
+        if(max > 1)
+        {
+            for(std::size_t idx(0); idx < max - 1; ++idx)
+            {
+                addr_range const r(result[idx].union_if_possible(result[idx + 1]));
+                if(r.is_defined()
+                && !r.is_empty())
+                {
+                    // merge worked, update the vector
+                    //
+                    result[idx] = r;
+                    result.erase(result.begin() + idx + 1);
+                    --max;
+                    --idx;
+                }
+            }
+        }
+    }
+
+    // move IPv4 or IPv6 first (should be IPv6 in newer systems)
+    //
+    if((f_sort & SORT_IPV4_FIRST) != 0)
+    {
+        std::stable_sort(
               result.begin()
             , result.end()
             , [](auto const & a, auto const & b)
             {
                 switch(a.compare(b))
                 {
-                case compare_t::COMPARE_SMALLER:
-                case compare_t::COMPARE_OVERLAP_SMALL_VS_LARGE:
-                case compare_t::COMPARE_INCLUDED:
-                case compare_t::COMPARE_IPV6_VS_IPV4:
-                case compare_t::COMPARE_SMALL_VS_LARGE:
-                case compare_t::COMPARE_FOLLOWS:
+                case compare_t::COMPARE_IPV4_VS_IPV6:
                 case compare_t::COMPARE_FIRST:
                     return true;
 
@@ -982,42 +1113,23 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
                 }
             });
     }
-
-    if((f_sort & SORT_MERGE) != 0)
-    {
-        std::size_t max(result.size());
-        for(std::size_t idx(0); idx < max - 1; ++idx)
-        {
-            addr_range const r(result[idx].union_if_possible(result[idx + 1]));
-            if(!r.is_empty())
-            {
-                // merge worked
-                //
-                result[idx] = r;
-                result.erase(result.begin() + idx + 1);
-                --max;
-            }
-        }
-    }
-
-    if((f_sort & SORT_IPV4_FIRST) != 0)
-    {
-        std::sort(
-              result.begin()
-            , result.end()
-            , [](auto const & a, auto const & b)
-            {
-                return a.compare(b) == compare_t::COMPARE_IPV4_VS_IPV6;
-            });
-    }
     else if((f_sort & SORT_IPV6_FIRST) != 0)
     {
-        std::sort(
+        std::stable_sort(
               result.begin()
             , result.end()
             , [](auto const & a, auto const & b)
             {
-                return a.compare(b) == compare_t::COMPARE_IPV6_VS_IPV4;
+                switch(a.compare(b))
+                {
+                case compare_t::COMPARE_IPV6_VS_IPV4:
+                case compare_t::COMPARE_FIRST:
+                    return true;
+
+                default:
+                    return false;
+
+                }
             });
     }
 
@@ -1077,7 +1189,7 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
                 {
                     m = f_default_mask4;
                 }
-                else
+                else if(!f_default_mask6.empty())
                 {
                     // parse_mask() expects '[...]' around IPv6 addresses
                     //
@@ -1085,6 +1197,9 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
                 }
             }
 
+            // TODO: the am.get_from() may be wrong since now we support
+            //       ranges so it could require am.get_to() instead
+            //
             parse_mask(m, am.get_from());
         }
 
@@ -1092,9 +1207,6 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
         //
         if(errcnt == f_error_count)
         {
-            // note: no need to test the SORT_NO_EMPTY since that was already
-            //       done when adding addresses to addr_mask
-            //
             result.insert(result.end(), addr_mask.begin(), addr_mask.end());
         }
     }
@@ -1131,10 +1243,16 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
  */
 void addr_parser::parse_address(std::string const & in, std::string const & mask, addr_range::vector_t & result)
 {
-    // With our only supported format, ipv6 addresses must be between square
-    // brackets. The address may just be a mask in which case the '[' may
-    // not be at the very start (i.e. "/[ffff:ffff::]")
+    // if the number of colons is 2 or more, the address has to be an
+    // IPv6 address so we have a very special case at the start for that
     //
+    std::size_t const colons(std::count(in.begin(), in.end(), ':'));
+    if(colons >= 2)
+    {
+        parse_address6(in, colons, result);
+        return;
+    }
+
     if(in.empty()
     || in[0] == ':')    // if it start with ':' then there is no address
     {
@@ -1149,7 +1267,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
             {
                 // IPv6 parsing
                 //
-                parse_address6(in, result);
+                parse_address6(in, colons, result);
             }
             else
             {
@@ -1180,7 +1298,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
                 }
                 if(mask_count > 32)
                 {
-                    parse_address6(in, result);
+                    parse_address6(in, colons, result);
                 }
                 else
                 {
@@ -1193,7 +1311,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
             if(f_default_address4.empty()
             && !f_default_address6.empty())
             {
-                parse_address6(in, result);
+                parse_address6(in, colons, result);
             }
             else
             {
@@ -1210,7 +1328,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
         if(in[0] == '['
         || in.find(']') != std::string::npos)
         {
-            parse_address6(in, result);
+            parse_address6(in, colons, result);
         }
         else
         {
@@ -1225,7 +1343,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
                 if(p != std::string::npos
                 && in.find('.') > p)
                 {
-                    parse_address6(in, result);
+                    parse_address6(in, colons, result);
                 }
                 else
                 {
@@ -1268,44 +1386,25 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
         //
         if(p != std::string::npos)
         {
-            // get the address only if not empty (otherwise we want to
-            // keep the default)
-            //
-            if(p > 0)
-            {
-                address = in.substr(0, p);
-            }
-
-            // get the port only if not empty (otherwise we want to
-            // keep the default)
-            //
-            if(p + 1 < in.length())
-            {
-                port_str = in.substr(p + 1);
-            }
+            address = in.substr(0, p);
+            port_str = in.substr(p + 1);
         }
-        else if(!in.empty())
+        else
         {
             address = in;
         }
+    }
+    else if(p == std::string::npos)
+    {
+        address = in;
     }
     else
     {
-        if(p != std::string::npos
-        && !get_allow(allow_t::ALLOW_PORT)
-        && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
-        {
-            emit_error("Port not allowed (" + in + ").");
-            return;
-        }
-
-        if(!in.empty())
-        {
-            address = in;
-        }
+        emit_error("Port not allowed (" + in + ").");
+        return;
     }
 
-    parse_address_port(address, port_str, result, false);
+    parse_address_range_port(address, port_str, result, false);
 }
 
 
@@ -1320,15 +1419,14 @@ void addr_parser::parse_address4(std::string const & in, addr_range::vector_t & 
  * returns without adding anything to `result`.
  *
  * \note
- * This function can be called with an IPv6
+ * This function is expected to be called with an IPv6.
  *
  * \param[in] in  The input string with the address and optional port.
+ * \param[in] colons  The number of colons in \p in.
  * \param[in,out] result  The list of resulting addresses.
  */
-void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & result)
+void addr_parser::parse_address6(std::string const & in, std::size_t const colons, addr_range::vector_t & result)
 {
-    std::string::size_type p(0);
-
     std::string address;
     std::string port_str;
 
@@ -1337,7 +1435,7 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
     if(!in.empty()
     && in[0] == '[')
     {
-        p = in.find(']');
+        std::string::size_type p(in.find(']'));
 
         if(p == std::string::npos)
         {
@@ -1345,38 +1443,153 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
             return;
         }
 
-        if(p != 1)
-        {
-            // get the address only if not empty (otherwise we want to
-            // keep the default) -- so we actually support "[]" to
-            // represent "use the default address if defined".
-            //
-            address = in.substr(1, p - 1);
-        }
-    }
+        address = in.substr(1, p - 1);
 
-    // on entry 'p' is either 0 or the position of the ']' character
-    //
-    p = in.find(':', p);
-
-    if(p != std::string::npos)
-    {
-        if(get_allow(allow_t::ALLOW_PORT)
-        || get_allow(allow_t::ALLOW_REQUIRED_PORT))
+        ++p;
+        if(p < in.length())
         {
-            // there is also a port, extract it
-            //
+            if(in[p] != ':')
+            {
+                emit_error("The IPv6 address \"" + in + "\" is followed by unknown data.");
+                return;
+            }
+
+            if(!get_allow(allow_t::ALLOW_PORT)
+            && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
+            {
+                // even just a ':' is no allowed in this case
+                //
+                emit_error("Port not allowed (" + in + ").");
+                return;
+            }
+
             port_str = in.substr(p + 1);
         }
-        else if(!get_allow(allow_t::ALLOW_PORT)
-             && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
+    }
+    else if(colons == 1)
+    {
+        // this usually happens when only a port was specified
+        // (so here p == 0 will be true 99% of the time)
+        //
+        std::string::size_type const p(in.find(':'));
+        if(p == std::string::npos)
         {
-            emit_error("Port not allowed (" + in + ").");
+            throw logic_error("colons == 1 & we did not find it!"); // LCOV_EXCL_LINE
+        }
+        address = in.substr(0, p);
+        port_str = in.substr(p + 1);
+    }
+    else
+    {
+        address = in;
+    }
+
+    parse_address_range_port(address, port_str, result, true);
+}
+
+
+/** \brief Parse an address range and a port.
+ *
+ * This function checks whether the address part includes a dash, if so, it
+ * is considered an address range and the function transforms it in a "from"
+ * and a "to" set of addresses.
+ *
+ * This function emits an error if the address is just a dash (-). If you
+ * want to get the default IP address, use the empty string instead.
+ *
+ * \note
+ * The address range has to be enabled for it to be active. If a range is
+ * not allowed, then any '-' is ignored. That also allows you to use domain
+ * names that may otherwise include a dash character (i.e. "bad-domain.com").
+ *
+ * \param[in] addresses  One or two addresses separated by a dash (-).
+ * \param[in] port_str  The port as a string.
+ * \param[out] result  The vector where the results get saved.
+ * \param[in] ipv6  Whether the parser needs to use AF_INET or AF_INET6.
+ */
+void addr_parser::parse_address_range_port(
+      std::string const & addresses
+    , std::string const & port_str
+    , addr_range::vector_t & result
+    , bool ipv6)
+{
+    std::string::size_type p(std::string::npos);
+    if(get_allow(allow_t::ALLOW_ADDRESS_RANGE))
+    {
+        p = addresses.find('-');
+    }
+    if(p == std::string::npos)
+    {
+        parse_address_port(addresses, port_str, result, ipv6);
+        return;
+    }
+
+    std::string const from(addresses.substr(0, p));
+    std::string const to(addresses.substr(p + 1));
+
+    if(from.empty()
+    && to.empty())
+    {
+        emit_error("An address range requires at least one of the \"from\" or \"to\" addresses.");
+        return;
+    }
+
+    addr_range::vector_t from_result;
+    if(!from.empty())
+    {
+        parse_address_port(from, port_str, from_result, ipv6);
+        if(from_result.size() > 1)
+        {
+            emit_error("The \"from\" of an address range must be exactly one address.");
+            return;
+        }
+        if(from_result.empty())
+        {
+            // parse_address_port() failed
             return;
         }
     }
 
-    parse_address_port(address, port_str, result, true);
+    addr_range::vector_t to_result;
+    if(!to.empty())
+    {
+        // our parse_address_port() function sees the input address as
+        // the "from" address; the following moves that result to the
+        // "to" address of our own result (assuming the parsing worked
+        // as expected)
+        //
+        parse_address_port(to, port_str, to_result, ipv6);
+        if(to_result.size() > 1)
+        {
+            emit_error("The \"to\" of an address range must be exactly one address.");
+            return;
+        }
+        if(to_result.empty())
+        {
+            // parse_address_port() failed
+            return;
+        }
+        to_result[0].swap_from_to();
+    }
+
+    if(!from_result.empty()
+    && !to_result.empty())
+    {
+        from_result[0].set_to(to_result[0].get_to());
+        if((f_sort & SORT_NO_EMPTY) == 0
+        || !from_result[0].is_empty())
+        {
+            result.push_back(from_result[0]);
+        }
+    }
+    else if(!from_result.empty())
+    {
+        result.push_back(from_result[0]);
+    }
+    else //if(!to_result.empty())
+    {
+        result.push_back(to_result[0]);
+    }
 }
 
 
@@ -1391,16 +1604,20 @@ void addr_parser::parse_address6(std::string const & in, addr_range::vector_t & 
  * The port may be numeric or a name such as `"http"`.
  *
  * \note
- * This function is not responsible for handling the default address
- * and default port. This is expected to be dealt with by the caller
- * if required.
+ * When this function gets called with an empty string as the address or
+ * the port, then it makes use of the user defined default unless that
+ * default string is also empty in which case it uses a system default.
  *
  * \param[in] address  The address to convert to binary.
  * \param[in] port_str  The port as a string.
  * \param[out] result  The range where we save the results.
  * \param[in] ipv6  Use the default IPv6 address if the address is empty.
  */
-void addr_parser::parse_address_port(std::string address, std::string port_str, addr_range::vector_t & result, bool ipv6)
+void addr_parser::parse_address_port(
+      std::string address
+    , std::string port_str
+    , addr_range::vector_t & result
+    , bool ipv6)
 {
     // make sure the port is good
     //
@@ -1427,7 +1644,6 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
             return;
         }
         // internal default if no address was defined
-        // (TBD: should it be an IPv6 instead?)
         //
         if(ipv6)
         {
@@ -1455,8 +1671,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
 
     // prepare hints for the the getaddrinfo() function
     //
-    addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
+    addrinfo hints = {};
     hints.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG | AI_V4MAPPED;
     hints.ai_family = AF_UNSPEC;
 
@@ -1540,11 +1755,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                     a.set_hostname(address);
                     addr_range r;
                     r.set_from(a);
-                    if((f_sort & SORT_NO_EMPTY) == 0
-                    || !r.is_empty())
-                    {
-                        result.push_back(r);
-                    }
+                    result.push_back(r);
                 }
             }
             else if(addrlist->ai_family == AF_INET6)
@@ -1567,23 +1778,19 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                     }
                     addr_range r;
                     r.set_from(a);
-                    if((f_sort & SORT_NO_EMPTY) == 0
-                    || !r.is_empty())
-                    {
-                        result.push_back(r);
-                    }
+                    result.push_back(r);
                 }
             }
             else if(first)                                                  // LCOV_EXCL_LINE
             {
-                // ignore errors from further addresses
+                // ignore errors from other unsupported addresses
                 //
-                emit_error("Unsupported address family "                     // LCOV_EXCL_LINE
-                         + std::to_string(addrlist->ai_family)               // LCOV_EXCL_LINE
-                         + ".");                                             // LCOV_EXCL_LINE
-            }
+                first = false;                                              // LCOV_EXCL_LINE
 
-            first = false;
+                emit_error("Unsupported address family "                    // LCOV_EXCL_LINE
+                         + std::to_string(addrlist->ai_family)              // LCOV_EXCL_LINE
+                         + ".");                                            // LCOV_EXCL_LINE
+            }
 
             addrlist = addrlist->ai_next;
         }
@@ -1608,6 +1815,11 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
             if(!get_allow(allow_t::ALLOW_PORT)
             && !get_allow(allow_t::ALLOW_REQUIRED_PORT))
             {
+                // TBD: this is probably a logic error because as far as I
+                //      know it can only happen if the programmer defined
+                //      a default port and also told the parser that no
+                //      port is allowed
+                //
                 emit_error("Found a port (\""
                          + port_str
                          + "\") when it is not allowed.");
@@ -1629,11 +1841,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
             }
             addr_range r;
             r.set_from(a);
-            if((f_sort & SORT_NO_EMPTY) == 0
-            || !r.is_empty())
-            {
-                result.push_back(r);
-            }
+            result.push_back(r);
         }
         else
         {
@@ -1653,11 +1861,7 @@ void addr_parser::parse_address_port(std::string address, std::string port_str, 
                 }
                 addr_range r;
                 r.set_from(a);
-                if((f_sort & SORT_NO_EMPTY) == 0
-                || !r.is_empty())
-                {
-                    result.push_back(r);
-                }
+                result.push_back(r);
             }
             else
             {
@@ -1709,12 +1913,28 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
     //
     int mask_count(0);
     {
-        for(char const * s(mask.c_str()); *s != '\0'; ++s)
+        // TODO: compute `m` only once
+        std::string m(mask);
+        if(mask.length() >= 2
+        && mask.front() == '['
+        && mask.back() == ']')
+        {
+            m = mask.substr(1, mask.length() - 2);
+            if(m.empty())
+            {
+                // "[]" is also considered empty and that has to use the
+                // default mask, not 0
+                //
+                return;
+            }
+        }
+
+        for(char const * s(m.c_str()); *s != '\0'; ++s)
         {
             if(*s >= '0' && *s <= '9')
             {
                 mask_count = mask_count * 10 + *s - '0';
-                if(mask_count > 1000)
+                if(mask_count > 10000)
                 {
                     emit_error("Mask number too large ("
                              + mask
@@ -1768,6 +1988,14 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
     }
     else //if(mask_count < 0)
     {
+        if(!get_allow(allow_t::ALLOW_ADDRESS_MASK))
+        {
+            emit_error("Address like mask not allowed (/"
+                     + mask
+                     + "), try with a simple number instead.");
+            return;
+        }
+
         // prepare hints for the the getaddrinfo() function
         //
         addrinfo hints;

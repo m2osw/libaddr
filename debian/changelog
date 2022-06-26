@@ -4,8 +4,25 @@ libaddr (1.0.31.0~bionic) bionic; urgency=high
   * Added support for a '#' comment introducer (along the newline feature).
   * Added the to_string() on the addr_range class.
   * Added the to_string() for the addr_range::vector_t type.
+  * Added support for address ranges in the parser (<addr>-<addr>).
+  * Added ability to forbid address like masks (default now).
+  * Correctly implemented the SORT_NO_EMPTY check.
   * Added support for ostream << operator including manip like parameters.
   * Added test to verify the input port as string.
+  * Added error messages in the validator_address object.
+  * Added cppthread as a dependency to support validator_address errors.
+  * Redesign parsing of validator_address parameters.
+  * Changed the set_protocol() to make use of getprotobyname_r().
+  * Added a set_mask_count() to allow for a number instead of a 128 bit mask.
+  * Allow for applying the reversed mask (i.e. addr |= ~mask).
+  * Moved the network_type_t and string_ip_t outside of the addr class.
+  * Fixed the range compare() function so it actually works.
+  * Enhanced the parsing of IPv6 vs. IPv4 addresses.
+  * Tested and fixed the sorting of IPs by the parser.
+  * Added a range "is_defined()" if one of "from" or "to" is set.
+  * Added a swap of the boundaries in addr_range.
+  * Fixed union_if_possible() tests as "from" or "to" may be undefined.
+  * Enhanced many tests and updated them to pass with the new features.
 
  -- Alexis Wilke <alexis@m2osw.com>  Sat, 11 Jun 2022 21:19:18 -0700
 

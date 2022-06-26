@@ -47,6 +47,11 @@
 #include    "catch_main.h"
 
 
+// snapdev
+//
+#include    <snapdev/not_used.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -74,8 +79,20 @@ Catch::Clara::Parser add_command_line_options(Catch::Clara::Parser const & cli)
 }
 
 
+int finish_init(Catch::Session & session)
+{
+    snapdev::NOT_USED(session);
+
+    cppthread::set_log_callback(SNAP_CATCH2_NAMESPACE::log_for_test);
+
+    return 0;
+}
+
+
 void cleanup()
 {
+    SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
     if(system("rm -rf socket-test*") != 0)
     {
         std::cerr << "error: test could not properly clean up socket files." << std::endl;
@@ -96,7 +113,7 @@ int main(int argc, char * argv[])
             , argv
             , nullptr
             , &add_command_line_options
-            , nullptr
+            , &finish_init
             , &cleanup
         );
 }

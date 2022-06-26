@@ -66,6 +66,11 @@
 #include    <netdb.h>
 
 
+// cppthread
+//
+#include    <cppthread/log.h>
+
+
 // last include
 //
 #include    <snapdev/poison.h>
@@ -80,6 +85,11 @@ namespace SNAP_CATCH2_NAMESPACE
 //
 
 extern int          g_tcp_port;
+
+
+void                push_expected_log(std::string const & message);
+void                log_for_test(cppthread::log_level_t level, std::string const & message);
+void                expected_logs_stack_is_empty();
 
 
 }

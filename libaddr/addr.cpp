@@ -406,10 +406,10 @@ void addr::set_port(int port)
  * this addr object.
  *
  * \exception addr_invalid_argument
- * We currently support "tcp", "udp", and "ip". Any other protocol
- * name generates this exception.
+ * The supported protocol names are defined in /etc/protocols. However,
+ * internally, we are likely to support many less protocols.
  *
- * \param[in] protocol  The name of the protocol ("tcp", "udp", or "ip")
+ * \param[in] protocol  The name of the protocol.
  */
 void addr::set_protocol(char const * protocol)
 {
@@ -418,25 +418,24 @@ void addr::set_protocol(char const * protocol)
         throw addr_invalid_argument("protocol pointer to set_protocol() cannot be a nullptr.");
     }
 
-    if(strcmp(protocol, "ip") == 0)
-    {
-        f_protocol = IPPROTO_IP;
-    }
-    else if(strcmp(protocol, "tcp") == 0)
-    {
-        f_protocol = IPPROTO_TCP;
-    }
-    else if(strcmp(protocol, "udp") == 0)
-    {
-        f_protocol = IPPROTO_UDP;
-    }
-    else
+    char buf[1024];
+    protoent p = {};
+    protoent * ptr(&p);
+    int const r(getprotobyname_r(
+              protocol
+            , &p
+            , buf
+            , sizeof(buf)
+            , &ptr));
+    if(r != 0
+    || ptr == nullptr)
     {
         throw addr_invalid_argument(
                           std::string("unknown protocol \"")
                         + protocol
                         + "\", expected \"tcp\" or \"udp\" (string).");
     }
+    f_protocol = p.p_proto;
 
     address_changed();
 }
@@ -503,19 +502,83 @@ void addr::set_mask(std::uint8_t const * mask)
 }
 
 
+/** \brief Set the mask.
+ *
+ * This function sets the mask to the specified number. An IPv4 supports a
+ * mask of 0 to 32, but we only handle IPv6 addresses which are 128 bits.
+ * So for an IPv4, call this function with a number from 96 to 128.
+ *
+ * \exception out_of_range
+ * If the \p mask_size parameter is too small or too large, then this
+ * exception is raised.
+ *
+ * \param[in] mask_size  The number of bits that are not masked (number of 1s
+ * starting from the left side, the same as the `.../CIDR` number).
+ */
+void addr::set_mask_count(int mask_size)
+{
+    int const min(is_ipv4() ? 96 : 0);
+    if(mask_size < min || mask_size > 128)
+    {
+        throw out_of_range("the mask size " + std::to_string(mask_size) + " is out of range.");
+    }
+
+    std::size_t count(sizeof(f_mask));
+    std::uint8_t * mask(f_mask);
+    while(mask_size >= 8)
+    {
+        *mask = 0xFF;
+        ++mask;
+        mask_size -= 8;
+        --count;
+    }
+    if(mask_size != 0)
+    {
+        *mask = 0xFF00 >> mask_size;
+        ++mask;
+        --count;
+    }
+    for(; count > 0; --count, ++mask)
+    {
+        *mask = 0;
+    }
+}
+
+
 /** \brief Apply the mask to the IP address.
  *
- * This function applies the mask to this address IP address. This means
- * the bits that are 0 in the mask will also be 0 in the address once
- * the function returns.
+ * This function applies the mask to this address IP address. We offer
+ * to functions:
  *
- * This should be called if you are trying to canonicalize an IP/mask.
+ * 1. AND (\p inversed = false)
+ *
+ *    This means the bits that are 0 in the mask will also be 0 in the
+ *    address once the function returns.
+ *
+ * 2. OR (\p inversed = true)
+ *
+ *    This means the bits that are 0 in the mask are set to 1 in the
+ *    address once the function returns.
+ *
+ * This should be called to canonicalize an IP/mask in cases where the
+ * address represents a group of all the addresses represented by the
+ * mask. It can also be useful to generate the broadcast address (when
+ * inversed is set to true).
+ *
+ * \param[in] inversed  If true, applied the inversed mask with an OR (|).
  */
-void addr::apply_mask()
+void addr::apply_mask(bool inversed)
 {
     for(int idx(0); idx < 16; ++idx)
     {
-        f_address.sin6_addr.s6_addr[idx] &= f_mask[idx];
+        if(inversed)
+        {
+            f_address.sin6_addr.s6_addr[idx] |= ~f_mask[idx];
+        }
+        else
+        {
+            f_address.sin6_addr.s6_addr[idx] &= f_mask[idx];
+        }
     }
 }
 
@@ -795,8 +858,8 @@ bool addr::is_lan(bool include_all) const
 {
     network_type_t const type(get_network_type());
 
-    if(type == addr::addr::network_type_t::NETWORK_TYPE_PRIVATE
-    || type == addr::addr::network_type_t::NETWORK_TYPE_LOOPBACK)
+    if(type == network_type_t::NETWORK_TYPE_PRIVATE
+    || type == network_type_t::NETWORK_TYPE_LOOPBACK)
     {
         return true;
     }
@@ -1191,7 +1254,7 @@ void addr::ip_from_uint128(unsigned __int128 u)
  * \return One of the possible network types as defined in the
  *         network_type_t enumeration.
  */
-addr::network_type_t addr::get_network_type() const
+network_type_t addr::get_network_type() const
 {
     if(f_private_network == network_type_t::NETWORK_TYPE_UNDEFINED)
     {
@@ -1299,14 +1362,14 @@ std::string addr::get_network_type_string() const
     std::string name;
     switch( get_network_type() )
     {
-    case addr::network_type_t::NETWORK_TYPE_UNDEFINED  : name = "Undefined";  break; // LCOV_EXCL_LINE -- get_network_type() defines it...
-    case addr::network_type_t::NETWORK_TYPE_PRIVATE    : name = "Private";    break;
-    case addr::network_type_t::NETWORK_TYPE_CARRIER    : name = "Carrier";    break;
-    case addr::network_type_t::NETWORK_TYPE_LINK_LOCAL : name = "Local Link"; break;
-    case addr::network_type_t::NETWORK_TYPE_MULTICAST  : name = "Multicast";  break;
-    case addr::network_type_t::NETWORK_TYPE_LOOPBACK   : name = "Loopback";   break;
-    case addr::network_type_t::NETWORK_TYPE_ANY        : name = "Any";        break;
-    case addr::network_type_t::NETWORK_TYPE_UNKNOWN    : name = "Unknown";    break; // == NETWORK_TYPE_PUBLIC
+    case network_type_t::NETWORK_TYPE_UNDEFINED  : name = "Undefined";  break; // LCOV_EXCL_LINE -- get_network_type() defines it...
+    case network_type_t::NETWORK_TYPE_PRIVATE    : name = "Private";    break;
+    case network_type_t::NETWORK_TYPE_CARRIER    : name = "Carrier";    break;
+    case network_type_t::NETWORK_TYPE_LINK_LOCAL : name = "Local Link"; break;
+    case network_type_t::NETWORK_TYPE_MULTICAST  : name = "Multicast";  break;
+    case network_type_t::NETWORK_TYPE_LOOPBACK   : name = "Loopback";   break;
+    case network_type_t::NETWORK_TYPE_ANY        : name = "Any";        break;
+    case network_type_t::NETWORK_TYPE_UNKNOWN    : name = "Unknown";    break; // == NETWORK_TYPE_PUBLIC
     }
     return name;
 }

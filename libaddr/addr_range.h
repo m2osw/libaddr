@@ -51,6 +51,7 @@ public:
 
     bool                            has_from() const;
     bool                            has_to() const;
+    bool                            is_defined() const;
     bool                            is_range() const;
     bool                            is_empty() const;
     bool                            is_in(addr const & rhs) const;
@@ -62,19 +63,21 @@ public:
     void                            set_to(addr const & to);
     addr &                          get_to();
     addr const &                    get_to() const;
+    void                            swap_from_to();
     void                            from_cidr(addr const & range);
     addr::vector_t                  to_addresses(std::size_t limit = 1000) const;
-    std::string                     to_string(addr::string_ip_t mode = addr::string_ip_t::STRING_IP_ALL) const;
+    std::string                     to_string(string_ip_t mode = string_ip_t::STRING_IP_ALL) const;
     static std::string              to_string(
                                           vector_t const & ranges
-                                        , addr::string_ip_t mode = addr::string_ip_t::STRING_IP_ALL
+                                        , string_ip_t mode = string_ip_t::STRING_IP_ALL
                                         , std::string const & separator = std::string(","));
 
     std::size_t                     size() const;
     addr_range                      intersection(addr_range const & rhs) const;
     addr_range                      union_if_possible(addr_range const & rhs) const;
     bool                            match(addr const & address) const;
-    compare_t                       compare(addr_range const & rhs) const;
+    compare_t                       compare(addr_range const & rhs, bool mixed = false) const;
+    bool                            operator < (addr_range const & rhs) const;
 
     static addr::vector_t           to_addresses(vector_t ranges, std::size_t limit = 1000);
 
@@ -87,6 +90,46 @@ private:
 
 
 bool address_match_ranges(addr_range::vector_t ranges, addr const & address);
+
+
+
+template<typename _CharT, typename _Traits>
+inline std::basic_ostream<_CharT, _Traits> &
+operator << (std::basic_ostream<_CharT, _Traits> & out, addr_range const & range)
+{
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
+    if(info == nullptr)
+    {
+        out << range.to_string(string_ip_t::STRING_IP_ALL);
+    }
+    else
+    {
+        out << range.to_string(info->f_mode);
+    }
+    return out;
+}
+
+
+template<typename _CharT, typename _Traits>
+inline std::basic_ostream<_CharT, _Traits> &
+operator << (std::basic_ostream<_CharT, _Traits> & out, addr_range::vector_t const & ranges)
+{
+    _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
+    if(info == nullptr)
+    {
+        out << addr_range::to_string(ranges);
+    }
+    else
+    {
+        out << addr_range::to_string(
+                  ranges
+                , info->f_mode
+                , info->f_sep);
+    }
+    return out;
+}
+
+
 
 
 
