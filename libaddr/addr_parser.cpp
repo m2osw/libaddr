@@ -1247,7 +1247,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
     // IPv6 address so we have a very special case at the start for that
     //
     std::size_t const colons(std::count(in.begin(), in.end(), ':'));
-    if(colons >= 2)
+    if(colons >= 2UL)
     {
         parse_address6(in, colons, result);
         return;
