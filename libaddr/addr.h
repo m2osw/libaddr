@@ -157,7 +157,7 @@ public:
     void                            get_ipv6(sockaddr_in6 & in6) const;
     std::string                     to_ipv4_string(string_ip_t mode) const;
     std::string                     to_ipv6_string(string_ip_t mode) const;
-    std::string                     to_ipv4or6_string(string_ip_t mode) const;
+    std::string                     to_ipv4or6_string(string_ip_t mode = string_ip_t::STRING_IP_ALL) const;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     unsigned __int128               ip_to_uint128() const;
