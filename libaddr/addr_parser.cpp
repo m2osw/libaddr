@@ -1246,8 +1246,8 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
     // if the number of colons is 2 or more, the address has to be an
     // IPv6 address so we have a very special case at the start for that
     //
-    std::size_t const colons(std::count(in.begin(), in.end(), ':'));
-    if(static_cast<std::make_signed_t<decltype(colons)>>(colons) >= 2LL)
+    std::ptrdiff_t const colons(std::count(in.begin(), in.end(), ':'));
+    if(colons >= 2LL)
     {
         parse_address6(in, colons, result);
         return;

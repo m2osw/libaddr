@@ -46,7 +46,13 @@ of bits from left to right that are set to 1.
 The mask can also be an address. In case of an address, it has to use the
 same format as the first part (IPv4/IPv4 or IPv6/IPv6). Such a mask can
 be absolutely anything. (i.e. 85.85.85.85 would clear all even bits of
-an IPv4 address.)
+an IPv4 address).
+
+More or less from the time IPv6 was designed, the use of an address as
+a mask has been deprecated. The library still supports such, however, by
+default that feature is now turned off. Make sure to set the
+`addr::allow_t::ALLOW_ADDRESS_MASK` parameter to true before parsing an
+address if you want to allow such a feature (not recommanded).
 
 
 Bugs
