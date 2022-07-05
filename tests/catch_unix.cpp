@@ -1087,19 +1087,19 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
 
         // missing ":"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("unix/run/snapwebsites/sockets"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_AS(u.set_uri("cu/run/snapwebsites/sockets"), addr::addr_invalid_argument);
 
         // "?alexis"
         //
         CATCH_REQUIRE_THROWS_AS(u.set_uri("unix:/run/snapwebsites/sockets?alexis"), addr::addr_invalid_argument);
 
-        // "http:"
+        // "_test:"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("http:/run/snapwebsites/sockets?abstract"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_AS(u.set_uri("_test:/run/snapwebsites/sockets?abstract"), addr::addr_invalid_argument);
 
         // name with "?unnamed"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("unix:not-empty?unnamed"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_AS(u.set_uri("cd:not-empty?unnamed"), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
