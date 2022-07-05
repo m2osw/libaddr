@@ -90,6 +90,7 @@ public:
                                     unix(sockaddr_un const & un);
                                     unix(std::string const & address, bool abstract = false);
 
+    void                            set_scheme(std::string const & scheme);
     void                            set_un(sockaddr_un const & un);
     void                            make_unnamed();
     void                            set_file(std::string const & address);
@@ -100,6 +101,7 @@ public:
     bool                            is_file() const;
     bool                            is_abstract() const;
     bool                            is_unnamed() const;
+    std::string                     get_scheme() const;
     void                            get_un(sockaddr_un & un) const;
     std::string                     to_string() const;
     std::string                     to_uri() const;
@@ -115,6 +117,7 @@ public:
 private:
     std::string                     verify_path(std::string const & path, bool abstract);
 
+    std::string                     f_scheme = std::string();
     sockaddr_un                     f_address = init_un();
 };
 

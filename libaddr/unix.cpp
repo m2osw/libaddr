@@ -88,7 +88,7 @@ unix::unix()
  * This function initializes this Unix object with the specified sockaddr_un
  * address.
  *
- * \param[in] in  The Unix address.
+ * \param[in] un  The Unix address.
  */
 unix::unix(sockaddr_un const & un)
 {
@@ -123,6 +123,24 @@ unix::unix(std::string const & address, bool abstract)
     //{
     //    make_unnamed();
     //}
+}
+
+
+/** \brief Define a scheme name.
+ *
+ * This parameter is used when you convert the Unix address back to a string
+ * using to_uri(). It is also set when you use the set_uri().
+ *
+ * The default is set to "unix", which is not really a scheme per se, but
+ * for the purpose it works.
+ *
+ * If you pass an empty string, the scheme is reset to the default ("unix").
+ *
+ * \param[in] scheme  The name of the scheme.
+ */
+void unix::set_scheme(std::string const & scheme)
+{
+    f_scheme = scheme == "unix" ? std::string() : scheme;
 }
 
 
@@ -306,12 +324,17 @@ void unix::set_abstract(std::string const & abstract)
  * We support the following basic URI syntax:
  *
  * \code
- *     <type>:[<path>][?<mode>]
+ *     <scheme>:[<path>][?<mode>]
  * \endcode
  *
- * Where `\<type>` has to be one of:
+ * Where `\<scheme>` has to be a valid URI scheme. RFC 3986 defines the
+ * valid characters in a scheme:
  *
- * * `unix:` -- this is the only scheme we currently support
+ * \code
+ *     scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+ * \endcode
+ *
+ * You can later retrieve the scheme with the get_scheme() function.
  *
  * Where `\<path>` is the path to the file or abstract filename. For unnamed
  * sockets, it must be an empty string. If it starts with more than one
@@ -363,6 +386,29 @@ void unix::set_uri(std::string const & uri)
     }
 
     std::string const scheme(uri.substr(0, scheme_pos));
+    if(scheme.empty())
+    {
+        throw addr_invalid_argument("the scheme of a URI cannot be an empty string.");
+    }
+    for(auto it(scheme.begin()); it != scheme.end(); ++it)
+    {
+        std::string::value_type const c(*it);
+        if((c < 'a' || c > 'z')
+        && (c < 'A' || c > 'Z')
+        && (it != scheme.begin()
+            && (c < '0' || c > '9')
+            && c != '+' || c != '-' || c != '.'))
+        {
+            // as per RFC 3986
+            // https://datatracker.ietf.org/doc/html/rfc3986
+            //
+            throw addr_invalid_argument(
+                  "\""
+                + scheme
+                + "\" is not a supported URI scheme for a Unix address;"
+                  " supported scheme are limited to `[a-zA-Z][-+.a-zA-Z0-9]*`.");
+        }
+    }
 
     std::string address;
     std::string query;
@@ -403,15 +449,6 @@ void unix::set_uri(std::string const & uri)
         }
     }
 
-    if(scheme != "unix")
-    {
-        throw addr_invalid_argument(
-              "\""
-            + scheme
-            + "\" is not a supported URI scheme for a Unix address;"
-              " supported scheme are: \"stream\", \"dgram\" and \"seqpacket\".");
-    }
-
     switch(force)
     {
     case uri_force_t::URI_FORCE_NONE:
@@ -445,6 +482,10 @@ void unix::set_uri(std::string const & uri)
         break;
 
     }
+
+    // unix is the default so we don't have to save it
+    //
+    set_scheme(scheme);
 }
 
 
@@ -546,6 +587,21 @@ bool unix::is_unnamed() const
 }
 
 
+/** \brief Retrieve the protocol.
+ *
+ * This function retrive the protocol as defined by the set_scheme().
+ *
+ * The default value is "unix", which is not really a scheme, but a
+ * default is required for the to_uri() function to work properly.
+ *
+ * \return The current scheme.
+ */
+std::string unix::get_scheme() const
+{
+    return f_scheme.empty() ? "unix" : f_scheme;
+}
+
+
 /** \brief Retrieve a copy of this Unix address.
  *
  * This function returns the Unix address as currently defined in this
@@ -598,11 +654,8 @@ std::string unix::to_uri() const
     std::string result;
     result.reserve(125);
 
-    // TODO: this is incorrect, we would need the user to tell us what the
-    //       protocol name really is (i.e. in snapcommunicator, it would be
-    //       either "sc:" or "scu:" and not "unix:")
-    //
-    result = "unix:";
+    result = get_scheme();
+    result += ':';
 
     if(!is_unnamed())
     {
@@ -666,7 +719,10 @@ int unix::unlink()
  *
  * \warning
  * The function only compares the address itself. The family, port,
- * flow info, scope identifier, protocol are all ignored.
+ * flow info, scope identifier, scheme are all ignored. You can
+ * compare the scheme using the get_scheme() of lhs and rhs and
+ * compare. The family is expected to by AF_UNIX in both so there
+ * should be no need to compare.
  *
  * \param[in] rhs  The other Unix address to compare against.
  *
