@@ -44,6 +44,7 @@
 //
 #include    <algorithm>
 #include    <cassert>
+#include    <limits>
 
 
 // last include
