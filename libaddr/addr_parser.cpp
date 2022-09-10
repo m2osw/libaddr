@@ -39,7 +39,8 @@
  *
  * The port is separated from the address by a colon (:). For IPv6, this means
  * the IPv6 address itself must be defined between square brackets as in
- * `[x:x:...:x]`.
+ * `[x:x:...:x]`. The square brackets are not required if the port is not
+ * allowed.
  *
  * The `<mask>` appears after a slash (/). It is expected to be a number
  * from 0 to 128 (0 to 32 for IPv4 addresses). It can be written as an
@@ -85,7 +86,7 @@
  *       | 'a' | 'b' | ... | 'z'
  *       | 'A' | 'B' | ... | 'Z'
  *       | '.' | '-'
- *       | UTF8_CHARACTER (most domain system do not support all UTF-8)
+ *       | UTF8_CHARACTER (most domain systems do not support all UTF-8)
  * \endcode
  */
 
@@ -95,18 +96,18 @@
 #include    "libaddr/exception.h"
 
 
-// advgetopt library
+// advgetopt
 //
 #include    <advgetopt/validator_integer.h>
 
 
-// C++ library
+// C++
 //
 #include    <algorithm>
 #include    <iostream>
 
 
-// C library
+// C
 //
 #include    <ifaddrs.h>
 #include    <netdb.h>
@@ -1621,7 +1622,8 @@ void addr_parser::parse_address_port(
 {
     // make sure the port is good
     //
-    if(port_str.empty())
+    bool const defined_port(!port_str.empty());
+    if(!defined_port)
     {
         if(get_allow(allow_t::ALLOW_REQUIRED_PORT))
         {
@@ -1746,13 +1748,14 @@ void addr_parser::parse_address_port(
                 else
                 {
                     addr a(*reinterpret_cast<sockaddr_in *>(addrlist->ai_addr));
+                    a.set_hostname(address);
                     // in most cases we do not get a protocol from
                     // the getaddrinfo() function...
                     if(addrlist->ai_protocol != -1)
                     {
                         a.set_protocol(addrlist->ai_protocol);
                     }
-                    a.set_hostname(address);
+                    a.set_port_defined(defined_port);
                     addr_range r;
                     r.set_from(a);
                     result.push_back(r);
@@ -1776,6 +1779,7 @@ void addr_parser::parse_address_port(
                     {
                         a.set_protocol(addrlist->ai_protocol);
                     }
+                    a.set_port_defined(defined_port);
                     addr_range r;
                     r.set_from(a);
                     result.push_back(r);
@@ -1839,6 +1843,7 @@ void addr_parser::parse_address_port(
             {
                 a.set_protocol(f_protocol);
             }
+            a.set_port_defined(defined_port);
             addr_range r;
             r.set_from(a);
             result.push_back(r);
@@ -1859,6 +1864,7 @@ void addr_parser::parse_address_port(
                 {
                     a.set_protocol(f_protocol);
                 }
+                a.set_port_defined(defined_port);
                 addr_range r;
                 r.set_from(a);
                 result.push_back(r);

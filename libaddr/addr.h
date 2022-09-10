@@ -138,7 +138,9 @@ public:
     void                            set_from_socket(int s, bool peer);
     void                            set_ipv4(sockaddr_in const & in);
     void                            set_ipv6(sockaddr_in6 const & in6);
+    void                            set_port_defined(bool defined = true);
     void                            set_port(int port);
+    void                            set_protocol_defined(bool defined = true);
     void                            set_protocol(char const * protocol);
     void                            set_protocol(int protocol);
     void                            set_mask(uint8_t const * mask);
@@ -173,8 +175,10 @@ public:
     int                             bind(int s) const;
     std::string                     get_name() const;
     std::string                     get_service() const;
+    bool                            get_port_defined() const;
     int                             get_port() const;
     std::string                     get_str_port() const;
+    bool                            is_protocol_defined() const;
     int                             get_protocol() const;
     void                            get_mask(uint8_t * mask) const;
     int                             get_mask_size() const;
@@ -209,6 +213,8 @@ private:
     //
     sockaddr_in6                    f_address = init_in6();
     uint8_t                         f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
+    bool                            f_port_defined = false;
+    bool                            f_protocol_defined = false;
     int                             f_protocol = IPPROTO_TCP;
     mutable network_type_t          f_private_network = network_type_t::NETWORK_TYPE_UNDEFINED;
     std::string                     f_interface = std::string();

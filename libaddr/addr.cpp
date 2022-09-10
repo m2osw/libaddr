@@ -374,6 +374,20 @@ void addr::set_ipv4(sockaddr_in const & in)
 }
 
 
+/** \brief Mark the port as defined.
+ *
+ * When parsing an address, the port in an addr object is always considered
+ * valid. We have no other means to mark the port as defined or not, so we
+ * use a separate flag.
+ *
+ * \param[in] defined  Whether the port was defined (true) or not.
+ */
+void addr::set_port_defined(bool defined)
+{
+    f_port_defined = defined;
+}
+
+
 /** \brief Set the port of this address.
  *
  * This function changes the port of this address to \p port.
@@ -396,7 +410,28 @@ void addr::set_port(int port)
     {
         throw addr_invalid_argument("port to set_port() cannot be out of the allowed range [0..65535].");
     }
+    f_port_defined = true;
     f_address.sin6_port = htons(port);
+}
+
+
+/** \brief Mark the protocol as defined.
+ *
+ * This function marks the protocol as defined whether the set_protocol()
+ * gets called or not.
+ *
+ * This is used by users of the object to know whether the protocol was
+ * explicitly defined or just defined as a default like we often do.
+ *
+ * If you want to have a specific default, you can first call the
+ * set_protocol() and then call this function and set the \p defined
+ * parameter to false.
+ *
+ * \param[in] defined  Whether the protocol was defined or not.
+ */
+void addr::set_protocol_defined(bool defined)
+{
+    f_protocol_defined = defined;
 }
 
 
@@ -435,6 +470,7 @@ void addr::set_protocol(char const * protocol)
                         + protocol
                         + "\", expected \"tcp\" or \"udp\" (string).");
     }
+    f_protocol_defined = true;
     f_protocol = p.p_proto;
 
     address_changed();
@@ -469,6 +505,7 @@ void addr::set_protocol(int protocol)
     case IPPROTO_IP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
+        f_protocol_defined = true;
         f_protocol = protocol;
         break;
 
@@ -1032,9 +1069,12 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
         // this is an IPv4 mapped in an IPv6, "unmap" that IP
         // so the inet_ntop() can correctly generate an output IP
         //
-        in_addr in;
-        memset(&in, 0, sizeof(in));
-        in.s_addr = f_address.sin6_addr.s6_addr32[3];
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+        in_addr in = {
+            .s_addr = f_address.sin6_addr.s6_addr32[3],
+        };
+#pragma GCC diagnostic pop
         char buf[INET_ADDRSTRLEN + 1];
         if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) != nullptr)
         {
@@ -1735,7 +1775,7 @@ std::string addr::get_name() const
  * \warning
  * The getnameinfo() will return a string with a number if it does not
  * know the server (i.e. this is the equivalent to std::to_string() of
- * the port.) For port 0, the function always returns an empty string.
+ * the port). For port 0, the function always returns an empty string.
  *
  * \return The service name. If not available, an empty string.
  */
@@ -1769,6 +1809,20 @@ std::string addr::get_service() const
 }
 
 
+/** \brief Check whether the port was explicitly defined or not.
+ *
+ * This function returns the flag as set by the set_port_defined(). By
+ * default the flag is set to false. It is also set to true if you
+ * explicitely call the set_port() function.
+ *
+ * \return true if the port was explicitly set, false otherwise.
+ */
+bool addr::get_port_defined() const
+{
+    return f_port_defined;
+}
+
+
 /** \brief Retrieve the port.
  *
  * This function retrieves the port of the IP address in host order.
@@ -1790,6 +1844,29 @@ int addr::get_port() const
 std::string addr::get_str_port() const
 {
     return std::to_string(get_port());
+}
+
+
+/** \brief Whether the protocol was defined.
+ *
+ * This flag is set to try if the set_protocol_defined() or just
+ * set_protocol() functions get called. By default, the protocol is
+ * set to "tcp" (IPPROTO_TCP). So you do not have a way to know whether
+ * an explicit protocol was defined.
+ *
+ * This flag allows you to save that information in this object. In most
+ * cases, you want to:
+ *
+ * 1. parse the protocol out of the address,
+ * 2. call the address parser
+ * 3. save the protocol in the resulting addr objects
+ *
+ * The set_protocol() of the parser should also be called, but that will
+ * not automatically mark
+ */
+bool addr::is_protocol_defined() const
+{
+    return f_protocol_defined;
 }
 
 
