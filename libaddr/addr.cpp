@@ -523,6 +523,25 @@ void addr::set_protocol(int protocol)
 }
 
 
+/** \brief Change the mask defined flag.
+ *
+ * By default, address has no mask. This means a mask has a size of 0.
+ *
+ * To make sure that the mask was defined, and since the size is not
+ * reliable, the flag can be used for that purpose. If the set_mask()
+ * and set_mask_count() functions are called, that flag will be set
+ * to true. By default the flag is false.
+ *
+ * This function can be used to force the flag to true or false.
+ *
+ * \param[in] defined  Whether the mask was defined (true) or not (false).
+ */
+void addr::set_mask_defined(bool defined)
+{
+    f_mask_defined = defined;
+}
+
+
 /** \brief Set the mask.
  *
  * The input mask must be at least 16 bytes. If you are dealing with an
@@ -535,6 +554,7 @@ void addr::set_protocol(int protocol)
  */
 void addr::set_mask(std::uint8_t const * mask)
 {
+    f_mask_defined = true;
     memcpy(f_mask, mask, sizeof(f_mask));
 }
 
@@ -560,6 +580,7 @@ void addr::set_mask_count(int mask_size)
         throw out_of_range("the mask size " + std::to_string(mask_size) + " is out of range.");
     }
 
+    f_mask_defined = true;
     std::size_t count(sizeof(f_mask));
     std::uint8_t * mask(f_mask);
     while(mask_size >= 8)
@@ -757,6 +778,17 @@ bool addr::is_mask_ipv4_compatible() const
 }
 
 
+/** \brief Check whether the mask was defined.
+ *
+ * This function returns true if the mask was defined. The mask is marked
+ * as defined when one of the set_mask() function gets called.
+ */
+bool addr::is_mask_defined() const
+{
+    return f_mask_defined;
+}
+
+
 /** \brief Return the interface name.
  *
  * It is possible to indicate an interface name along an address to make
@@ -853,7 +885,15 @@ int addr::get_family() const
  * You can also determine this by calling the get_network_type() function
  * and compare the result against `network_type_t::NETWORK_TYPE_ANY`.
  *
+ * \warning
+ * The IP may have a mask attached to it (see is_mask_defined()). If
+ * so then is_default() may still return true but the address object
+ * really represents a range (i.e. "0.0.0.0/8"). You want to use both
+ * functions to really make sure it is just the default address.
+ *
  * \return true if this addr represents the any address.
+ *
+ * \sa is_mask_defined()
  */
 bool addr::is_default() const
 {

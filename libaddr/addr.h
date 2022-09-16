@@ -143,6 +143,7 @@ public:
     void                            set_protocol_defined(bool defined = true);
     void                            set_protocol(char const * protocol);
     void                            set_protocol(int protocol);
+    void                            set_mask_defined(bool defined = true);
     void                            set_mask(uint8_t const * mask);
     void                            set_mask_count(int mask_size);
     void                            apply_mask(bool inversed = false);
@@ -183,6 +184,7 @@ public:
     void                            get_mask(uint8_t * mask) const;
     int                             get_mask_size() const;
     bool                            is_mask_ipv4_compatible() const;
+    bool                            is_mask_defined() const;
 
     bool                            match(addr const & ip, bool any = false) const;
     bool                            is_next(addr const & a) const;
@@ -215,6 +217,7 @@ private:
     uint8_t                         f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
     bool                            f_port_defined = false;
     bool                            f_protocol_defined = false;
+    bool                            f_mask_defined = false;
     int                             f_protocol = IPPROTO_TCP;
     mutable network_type_t          f_private_network = network_type_t::NETWORK_TYPE_UNDEFINED;
     std::string                     f_interface = std::string();
