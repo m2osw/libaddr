@@ -174,6 +174,7 @@ public:
     int                             connect(int s) const;
     int                             bind(int s);
     int                             bind(int s) const;
+    ssize_t                         sendto(int s, char const * buffer, std::size_t size) const;
     std::string                     get_name() const;
     std::string                     get_service() const;
     bool                            get_port_defined() const;

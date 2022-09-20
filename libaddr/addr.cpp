@@ -1640,6 +1640,54 @@ int addr::bind(int s) const
 }
 
 
+/** \brief Send a message over UDP.
+ *
+ * If you successfully called the create_socket() function on an address
+ * using the UDP protocol, you can send send messages using this function.
+ *
+ * If the address is not defined with the UDP protocol, then the function
+ * fails and errno is set to EINVAL.
+ *
+ * \param[in] s  The socket as opened by create_socket().
+ * \param[in] buffer  The buffer with the message to send.
+ * \param[in] size  The size of the buffer in bytes.
+ *
+ * \return the number of bytes sent on success, -1 on error and errno set
+ * to the error code.
+ */
+ssize_t addr::sendto(int s, char const * buffer, std::size_t size) const
+{
+    if(f_protocol != IPPROTO_UDP)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if(is_ipv4())
+    {
+        sockaddr_in ipv4;
+        get_ipv4(ipv4);
+        return ::sendto(
+              s
+            , buffer
+            , size
+            , 0
+            , reinterpret_cast<sockaddr const *>(&ipv4)
+            , sizeof(ipv4));
+    }
+    else
+    {
+        return ::sendto(
+              s
+            , buffer
+            , size
+            , 0
+            , reinterpret_cast<sockaddr const *>(&f_address)
+            , sizeof(sockaddr_in6));
+    }
+}
+
+
 /** \brief Set the interface on which to listen.
  *
  * When binding an AF_INET or AF_INET6, we can forcibly bind the socket
