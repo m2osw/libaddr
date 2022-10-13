@@ -123,6 +123,7 @@ constexpr string_ip_t           STRING_IP_PORT_NAME       = 0x0008;        // us
 constexpr string_ip_t           STRING_IP_MASK            = 0x0010;        // include the mask
 constexpr string_ip_t           STRING_IP_BRACKET_MASK    = 0x0020;        // put brackets around IPv6 mask
 constexpr string_ip_t           STRING_IP_MASK_AS_ADDRESS = 0x0040;        // output the mask as n.n.n.n or x:x:x:x:x:x:x:x
+constexpr string_ip_t           STRING_IP_MASK_IF_NEEDED  = 0x0080;        // output mask only if not equal to 128
 
 // combo
 //

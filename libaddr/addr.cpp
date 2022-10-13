@@ -1169,7 +1169,8 @@ std::string addr::to_ipv4_string(string_ip_t const mode) const
         }
     }
 
-    if((mode & (STRING_IP_MASK | STRING_IP_BRACKET_MASK | STRING_IP_MASK_AS_ADDRESS)) != 0)
+    if((mode & (STRING_IP_MASK | STRING_IP_BRACKET_MASK | STRING_IP_MASK_AS_ADDRESS | STRING_IP_MASK_IF_NEEDED)) != 0
+    && (get_mask_size() != 128 || (mode & STRING_IP_MASK_IF_NEEDED) == 0))
     {
         if(!is_mask_ipv4_compatible())
         {
@@ -1290,7 +1291,8 @@ std::string addr::to_ipv6_string(string_ip_t const mode) const
         }
     }
 
-    if((mode & (STRING_IP_MASK | STRING_IP_BRACKET_MASK | STRING_IP_MASK_AS_ADDRESS)) != 0)
+    if((mode & (STRING_IP_MASK | STRING_IP_BRACKET_MASK | STRING_IP_MASK_AS_ADDRESS | STRING_IP_MASK_IF_NEEDED)) != 0
+    && (get_mask_size() != 128 || (mode & STRING_IP_MASK_IF_NEEDED) == 0))
     {
         char buf[INET6_ADDRSTRLEN + 1];
         if(inet_ntop(AF_INET6, f_mask, buf, sizeof(buf)) == nullptr)
