@@ -362,7 +362,7 @@ validator_address::validator_address(advgetopt::string_list_t const & data)
 
                             if(a.get_network_type() != network_type_t::NETWORK_TYPE_ANY)
                             {
-                                f_parser.set_default_address(a.to_ipv4or6_string(string_ip_t::STRING_IP_BRACKETS));
+                                f_parser.set_default_address(a.to_ipv4or6_string(STRING_IP_BRACKET_ADDRESS));
                             }
 
                             if(a.get_port() != 0)

@@ -472,7 +472,7 @@ addr::vector_t addr_range::to_addresses(vector_t ranges, std::size_t limit)
  *
  * \return The range or the "<empty address range>" string.
  */
-std::string addr_range::to_string(string_ip_t mode) const
+std::string addr_range::to_string(string_ip_t const mode) const
 {
     if(is_empty()
     || (!has_from() && !has_to()))
@@ -484,19 +484,9 @@ std::string addr_range::to_string(string_ip_t mode) const
 
     if(has_from() && has_to())
     {
-        string_ip_t from_mode(string_ip_t::STRING_IP_BRACKETS);
-        switch(mode)
-        {
-        case string_ip_t::STRING_IP_ONLY:
-        case string_ip_t::STRING_IP_MASK:
-            from_mode = string_ip_t::STRING_IP_ONLY;
-            break;
-
-        default:
-            // already defined
-            break;
-
-        }
+        // we do not want the port nor mask in the from address
+        //
+        string_ip_t const from_mode(mode & (STRING_IP_ADDRESS | STRING_IP_BRACKET_ADDRESS));
 
         // WARNING: we are assuming that the from & to data has the same
         //          port information (which should be the case if you used
@@ -547,7 +537,7 @@ std::string addr_range::to_string(string_ip_t mode) const
  */
 std::string addr_range::to_string(
       vector_t const & ranges
-    , string_ip_t mode
+    , string_ip_t const mode
     , std::string const & separator)
 {
     std::string result;

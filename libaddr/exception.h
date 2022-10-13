@@ -42,12 +42,13 @@ DECLARE_OUT_OF_RANGE(out_of_range);
 
 DECLARE_MAIN_EXCEPTION(addr_error);
 
-DECLARE_EXCEPTION(addr_error, addr_unsupported_as_range);
+DECLARE_EXCEPTION(addr_error, addr_io_error);
 DECLARE_EXCEPTION(addr_error, addr_invalid_argument);
 DECLARE_EXCEPTION(addr_error, addr_invalid_state);
 DECLARE_EXCEPTION(addr_error, addr_invalid_structure);
-DECLARE_EXCEPTION(addr_error, addr_io_error);
+DECLARE_EXCEPTION(addr_error, addr_unexpected_error);
 DECLARE_EXCEPTION(addr_error, addr_unexpected_mask);
+DECLARE_EXCEPTION(addr_error, addr_unsupported_as_range);
 
 
 

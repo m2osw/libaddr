@@ -1,4 +1,3 @@
-// Network Address -- get addresses on the command line and validate them
 // Copyright (c) 2012-2022  Made to Order Software Corp.  All Rights Reserved
 //
 // https://snapwebsites.org/project/libaddr
@@ -337,19 +336,19 @@ void validate_ip::run()
             {
                 if(r.is_range())
                 {
-                    std::cout << r.get_from().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL)
+                    std::cout << r.get_from().to_ipv4or6_string(addr::STRING_IP_ALL)
                               << " .. "
-                              << r.get_to().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL)
+                              << r.get_to().to_ipv4or6_string(addr::STRING_IP_ALL)
                               << std::endl;
                 }
                 else if(r.has_from())
                 {
-                    std::cout << r.get_from().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL)
+                    std::cout << r.get_from().to_ipv4or6_string(addr::STRING_IP_ALL)
                               << std::endl;
                 }
                 else if(r.has_to())
                 {
-                    std::cout << r.get_to().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL)
+                    std::cout << r.get_to().to_ipv4or6_string(addr::STRING_IP_ALL)
                               << std::endl;
                 }
                 else

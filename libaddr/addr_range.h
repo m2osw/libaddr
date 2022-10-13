@@ -66,10 +66,10 @@ public:
     void                            swap_from_to();
     void                            from_cidr(addr const & range);
     addr::vector_t                  to_addresses(std::size_t limit = 1000) const;
-    std::string                     to_string(string_ip_t mode = string_ip_t::STRING_IP_ALL) const;
+    std::string                     to_string(string_ip_t const mode = STRING_IP_ALL) const;
     static std::string              to_string(
                                           vector_t const & ranges
-                                        , string_ip_t mode = string_ip_t::STRING_IP_ALL
+                                        , string_ip_t const mode = STRING_IP_ALL
                                         , std::string const & separator = std::string(","));
 
     std::size_t                     size() const;
@@ -100,7 +100,7 @@ operator << (std::basic_ostream<_CharT, _Traits> & out, addr_range const & range
     _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
     if(info == nullptr)
     {
-        out << range.to_string(string_ip_t::STRING_IP_ALL);
+        out << range.to_string(STRING_IP_ALL);
     }
     else
     {

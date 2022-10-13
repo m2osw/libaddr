@@ -787,57 +787,57 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                     addresses.push_back(a);
                     CATCH_REQUIRE(a.get_str_port() == port_str);
                     {
-                        std::string const str(a.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY));
-                        if(addr_vec[addr::string_ip_t::STRING_IP_ONLY] != std::string())
+                        std::string const str(a.to_ipv6_string(addr::STRING_IP_ADDRESS));
+                        if(addr_vec[addr::STRING_IP_ADDRESS] != std::string())
                         {
-                            addr_vec[addr::string_ip_t::STRING_IP_ONLY] += ",";
+                            addr_vec[addr::STRING_IP_ADDRESS] += ",";
                         }
-                        addr_vec[addr::string_ip_t::STRING_IP_ONLY] += str;
+                        addr_vec[addr::STRING_IP_ADDRESS] += str;
                         CATCH_REQUIRE(str == ip);
                     }
                     {
-                        std::string const str(a.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS));
-                        if(addr_vec[addr::string_ip_t::STRING_IP_BRACKETS] != std::string())
+                        std::string const str(a.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS));
+                        if(addr_vec[addr::STRING_IP_BRACKET_ADDRESS] != std::string())
                         {
-                            addr_vec[addr::string_ip_t::STRING_IP_BRACKETS] += ",";
+                            addr_vec[addr::STRING_IP_BRACKET_ADDRESS] += ",";
                         }
-                        addr_vec[addr::string_ip_t::STRING_IP_BRACKETS] += str;
+                        addr_vec[addr::STRING_IP_BRACKET_ADDRESS] += str;
                         CATCH_REQUIRE(str == "[" + ip + "]");
                     }
                     {
-                        std::string const str(a.to_ipv6_string(addr::string_ip_t::STRING_IP_PORT));
-                        if(addr_vec[addr::string_ip_t::STRING_IP_PORT] != std::string())
+                        std::string const str(a.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT));
+                        if(addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT] != std::string())
                         {
-                            addr_vec[addr::string_ip_t::STRING_IP_PORT] += ",";
+                            addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT] += ",";
                         }
-                        addr_vec[addr::string_ip_t::STRING_IP_PORT] += str;
+                        addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT] += str;
                         CATCH_REQUIRE(str == "[" + ip + "]:" + port_str);
                     }
                     {
-                        std::string const str(a.to_ipv6_string(addr::string_ip_t::STRING_IP_MASK));
-                        if(addr_vec[addr::string_ip_t::STRING_IP_MASK] != std::string())
+                        std::string const str(a.to_ipv6_string(addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK));
+                        if(addr_vec[addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK] != std::string())
                         {
-                            addr_vec[addr::string_ip_t::STRING_IP_MASK] += ",";
+                            addr_vec[addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK] += ",";
                         }
-                        addr_vec[addr::string_ip_t::STRING_IP_MASK] += str;
+                        addr_vec[addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK] += str;
                         CATCH_REQUIRE(str == ip + "/128");
                     }
                     {
-                        std::string const str(a.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS_MASK));
-                        if(addr_vec[addr::string_ip_t::STRING_IP_BRACKETS_MASK] != std::string())
+                        std::string const str(a.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK));
+                        if(addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK] != std::string())
                         {
-                            addr_vec[addr::string_ip_t::STRING_IP_BRACKETS_MASK] += ",";
+                            addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK] += ",";
                         }
-                        addr_vec[addr::string_ip_t::STRING_IP_BRACKETS_MASK] += str;
+                        addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK] += str;
                         CATCH_REQUIRE(str == "[" + ip + "]/128");
                     }
                     {
-                        std::string const str(a.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL));
-                        if(addr_vec[addr::string_ip_t::STRING_IP_ALL] != std::string())
+                        std::string const str(a.to_ipv6_string(addr::STRING_IP_ALL));
+                        if(addr_vec[addr::STRING_IP_ALL] != std::string())
                         {
-                            addr_vec[addr::string_ip_t::STRING_IP_ALL] += ",";
+                            addr_vec[addr::STRING_IP_ALL] += ",";
                         }
-                        addr_vec[addr::string_ip_t::STRING_IP_ALL] += str;
+                        addr_vec[addr::STRING_IP_ALL] += str;
                         CATCH_REQUIRE(str == "[" + ip + "]:" + port_str + "/128");
                     }
 
@@ -849,37 +849,37 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_ONLY) << a;
+                        ss << addr::setaddrmode(addr::STRING_IP_ADDRESS) << a;
                         CATCH_REQUIRE(ss.str() == ip);
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS) << a;
+                        ss << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS) << a;
                         CATCH_REQUIRE(ss.str() == "[" + ip + "]");
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_PORT) << a;
+                        ss << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT) << a;
                         CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str);
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_MASK) << a;
+                        ss << addr::setaddrmode(addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK) << a;
                         CATCH_REQUIRE(ss.str() == ip + "/128");
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS_MASK) << a;
+                        ss << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK) << a;
                         CATCH_REQUIRE(ss.str() == "[" + ip + "]/128");
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_ALL) << a;
+                        ss << addr::setaddrmode(addr::STRING_IP_ALL) << a;
                         CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
                     }
                     {
                         std::stringstream ss;
-                        ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_PORT);
+                        ss << addr::setaddrmode(addr::STRING_IP_PORT);
                         ss.copyfmt(std::cout); // we did not change the mode of std::cout so here we expect STRING_IP_ALL after the copy
                         ss << a;
                         CATCH_REQUIRE(ss.str() == "[" + ip + "]:" + port_str + "/128");
@@ -887,8 +887,8 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                     {
                         std::stringstream sss;
                         std::stringstream ssd;
-                        sss << addr::setaddrmode(addr::string_ip_t::STRING_IP_PORT);
-                        ssd << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS);
+                        sss << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT);
+                        ssd << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS);
                         ssd.copyfmt(sss);
                         ssd << a;
                         CATCH_REQUIRE(ssd.str() == "[" + ip + "]:" + port_str);
@@ -899,7 +899,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                     std::stringstream ss;
                     ss << addresses;
                     ss.imbue(loc);
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_ALL]);
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_ALL]);
                 }
                 {
                     std::stringstream ss;
@@ -907,81 +907,81 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                     ss << addr::setaddrsep(" ");
                     ss.imbue(loc);
                     ss << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_ALL], {{",", " "}}));
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_ALL], {{",", " "}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_ONLY);
+                    ss << addr::setaddrmode(addr::STRING_IP_ADDRESS);
                     ss.imbue(loc);
                     ss << addresses;
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_ONLY]);
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_ADDRESS]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrsep("|") << addr::setaddrmode(addr::string_ip_t::STRING_IP_ONLY) << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_ONLY], {{",", "|"}}));
+                    ss << addr::setaddrsep("|") << addr::setaddrmode(addr::STRING_IP_ADDRESS) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_ADDRESS], {{",", "|"}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS) << addresses;
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_BRACKETS]);
+                    ss << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_BRACKET_ADDRESS]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrsep(";") << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS) << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_BRACKETS], {{",", ";"}}));
+                    ss << addr::setaddrsep(";") << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_BRACKET_ADDRESS], {{",", ";"}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_PORT) << addresses;
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_PORT]);
+                    ss << addr::setaddrmode(addr::STRING_IP_ADDRESS | addr::STRING_IP_PORT) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrsep("+") << addr::setaddrmode(addr::string_ip_t::STRING_IP_PORT);
+                    ss << addr::setaddrsep("+") << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT);
                     ss.imbue(loc);
                     ss << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_PORT], {{",", "+"}}));
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT], {{",", "+"}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
                     ss.imbue(loc);
-                    ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_MASK) << addresses;
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_MASK]);
+                    ss << addr::setaddrmode(addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrsep(", ") << addr::setaddrmode(addr::string_ip_t::STRING_IP_MASK) << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_MASK], {{",", ", "}}));
+                    ss << addr::setaddrsep(", ") << addr::setaddrmode(addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK], {{",", ", "}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS_MASK) << addresses;
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_BRACKETS_MASK]);
+                    ss << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK) << addresses;
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK]);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrsep("$") << addr::setaddrmode(addr::string_ip_t::STRING_IP_BRACKETS_MASK) << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_BRACKETS_MASK], {{",", "$"}}));
+                    ss << addr::setaddrsep("$") << addr::setaddrmode(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_BRACKET_MASK], {{",", "$"}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
                 {
                     std::stringstream ss;
-                    ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_ALL);
+                    ss << addr::setaddrmode(addr::STRING_IP_ALL);
                     ss.imbue(loc);
                     ss << addresses;
-                    CATCH_REQUIRE(ss.str() == addr_vec[addr::string_ip_t::STRING_IP_ALL]);
+                    CATCH_REQUIRE(ss.str() == addr_vec[addr::STRING_IP_ALL]);
                 }
                 {
                     std::stringstream ss;
                     ss.imbue(loc);
-                    ss << addr::setaddrsep("\n") << addr::setaddrmode(addr::string_ip_t::STRING_IP_ALL) << addresses;
-                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::string_ip_t::STRING_IP_ALL], {{",", "\n"}}));
+                    ss << addr::setaddrsep("\n") << addr::setaddrmode(addr::STRING_IP_ALL) << addresses;
+                    std::string const expected(snapdev::string_replace_many(addr_vec[addr::STRING_IP_ALL], {{",", "\n"}}));
                     CATCH_REQUIRE(ss.str() == expected);
                 }
             }
@@ -1038,9 +1038,9 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             CATCH_REQUIRE_FALSE(f.is_ipv4());
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
             CATCH_REQUIRE(f.get_family() == AF_INET6);
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY) == "1:2:3:4:5:6:7:8");
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS) == "[1:2:3:4:5:6:7:8]");
-            CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "1:2:3:4:5:6:7:8");
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ADDRESS) == "1:2:3:4:5:6:7:8");
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS) == "[1:2:3:4:5:6:7:8]");
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "1:2:3:4:5:6:7:8");
             CATCH_REQUIRE(f.get_port() == 0);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
@@ -1077,9 +1077,9 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             CATCH_REQUIRE_FALSE(f.is_ipv4());
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
             CATCH_REQUIRE(f.get_family() == AF_INET6);
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY) == "5:5:5:5:5:5:5:5");
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS) == "[5:5:5:5:5:5:5:5]");
-            CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "5:5:5:5:5:5:5:5");
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ADDRESS) == "5:5:5:5:5:5:5:5");
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS) == "[5:5:5:5:5:5:5:5]");
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "5:5:5:5:5:5:5:5");
             CATCH_REQUIRE(f.get_port() == 0);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
@@ -1112,9 +1112,9 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 CATCH_REQUIRE_FALSE(f.is_ipv4());
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY) == "9:9:9:9:4:3:2:1");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS) == "[9:9:9:9:4:3:2:1]");
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "9:9:9:9:4:3:2:1");
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ADDRESS) == "9:9:9:9:4:3:2:1");
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS) == "[9:9:9:9:4:3:2:1]");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "9:9:9:9:4:3:2:1");
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
@@ -1144,9 +1144,9 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 CATCH_REQUIRE_FALSE(f.is_ipv4());
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY) == "5:1:6:2:7:3:8:4");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS) == "[5:1:6:2:7:3:8:4]");
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "5:1:6:2:7:3:8:4");
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ADDRESS) == "5:1:6:2:7:3:8:4");
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS) == "[5:1:6:2:7:3:8:4]");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "5:1:6:2:7:3:8:4");
                 CATCH_REQUIRE(f.get_port() == 0);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
@@ -1182,8 +1182,8 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
             CATCH_REQUIRE(f.get_family() == AF_INET6);
             // getting an IPv4 would throw, which is checked somewhere else
-            //CATCH_REQUIRE(f.to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "");
-            CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "4::f003:3001:20af");
+            //CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "");
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "4::f003:3001:20af");
             CATCH_REQUIRE(f.get_port() == 5093);
             CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
             CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
@@ -1253,14 +1253,14 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 8);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.15-192.168.2.23");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.14");
-            CATCH_REQUIRE(ips[7].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.15-192.168.2.23");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
+            CATCH_REQUIRE(ips[7].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1273,12 +1273,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 6);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.15-192.168.2.23");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.14");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.15-192.168.2.23");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
         }
         CATCH_END_SECTION()
 
@@ -1291,14 +1291,14 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 8);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.14");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.15-192.168.2.23");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[7].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.15-192.168.2.23");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[7].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1311,14 +1311,14 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 8);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.15-192.168.2.23");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.14");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[7].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.15-192.168.2.23");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[7].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1331,14 +1331,14 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 8);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.15-192.168.2.23");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.14");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[7].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.15-192.168.2.23");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[7].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1351,13 +1351,13 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 7);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.23");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.23");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1370,13 +1370,13 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 7);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.23");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.23");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1389,13 +1389,13 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 7);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.23");
-            CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
-            CATCH_REQUIRE(ips[6].to_string(addr::string_ip_t::STRING_IP_ONLY) == "<empty address range>");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.23");
+            CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
+            CATCH_REQUIRE(ips[6].to_string(addr::STRING_IP_ADDRESS) == "<empty address range>");
         }
         CATCH_END_SECTION()
 
@@ -1413,11 +1413,11 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 5);
-            CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
-            CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-            CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "5.8.9.11");
-            CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.0.0.32");
-            CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.23");
+            CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::");
+            CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+            CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "5.8.9.11");
+            CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "10.0.0.32");
+            CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.23");
         }
         CATCH_END_SECTION()
     }
@@ -1434,10 +1434,10 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
         CATCH_REQUIRE_FALSE(p.has_errors());
         CATCH_REQUIRE(ips.size() == 4);
-        CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "-::1");
-        CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "-10.0.0.32");
-        CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::5553");
-        CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1");
+        CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "-::1");
+        CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "-10.0.0.32");
+        CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "f801::5553");
+        CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1");
     }
     CATCH_END_SECTION()
 
@@ -1498,12 +1498,12 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         CATCH_REQUIRE(p.error_messages() == "An address range requires at least one of the \"from\" or \"to\" addresses.\n");
 
         CATCH_REQUIRE(ips.size() == 6);
-        CATCH_REQUIRE(ips[0].to_string(addr::string_ip_t::STRING_IP_ONLY) == "::1");
-        CATCH_REQUIRE(ips[1].to_string(addr::string_ip_t::STRING_IP_ONLY) == "9::-b::3");
-        CATCH_REQUIRE(ips[2].to_string(addr::string_ip_t::STRING_IP_ONLY) == "f801::3332");
-        CATCH_REQUIRE(ips[3].to_string(addr::string_ip_t::STRING_IP_ONLY) == "10.1.0.32");
-        CATCH_REQUIRE(ips[4].to_string(addr::string_ip_t::STRING_IP_ONLY) == "25.8.9.11");
-        CATCH_REQUIRE(ips[5].to_string(addr::string_ip_t::STRING_IP_ONLY) == "192.168.2.1-192.168.2.14");
+        CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::1");
+        CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "9::-b::3");
+        CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "f801::3332");
+        CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "10.1.0.32");
+        CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "25.8.9.11");
+        CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
     }
     CATCH_END_SECTION()
 
@@ -1643,10 +1643,10 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
                 CATCH_REQUIRE_FALSE(f.is_ipv4());
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY) == "ff01:2f3:f041:e301:f:10:11:12");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_BRACKETS) == "[ff01:2f3:f041:e301:f:10:11:12]");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_PORT) == "[ff01:2f3:f041:e301:f:10:11:12]:" + std::to_string(port));
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_PORT) == "[ff01:2f3:f041:e301:f:10:11:12]:" + std::to_string(port));
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ADDRESS) == "ff01:2f3:f041:e301:f:10:11:12");
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS) == "[ff01:2f3:f041:e301:f:10:11:12]");
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT) == "[ff01:2f3:f041:e301:f:10:11:12]:" + std::to_string(port));
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT) == "[ff01:2f3:f041:e301:f:10:11:12]:" + std::to_string(port));
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_LOOPBACK);
@@ -1680,8 +1680,8 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
                 CATCH_REQUIRE_FALSE(f.is_ipv4());
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_PORT) == "[ff02:23:f41:e31:20:30:40:50]:" + std::to_string(static_cast<int>(port)));
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_PORT) == "[ff02:23:f41:e31:20:30:40:50]:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT) == "[ff02:23:f41:e31:20:30:40:50]:" + std::to_string(static_cast<int>(port)));
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_BRACKET_ADDRESS | addr::STRING_IP_PORT) == "[ff02:23:f41:e31:20:30:40:50]:" + std::to_string(static_cast<int>(port)));
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
                 CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
@@ -1881,8 +1881,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
             CATCH_REQUIRE(f.get_family() == AF_INET6);
             std::string result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/128");
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-            CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.get_port() == port);
             CATCH_REQUIRE(f.get_protocol() == proto);
             CATCH_REQUIRE(f.get_mask_size() == 128);
@@ -1905,8 +1905,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
             CATCH_REQUIRE(f.get_family() == AF_INET6);
             std::string result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/128");
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-            CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.get_port() == port);
             CATCH_REQUIRE(f.get_protocol() == proto);
             CATCH_REQUIRE(f.get_mask_size() == 128);
@@ -1930,8 +1930,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
             CATCH_REQUIRE(f.get_family() == AF_INET6);
             std::string const result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/128");
-            CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-            CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
             CATCH_REQUIRE(f.get_port() == port);
             CATCH_REQUIRE(f.get_protocol() == proto);
             CATCH_REQUIRE(f.get_mask_size() == 128);
@@ -1949,7 +1949,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 1);
             std::string const result("[66:33:cc:11:7:11:bb:dd]:" + std::to_string(port) + "/128");
-            CATCH_REQUIRE(ips[0].get_from().to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(ips[0].get_from().to_ipv4or6_string(addr::STRING_IP_ALL) == result);
         }
         CATCH_END_SECTION()
 
@@ -1988,8 +1988,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                     throw std::logic_error("somehow we could not convert our mask to an IPv6 address.");
                 }
                 std::string result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/" + std::to_string(idx));
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_mask_size() == idx);
@@ -2044,8 +2044,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
                 std::string result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/[" + buf + "]");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
             }
@@ -2105,8 +2105,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
                 std::string result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/[" + buf + "]");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 uint8_t verify_mask[16];
@@ -2203,8 +2203,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
                 std::string result("[55:33:22:11:0:cc:bb:aa]:" + std::to_string(port) + "/[" + buf + "]");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 uint8_t verify_mask[16];
@@ -2256,8 +2256,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                     throw std::logic_error("somehow we could not convert our mask to an IPv6 address.");
                 }
                 std::string result("[::]:" + std::to_string(port) + "/" + std::to_string(idx));
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
                 CATCH_REQUIRE(f.get_mask_size() == idx);
@@ -2288,8 +2288,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 CATCH_REQUIRE_FALSE(f.get_family() == AF_INET);
                 CATCH_REQUIRE(f.get_family() == AF_INET6);
                 std::string result("[::]:" + std::to_string(port) + "/[1:2:3:4:5:6:7:8]");
-                CATCH_REQUIRE(f.to_ipv6_string(addr::string_ip_t::STRING_IP_ALL) == result);
-                CATCH_REQUIRE(f.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv6_string(addr::STRING_IP_ALL) == result);
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ALL) == result);
                 CATCH_REQUIRE(f.get_port() == port);
                 CATCH_REQUIRE(f.get_protocol() == proto);
             }
@@ -2665,8 +2665,8 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
                 CATCH_REQUIRE_FALSE(b.is_ipv4());
                 CATCH_REQUIRE_FALSE(b.get_family() == AF_INET);
                 CATCH_REQUIRE(b.get_family() == AF_INET6);
-                CATCH_REQUIRE(b.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY)    == "::1");
-                CATCH_REQUIRE(b.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "::1");
+                CATCH_REQUIRE(b.to_ipv6_string(addr::STRING_IP_ADDRESS)    == "::1");
+                CATCH_REQUIRE(b.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "::1");
 
                 // in this case we know what the port is since we specified
                 // that when connecting
@@ -2680,8 +2680,8 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
                 CATCH_REQUIRE_FALSE(c.is_ipv4());
                 CATCH_REQUIRE_FALSE(c.get_family() == AF_INET);
                 CATCH_REQUIRE(c.get_family() == AF_INET6);
-                CATCH_REQUIRE(c.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY)    == "::1");
-                CATCH_REQUIRE(c.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "::1");
+                CATCH_REQUIRE(c.to_ipv6_string(addr::STRING_IP_ADDRESS)    == "::1");
+                CATCH_REQUIRE(c.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "::1");
 
                 // we cannot be sure of the port, there is a range we could
                 // test better (more constraining) but for this test is
@@ -2721,8 +2721,8 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
             CATCH_REQUIRE_FALSE(b.is_ipv4());
             CATCH_REQUIRE_FALSE(b.get_family() == AF_INET);
             CATCH_REQUIRE(b.get_family() == AF_INET6);
-            CATCH_REQUIRE(b.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY)    == "::");
-            CATCH_REQUIRE(b.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
+            CATCH_REQUIRE(b.to_ipv6_string(addr::STRING_IP_ADDRESS)    == "::");
+            CATCH_REQUIRE(b.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "::");
 
             // in this case we know what the port is since we specified
             // that when connecting
@@ -2736,8 +2736,8 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
             CATCH_REQUIRE_FALSE(c.is_ipv4());
             CATCH_REQUIRE_FALSE(c.get_family() == AF_INET);
             CATCH_REQUIRE(c.get_family() == AF_INET6);
-            CATCH_REQUIRE(c.to_ipv6_string(addr::string_ip_t::STRING_IP_ONLY)    == "::");
-            CATCH_REQUIRE(c.to_ipv4or6_string(addr::string_ip_t::STRING_IP_ONLY) == "::");
+            CATCH_REQUIRE(c.to_ipv6_string(addr::STRING_IP_ADDRESS)    == "::");
+            CATCH_REQUIRE(c.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "::");
 
             // we cannot be sure of the port, there is a range we could
             // test better (more constraining) but for this test is

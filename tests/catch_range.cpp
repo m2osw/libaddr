@@ -200,7 +200,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 CATCH_REQUIRE(ss1.str() == "-10.0.0.1:" + std::to_string(fport) + "/32");
 
                 std::stringstream ss2;
-                ss2 << addr::setaddrmode(addr::string_ip_t::STRING_IP_ONLY) << range;
+                ss2 << addr::setaddrmode(addr::STRING_IP_ADDRESS) << range;
                 CATCH_REQUIRE(ss2.str() == "-10.0.0.1");
 
                 addr::addr::vector_t from_vec(range.to_addresses(1000));
@@ -965,8 +965,8 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
             CATCH_REQUIRE(range3.is_range());
             CATCH_REQUIRE_FALSE(range3.is_empty());
 
-            CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.2.0.0");
-            CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
+            CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.2.0.0");
+            CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.5.255.255");
         }
         CATCH_END_SECTION()
 
@@ -1040,8 +1040,8 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
 
             // although it is "empty" we know the IPs and can test them
             //
-            CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.10.0.0");
-            CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
+            CATCH_REQUIRE(range3.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.10.0.0");
+            CATCH_REQUIRE(range3.get_to().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.5.255.255");
 
             addr::addr_range::vector_t rlist;
             rlist.push_back(range1);
@@ -1135,7 +1135,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 CATCH_REQUIRE_FALSE(r.is_empty());
                 CATCH_REQUIRE(r.has_from());
                 CATCH_REQUIRE_FALSE(r.has_to());
-                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.1.0.0");
+                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.1.0.0");
             }
 
             range2.set_from(f2);
@@ -1166,8 +1166,8 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 CATCH_REQUIRE_FALSE(r.is_empty());
                 CATCH_REQUIRE(r.has_from());
                 CATCH_REQUIRE(r.has_to());
-                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.1.0.0");
-                CATCH_REQUIRE(r.get_to().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
+                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.1.0.0");
+                CATCH_REQUIRE(r.get_to().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.5.255.255");
             }
             {
                 addr::addr_range const r(range2.union_if_possible(range1));
@@ -1176,8 +1176,8 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 CATCH_REQUIRE_FALSE(r.is_empty());
                 CATCH_REQUIRE(r.has_from());
                 CATCH_REQUIRE(r.has_to());
-                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.1.0.0");
-                CATCH_REQUIRE(r.get_to().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.5.255.255");
+                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.1.0.0");
+                CATCH_REQUIRE(r.get_to().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.5.255.255");
             }
 
             range2.set_to(t2);
@@ -1197,8 +1197,8 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 CATCH_REQUIRE_FALSE(r.is_empty());
                 CATCH_REQUIRE(r.has_from());
                 CATCH_REQUIRE(r.has_to());
-                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.1.0.0");
-                CATCH_REQUIRE(r.get_to().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.10.255.255");
+                CATCH_REQUIRE(r.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.1.0.0");
+                CATCH_REQUIRE(r.get_to().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.10.255.255");
 
                 CATCH_REQUIRE(range1.compare(r) == addr::compare_t::COMPARE_INCLUDES);
                 CATCH_REQUIRE(r.compare(range1) == addr::compare_t::COMPARE_INCLUDED);
@@ -1285,8 +1285,8 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
             CATCH_REQUIRE(range4.is_range());
             CATCH_REQUIRE_FALSE(range4.is_empty());
 
-            CATCH_REQUIRE(range4.get_from().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.1.0.0");
-            CATCH_REQUIRE(range4.get_to().to_ipv4_string(addr::string_ip_t::STRING_IP_ONLY) == "10.11.255.255");
+            CATCH_REQUIRE(range4.get_from().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.1.0.0");
+            CATCH_REQUIRE(range4.get_to().to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.11.255.255");
         }
         CATCH_END_SECTION()
 
@@ -1384,7 +1384,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
             }
             {
                 std::stringstream ss;
-                ss << addr::setaddrmode(addr::string_ip_t::STRING_IP_MASK) << range3;
+                ss << addr::setaddrmode(addr::STRING_IP_ADDRESS | addr::STRING_IP_MASK) << range3;
                 std::string const range3_result("<empty address range>");
                 CATCH_REQUIRE(ss.str() == range3_result);
                 vec_result += ',';
@@ -1399,7 +1399,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 CATCH_REQUIRE(ss.str() == vec_result);
 
                 std::stringstream sm;
-                sm << addr::setaddrmode(addr::string_ip_t::STRING_IP_ONLY) << vec;
+                sm << addr::setaddrmode(addr::STRING_IP_ADDRESS) << vec;
                 CATCH_REQUIRE(sm.str() == vec_result_ip_only);
 
                 addr::addr::vector_t all_addresses(addr::addr_range::to_addresses(vec, 1000));

@@ -106,15 +106,34 @@ enum class network_type_t
 };
 
 
-enum class string_ip_t
-{
-    STRING_IP_ONLY,
-    STRING_IP_BRACKETS,         // IPv6 only
-    STRING_IP_PORT,             // in IPv6, includes brackets
-    STRING_IP_MASK,
-    STRING_IP_BRACKETS_MASK,    // IPv6 only
-    STRING_IP_ALL
-};
+typedef std::uint32_t           string_ip_t;
+
+// address
+//
+constexpr string_ip_t           STRING_IP_ADDRESS         = 0x0001;        // include the address
+constexpr string_ip_t           STRING_IP_BRACKET_ADDRESS = 0x0002;        // address with the brackets in IPv6
+
+// port
+//
+constexpr string_ip_t           STRING_IP_PORT            = 0x0004;        // include the port
+constexpr string_ip_t           STRING_IP_PORT_NAME       = 0x0008;        // use the port name if available (in /etc/services)
+
+// mask
+//
+constexpr string_ip_t           STRING_IP_MASK            = 0x0010;        // include the mask
+constexpr string_ip_t           STRING_IP_BRACKET_MASK    = 0x0020;        // put brackets around IPv6 mask
+constexpr string_ip_t           STRING_IP_MASK_AS_ADDRESS = 0x0040;        // output the mask as n.n.n.n or x:x:x:x:x:x:x:x
+
+// combo
+//
+constexpr string_ip_t           STRING_IP_ADDRESS_PORT = STRING_IP_BRACKET_ADDRESS
+                                                       | STRING_IP_PORT;
+constexpr string_ip_t           STRING_IP_NO_BRACKETS = STRING_IP_ADDRESS
+                                                      | STRING_IP_PORT
+                                                      | STRING_IP_MASK;
+constexpr string_ip_t           STRING_IP_ALL = STRING_IP_BRACKET_ADDRESS
+                                              | STRING_IP_PORT
+                                              | STRING_IP_BRACKET_MASK;
 
 
 class addr
@@ -158,9 +177,9 @@ public:
     bool                            is_ipv4() const;
     void                            get_ipv4(sockaddr_in & in) const;
     void                            get_ipv6(sockaddr_in6 & in6) const;
-    std::string                     to_ipv4_string(string_ip_t mode) const;
-    std::string                     to_ipv6_string(string_ip_t mode) const;
-    std::string                     to_ipv4or6_string(string_ip_t mode = string_ip_t::STRING_IP_ALL) const;
+    std::string                     to_ipv4_string(string_ip_t const mode) const;
+    std::string                     to_ipv6_string(string_ip_t const mode) const;
+    std::string                     to_ipv4or6_string(string_ip_t const mode = STRING_IP_ALL) const;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
     unsigned __int128               ip_to_uint128() const;
@@ -179,9 +198,11 @@ public:
     std::string                     get_service() const;
     bool                            get_port_defined() const;
     int                             get_port() const;
+    std::string                     get_port_name() const;
     std::string                     get_str_port() const;
     bool                            is_protocol_defined() const;
     int                             get_protocol() const;
+    std::string                     get_protocol_name() const;
     void                            get_mask(uint8_t * mask) const;
     int                             get_mask_size() const;
     bool                            is_mask_ipv4_compatible() const;
@@ -238,7 +259,7 @@ private:
  */
 struct _ostream_info
 {
-    string_ip_t         f_mode = string_ip_t::STRING_IP_ALL;
+    string_ip_t         f_mode = STRING_IP_ALL;
     std::string         f_sep = std::string(",");
 };
 
@@ -271,20 +292,19 @@ struct _setaddrmode
  *
  * The conversion of an address to a string uses the to_ipv4or6_string()
  * function. That function accepts a mode parameter. By default, it is
- * set to "all" (addr::string_ip_t::STRING_IP_ALL). You can change
+ * set to "all" (addr::STRING_IP_ALL). You can change
  * the mode using this setaddrmode() function in your ostream:
  *
  * \code
- *     std::cout << setaddrmode(addr::string_ip_t::STRING_IP_PORT)
+ *     std::cout << setaddrmode(addr::STRING_IP_ADDRESS | addr::STRING_IP_PORT)
  *               << my_address
  *               << std::endl;
  * \endcode
  *
- * The most common is to use the addr::string_ip_t::STRING_IP_PORT
- * although any other value will work as expected (i.e. if you do not
- * want to the port number and do not care about brackets around an IPv6,
- * then the most basic addr::string_ip_t::STRING_IP_ONLY can be
- * used).
+ * The most common is to use the addr::STRING_IP_ADDRESS and the
+ *  addr::STRING_IP_PORT although any other value works as expected (i.e. if
+ * you do not want to include the port number and do not care about brackets
+ * around an IPv6, then the most basic addr::STRING_IP_ADDRESS can be used).
  */
 inline _setaddrmode setaddrmode(string_ip_t mode)
 {
@@ -419,7 +439,7 @@ operator << (std::basic_ostream<_CharT, _Traits> & out, addr const & address)
     _ostream_info * info(static_cast<_ostream_info *>(out.pword(get_ostream_index())));
     if(info == nullptr)
     {
-        out << address.to_ipv4or6_string(string_ip_t::STRING_IP_ALL);
+        out << address.to_ipv4or6_string(STRING_IP_ALL);
     }
     else
     {

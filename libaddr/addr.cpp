@@ -46,6 +46,7 @@
 #include    <snapdev/int128_literal.h>
 #include    <snapdev/math.h>
 #include    <snapdev/not_reached.h>
+#include    <snapdev/static_to_dynamic_buffer.h>
 
 
 // C++ library
@@ -428,6 +429,8 @@ void addr::set_port(int port)
  * parameter to false.
  *
  * \param[in] defined  Whether the protocol was defined or not.
+ *
+ * \sa set_protocol()
  */
 void addr::set_protocol_defined(bool defined)
 {
@@ -445,6 +448,8 @@ void addr::set_protocol_defined(bool defined)
  * internally, we are likely to support many less protocols.
  *
  * \param[in] protocol  The name of the protocol.
+ *
+ * \sa get_protocol()
  */
 void addr::set_protocol(char const * protocol)
 {
@@ -453,25 +458,35 @@ void addr::set_protocol(char const * protocol)
         throw addr_invalid_argument("protocol pointer to set_protocol() cannot be a nullptr.");
     }
 
-    char buf[1024];
-    protoent p = {};
-    protoent * ptr(&p);
-    int const r(getprotobyname_r(
-              protocol
-            , &p
-            , buf
-            , sizeof(buf)
-            , &ptr));
-    if(r != 0
-    || ptr == nullptr)
+    protoent proto = {};
+    protoent * ptr(nullptr);
+
+    snapdev::static_to_dynamic_buffer<char, 1024> buf;
+    for(;;)
     {
-        throw addr_invalid_argument(
-                          std::string("unknown protocol \"")
-                        + protocol
-                        + "\", expected \"tcp\" or \"udp\" (string).");
+        int const r(getprotobyname_r(
+                  protocol
+                , &proto
+                , buf.get()
+                , buf.size()
+                , &ptr));
+        if(r == 0
+        && ptr != nullptr)
+        {
+            break;
+        }
+        if(r != ERANGE)
+        {
+            throw addr_invalid_argument(
+                              std::string("unknown protocol \"")
+                            + protocol
+                            + "\", expected \"tcp\" or \"udp\" (string).");
+        }
+        buf.increase_size(1024);
     }
+
     f_protocol_defined = true;
-    f_protocol = p.p_proto;
+    f_protocol = proto.p_proto;
 
     address_changed();
 }
@@ -1102,13 +1117,20 @@ void addr::get_ipv6(sockaddr_in6 & in6) const
  *
  * \param[in] mode  How the output string is to be built.
  */
-std::string addr::to_ipv4_string(string_ip_t mode) const
+std::string addr::to_ipv4_string(string_ip_t const mode) const
 {
-    if(is_ipv4())
+    std::stringstream result;
+
+    // this is an IPv4 mapped in an IPv6, "unmap" that IP
+    // so the inet_ntop() can correctly generate an output IP
+    //
+    if((mode & (STRING_IP_ADDRESS | STRING_IP_BRACKET_ADDRESS)) != 0)
     {
-        // this is an IPv4 mapped in an IPv6, "unmap" that IP
-        // so the inet_ntop() can correctly generate an output IP
-        //
+        if(!is_ipv4())
+        {
+            throw addr_invalid_state("Not an IPv4 compatible address.");
+        }
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
         in_addr in = {
@@ -1116,52 +1138,81 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
         };
 #pragma GCC diagnostic pop
         char buf[INET_ADDRSTRLEN + 1];
-        if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) != nullptr)
+        if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) == nullptr)
         {
-            if(mode != string_ip_t::STRING_IP_ONLY)
-            {
-                std::stringstream result;
-                result << buf;
-                if(mode == string_ip_t::STRING_IP_PORT
-                || mode == string_ip_t::STRING_IP_ALL)
-                {
-                    result << ":";
-                    result << get_port();
-                }
-                if(mode == string_ip_t::STRING_IP_MASK
-                || mode == string_ip_t::STRING_IP_BRACKETS_MASK
-                || mode == string_ip_t::STRING_IP_ALL)
-                {
-                    memset(&in, 0, sizeof(in));
-                    in.s_addr = htonl((f_mask[12] << 24) | (f_mask[13] << 16) | (f_mask[14] << 8) | f_mask[15]);
-                    if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) != nullptr)
-                    {
-                        if(!is_mask_ipv4_compatible())
-                        {
-                            throw addr_unexpected_mask("mask is not valid for an IPv4 address");
-                        }
-
-                        result << "/";
-                        int const bits(get_mask_size());
-                        if(bits == -1)
-                        {
-                            result << buf;
-                        }
-                        else
-                        {
-                            result << (bits - 96);
-                        }
-                    }
-                }
-                return result.str();
-            }
-            return std::string(buf);
+            // this should just never happen
+            //
+            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
         }
-        // IPv4 should never fail converting the address unless the
-        // buffer was too small...
+        result << buf;
     }
 
-    throw addr_invalid_state("Not an IPv4 compatible address.");
+    if((mode & (STRING_IP_PORT | STRING_IP_PORT_NAME)) != 0)
+    {
+        if((mode & (STRING_IP_ADDRESS | STRING_IP_BRACKET_ADDRESS)) != 0)
+        {
+            result << ':';
+        }
+        bool name_available(false);
+        if((mode & STRING_IP_PORT_NAME) != 0)
+        {
+            std::string const service_name(get_port_name());
+            if(!service_name.empty())
+            {
+                name_available = true;
+                result << service_name;
+            }
+        }
+        if(!name_available)
+        {
+            result << get_port();
+        }
+    }
+
+    if((mode & (STRING_IP_MASK | STRING_IP_BRACKET_MASK | STRING_IP_MASK_AS_ADDRESS)) != 0)
+    {
+        if(!is_mask_ipv4_compatible())
+        {
+            throw addr_unexpected_mask("mask is not valid for an IPv4 address");
+        }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+        in_addr in = {
+            .s_addr = htonl((f_mask[12] << 24) | (f_mask[13] << 16) | (f_mask[14] << 8) | f_mask[15]),
+        };
+#pragma GCC diagnostic pop
+        char buf[INET_ADDRSTRLEN + 1];
+        if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) == nullptr)
+        {
+            // this should just never happen
+            //
+            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+        }
+
+        if((mode & (STRING_IP_ADDRESS
+                  | STRING_IP_BRACKET_ADDRESS
+                  | STRING_IP_PORT
+                  | STRING_IP_PORT_NAME)) != 0)
+        {
+            result << '/';
+        }
+        int bits(-1);
+        if((mode & STRING_IP_MASK_AS_ADDRESS) == 0)
+        {
+            bits = get_mask_size();
+        }
+        if(bits == -1)
+        {
+            result << buf;
+        }
+        else
+        {
+            result << (bits - 96);
+        }
+    }
+
+    return result.str();
 }
 
 
@@ -1184,72 +1235,102 @@ std::string addr::to_ipv4_string(string_ip_t mode) const
  *
  * \return The addr object converted to an IPv6 address.
  */
-std::string addr::to_ipv6_string(string_ip_t mode) const
+std::string addr::to_ipv6_string(string_ip_t const mode) const
 {
-    char buf[INET6_ADDRSTRLEN + 1];
-    if(inet_ntop(AF_INET6, &f_address.sin6_addr, buf, sizeof(buf)) != nullptr)
+    std::stringstream result;
+
+    bool const include_brackets((mode &
+                (STRING_IP_BRACKET_ADDRESS
+                | STRING_IP_BRACKET_MASK
+                | STRING_IP_PORT
+                | STRING_IP_PORT_NAME)) != 0);
+
+    if((mode & (STRING_IP_ADDRESS | STRING_IP_BRACKET_ADDRESS)) != 0)
     {
-        bool const include_brackets(mode == string_ip_t::STRING_IP_BRACKETS
-                                 || mode == string_ip_t::STRING_IP_BRACKETS_MASK
-                                 || mode == string_ip_t::STRING_IP_PORT // port requires us to add brackets
-                                 || mode == string_ip_t::STRING_IP_ALL);
+        char buf[INET6_ADDRSTRLEN + 1];
+        if(inet_ntop(AF_INET6, &f_address.sin6_addr, buf, sizeof(buf)) == nullptr)
+        {
+            // this should just never happen
+            //
+            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET6 and IPv6 address");
+        }
 
-        std::stringstream result;
-
-        // always insert the IP, even if ANY or "BROADCAST"
+        // insert the IP, even if ANY or "BROADCAST"
         //
         if(include_brackets)
         {
-            result << "[";
+            result << '[';
         }
         result << buf;
         if(include_brackets)
         {
-            result << "]";
+            result << ']';
         }
-
-        // got a port?
-        //
-        if(mode == string_ip_t::STRING_IP_PORT
-        || mode == string_ip_t::STRING_IP_ALL)
-        {
-            result << ":";
-            result << get_port();
-        }
-
-        // got a mask?
-        //
-        if(mode == string_ip_t::STRING_IP_MASK
-        || mode == string_ip_t::STRING_IP_BRACKETS_MASK
-        || mode == string_ip_t::STRING_IP_ALL)
-        {
-            if(inet_ntop(AF_INET6, f_mask, buf, sizeof(buf)) != nullptr)
-            {
-                result << "/";
-                int const bits(get_mask_size());
-                if(bits == -1)
-                {
-                    if(include_brackets)
-                    {
-                        result << "[";
-                    }
-                    result << buf;
-                    if(include_brackets)
-                    {
-                        result << "]";
-                    }
-                }
-                else
-                {
-                    result << bits;
-                }
-            }
-        }
-
-        return result.str();
     }
 
-    throw addr_invalid_state("The address from this addr could not be converted to a valid canonicalized IPv6 address.");  // LCOV_EXCL_LINE
+    if((mode & (STRING_IP_PORT | STRING_IP_PORT_NAME)) != 0)
+    {
+        if((mode & (STRING_IP_ADDRESS | STRING_IP_BRACKET_ADDRESS)) != 0)
+        {
+            result << ':';
+        }
+        bool name_available(false);
+        if((mode & STRING_IP_PORT_NAME) != 0)
+        {
+            std::string const service_name(get_port_name());
+            if(!service_name.empty())
+            {
+                name_available = true;
+                result << service_name;
+            }
+        }
+        if(!name_available)
+        {
+            result << get_port();
+        }
+    }
+
+    if((mode & (STRING_IP_MASK | STRING_IP_BRACKET_MASK | STRING_IP_MASK_AS_ADDRESS)) != 0)
+    {
+        char buf[INET6_ADDRSTRLEN + 1];
+        if(inet_ntop(AF_INET6, f_mask, buf, sizeof(buf)) == nullptr)
+        {
+            // this should just never happen
+            //
+            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+        }
+
+        if((mode & (STRING_IP_ADDRESS
+                  | STRING_IP_BRACKET_ADDRESS
+                  | STRING_IP_PORT
+                  | STRING_IP_PORT_NAME)) != 0)
+        {
+            result << '/';
+        }
+        int bits(-1);
+        if((mode & STRING_IP_MASK_AS_ADDRESS) == 0)
+        {
+            bits = get_mask_size();
+        }
+        if(bits == -1)
+        {
+            if(include_brackets)
+            {
+                result << '[';
+            }
+            result << buf;
+            if(include_brackets)
+            {
+                result << ']';
+            }
+        }
+        else
+        {
+            result << bits;
+        }
+    }
+
+    return result.str();
 }
 
 
@@ -1923,6 +2004,42 @@ int addr::get_port() const
 }
 
 
+/** \brief Convert the port into a name.
+ *
+ * Many ports are used for specific services. For example, port 80 represents
+ * HTTP. This function converts the ports using the /etc/service file.
+ *
+ * \return The name of the port or an empty string.
+ */
+std::string addr::get_port_name() const
+{
+    servent service = {};
+    servent * list(nullptr);
+
+    snapdev::static_to_dynamic_buffer<char, 1024> buf;
+    std::string const proto(get_protocol_name());
+    for(;;)
+    {
+        int const r(getservbyport_r(
+              get_port()
+            , proto.c_str()
+            , &service
+            , buf.get()
+            , buf.size()
+            , &list));
+        if(r == 0)
+        {
+            return service.s_name;
+        }
+        if(r != ERANGE)
+        {
+            return std::string();
+        }
+        buf.increase_size(1024);
+    }
+}
+
+
 /** \brief Retrieve the port.
  *
  * This function retrieves the port of the IP address in host order.
@@ -1970,6 +2087,45 @@ bool addr::is_protocol_defined() const
 int addr::get_protocol() const
 {
     return f_protocol;
+}
+
+
+/** \brief Get the protocol name.
+ *
+ * A list of protocols is found in the /etc/protocols file. This function
+ * transforms the protocol number in one of the names found in that file.
+ *
+ * If no such name is available, then this function returns an empty string.
+ *
+ * \return The name of the protocol or an empty string.
+ *
+ * \sa get_protocol()
+ * \sa set_protocol()
+ */
+std::string addr::get_protocol_name() const
+{
+    struct protoent proto = {};
+    struct protoent * list(nullptr);
+
+    snapdev::static_to_dynamic_buffer<char, 1024> buf;
+    for(;;)
+    {
+        int const r(getprotobynumber_r(
+                  f_protocol
+                , &proto
+                , buf.get()
+                , buf.size()
+                , &list));
+        if(r == 0)
+        {
+            return proto.p_name;
+        }
+        if(r != ERANGE)
+        {
+            return std::string();
+        }
+        buf.increase_size(1024);
+    }
 }
 
 
