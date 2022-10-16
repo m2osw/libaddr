@@ -35,6 +35,11 @@
 #include    "libaddr/exception.h"
 
 
+// advgetopt
+//
+#include    <advgetopt/validator_integer.h>
+
+
 // cppthread
 //
 #include    <cppthread/guard.h>
@@ -386,6 +391,39 @@ void addr::set_ipv4(sockaddr_in const & in)
 void addr::set_port_defined(bool defined)
 {
     f_port_defined = defined;
+}
+
+
+/** \brief Set the port by name or number.
+ *
+ * This function checks whether the \p port parameter represents a port
+ * number ("80") or a port name ("http"). If the name is found in the
+ * /etc/services file, then the corresponding number is used. If not found
+ * then the function throws.
+ *
+ * \param[in] port  The name of the protcol to use.
+ *
+ * \return true if the input was recognized as a valid number or a name
+ * which matches one of the services defined in /etc/services.
+ */
+bool addr::set_port(char const * port)
+{
+    struct servent * s(getservbyname(port, "tcp"));
+    if(s == nullptr)
+    {
+        std::int64_t p(0);
+        if(advgetopt::validator_integer::convert_string(port, p))
+        {
+            set_port(p);
+            return true;
+        }
+        return false;
+    }
+    else
+    {
+        set_port(s->s_port);
+        return true;
+    }
 }
 
 

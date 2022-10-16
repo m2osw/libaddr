@@ -159,6 +159,7 @@ public:
     void                            set_ipv4(sockaddr_in const & in);
     void                            set_ipv6(sockaddr_in6 const & in6);
     void                            set_port_defined(bool defined = true);
+    bool                            set_port(char const * port);
     void                            set_port(int port);
     void                            set_protocol_defined(bool defined = true);
     void                            set_protocol(char const * protocol);
