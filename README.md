@@ -55,6 +55,19 @@ default that feature is now turned off. Make sure to set the
 address if you want to allow such a feature (not recommanded).
 
 
+Known Bugs
+==========
+
+It is possible to write an IPv4 address using the IPv6 syntax:
+
+    ::ffff:192.168.1.1
+
+Even though you write this IP address using the IPv6 syntax, the `is_ipv4()`
+function will return true, which is expected. This can cause problems if
+you really needed an IPv6 address, though. The library does not really have
+the means, at the moment, to tell you whether it parsed an IPv4 or an IPv6
+address.
+
 Bugs
 ====
 
