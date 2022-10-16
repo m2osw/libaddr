@@ -1174,7 +1174,7 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
         // handle the address first
         //
         addr_range::vector_t addr_mask;
-        parse_address(address, mask, addr_mask);
+        bool const is_ipv4(parse_address(address, mask, addr_mask));
 
         // now check for the mask
         //
@@ -1186,13 +1186,15 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
                 // the mask was not defined in the input, then adapt it to
                 // the type of address we got in 'am'
                 //
-                if(am.get_from().is_ipv4())
+                if(is_ipv4)
                 {
                     m = f_default_mask4;
                 }
                 else if(!f_default_mask6.empty())
                 {
                     // parse_mask() expects '[...]' around IPv6 addresses
+                    // we remove them when set_mask() is called and they
+                    // are present
                     //
                     m = "[" + f_default_mask6 + "]";
                 }
@@ -1201,7 +1203,7 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
             // TODO: the am.get_from() may be wrong since now we support
             //       ranges so it could require am.get_to() instead
             //
-            parse_mask(m, am.get_from());
+            parse_mask(m, am.get_from(), is_ipv4 && am.get_from().is_ipv4());
         }
 
         // now append the list to the result if no errors occurred
@@ -1241,8 +1243,14 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
  * \param[in] mask  The mask used to determine whether we are dealing with
  *                  an IPv6 or not.
  * \param[in,out] result  The list of resulting addresses.
+ *
+ * \return true if the address was parsed as an IPv4 address, false if it
+ * was determined to be an IPv6 address.
  */
-void addr_parser::parse_address(std::string const & in, std::string const & mask, addr_range::vector_t & result)
+bool addr_parser::parse_address(
+      std::string const & in
+    , std::string const & mask
+    , addr_range::vector_t & result)
 {
     // if the number of colons is 2 or more, the address has to be an
     // IPv6 address so we have a very special case at the start for that
@@ -1251,7 +1259,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
     if(colons >= 2LL)
     {
         parse_address6(in, colons, result);
-        return;
+        return false;
     }
 
     if(in.empty()
@@ -1269,6 +1277,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
                 // IPv6 parsing
                 //
                 parse_address6(in, colons, result);
+                return false;
             }
             else
             {
@@ -1300,10 +1309,12 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
                 if(mask_count > 32)
                 {
                     parse_address6(in, colons, result);
+                    return false;
                 }
                 else
                 {
                     parse_address4(in, result);
+                    return true;
                 }
             }
         }
@@ -1313,10 +1324,12 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
             && !f_default_address6.empty())
             {
                 parse_address6(in, colons, result);
+                return false;
             }
             else
             {
                 parse_address4(in, result);
+                return true;
             }
         }
     }
@@ -1330,6 +1343,7 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
         || in.find(']') != std::string::npos)
         {
             parse_address6(in, colons, result);
+            return false;
         }
         else
         {
@@ -1345,15 +1359,18 @@ void addr_parser::parse_address(std::string const & in, std::string const & mask
                 && in.find('.') > p)
                 {
                     parse_address6(in, colons, result);
+                    return false;
                 }
                 else
                 {
                     parse_address4(in, result);
+                    return true;
                 }
             }
             else
             {
                 parse_address4(in, result);
+                return true;
             }
         }
     }
@@ -1891,23 +1908,34 @@ void addr_parser::parse_address_port(
  * If the string is neither a decimal number nor a valid IP address
  * then the parser adds an error string to the f_error variable.
  *
+ * The \p is_ipv4 flag is used to know whether the size of the CIDR is
+ * 0 to 128 or 0 to 32 and fix the mask accordingly.
+ *
+ * \bug
+ * Note that this flag* is bogus when the input is a domain name and lookup
+ * are allowed. This is because in this case the address may be IPv4 or
+ * IPv6, which means the mask would be bogus anyway. So I think we are fine.
+ * The bug comes from the user in this case.
+ *
  * \param[in] mask  The mask to transform to binary.
  * \param[in,out] cidr  The address to which the mask will be added.
+ * \param[in] is_ipv4  Whether the address was parsed as an IPv4 (true) or
+ * an IPv6 (false).
  */
-void addr_parser::parse_mask(std::string const & mask, addr & cidr)
+void addr_parser::parse_mask(
+      std::string const & mask
+    , addr & cidr
+    , bool is_ipv4)
 {
     // no mask?
     //
     if(mask.empty())
     {
-        // in the current implementation this cannot happen since we
-        // do not call this function when mask is empty
-        //
-        // hwoever, the algorithm below expect that 'mask' is not
+        // however, the algorithm below expects that 'mask' is not
         // empty (otherwise we get the case of 0 even though it
         // may not be correct.)
         //
-        return;  // LCOV_EXCL_LINE
+        return;
     }
 
     // the mask may be a decimal number or an address, if just one number
@@ -1920,6 +1948,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
     int mask_count(0);
     {
         // TODO: compute `m` only once
+        //
         std::string m(mask);
         if(mask.length() >= 2
         && mask.front() == '['
@@ -1942,7 +1971,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
                 mask_count = mask_count * 10 + *s - '0';
                 if(mask_count > 10000)
                 {
-                    emit_error("Mask number too large ("
+                    emit_error("Mask size too large ("
                              + mask
                              + ", expected a maximum of 128).");
                     return;
@@ -1960,7 +1989,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
     //
     if(mask_count != -1)
     {
-        if(cidr.is_ipv4())
+        if(is_ipv4)
         {
             if(mask_count > 32)
             {
@@ -2027,7 +2056,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
 
         // if the mask is an IPv6, then it has to have the '[...]'
         std::string m(mask);
-        if(cidr.is_ipv4())
+        if(is_ipv4)
         {
             if(mask[0] == '[')
             {
@@ -2035,7 +2064,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
                 return;
             }
         }
-        else //if(!cidr.is_ipv4())
+        else //if(!is_ipv4)
         {
             if(mask[0] != '[')
             {
@@ -2087,7 +2116,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
         }
         std::shared_ptr<addrinfo> mask_ai(masklist, addrinfo_deleter);
 
-        if(cidr.is_ipv4())
+        if(is_ipv4)
         {
             if(masklist->ai_family != AF_INET)
             {
@@ -2109,7 +2138,7 @@ void addr_parser::parse_mask(std::string const & mask, addr & cidr)
             }
             memcpy(mask_bits + 12, &reinterpret_cast<sockaddr_in *>(masklist->ai_addr)->sin_addr.s_addr, 4); // last 4 bytes are the IPv4 address, keep the rest as 1s
         }
-        else //if(!cidr.is_ipv4())
+        else //if(!is_ipv4)
         {
             if(masklist->ai_family != AF_INET6)
             {

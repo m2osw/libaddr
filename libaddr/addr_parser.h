@@ -115,12 +115,12 @@ public:
 private:
     void                    parse_address_range(std::string const & in, addr_range::vector_t & result);
     void                    parse_cidr(std::string const & in, addr_range::vector_t & result);
-    void                    parse_address(std::string const & in, std::string const & mask, addr_range::vector_t & result);
+    bool                    parse_address(std::string const & in, std::string const & mask, addr_range::vector_t & result);
     void                    parse_address4(std::string const & in, addr_range::vector_t & result);
     void                    parse_address6(std::string const & in, std::size_t const colons, addr_range::vector_t & result);
     void                    parse_address_range_port(std::string const & addresses, std::string const & port_str, addr_range::vector_t & result, bool ipv6);
     void                    parse_address_port(std::string address, std::string port_str, addr_range::vector_t & result, bool ipv6);
-    void                    parse_mask(std::string const & mask, addr & cidr);
+    void                    parse_mask(std::string const & mask, addr & cidr, bool is_ipv4);
 
     bool                    f_flags[static_cast<int>(allow_t::ALLOW_max)] = {};
     sort_t                  f_sort = SORT_NO;

@@ -11,6 +11,12 @@
   that package. The nmap package can be installed by the build system and we
   can change the format to our own at build time.
 
+  There is a list from IANA here:
+
+  http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt
+
+  which is pretty complete. It includes deprecated numbers.
+
   The default system feature does not allow for growth without editing the
   system supplied `/etc/services` file. We would like to have our own
   protocols added to a directory which our functions can parse.

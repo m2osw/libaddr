@@ -144,7 +144,7 @@ advgetopt::option const g_options[] =
         , advgetopt::ShortName('l')
         , advgetopt::Flags(advgetopt::standalone_command_flags<
                       advgetopt::GETOPT_FLAG_GROUP_OPTIONS>())
-        , advgetopt::Help("specify protocol.")
+        , advgetopt::Help("allow list of addresses separated by spaces and/or commas.")
     ),
     advgetopt::define_option(
           advgetopt::Name("mask")
