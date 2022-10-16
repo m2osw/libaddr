@@ -26,7 +26,7 @@
 ##
 ## Addr command line tool
 ##
-project(validate_ip)
+project(validate-ip)
 
 add_executable(${PROJECT_NAME}
     validate_ip.cpp
@@ -56,7 +56,7 @@ install(
 ##
 ## Route command line tool
 ##
-project(ipv4_routes)
+project(ipv4-routes)
 
 include_directories(
     ${LIBEXCEPT_INCLUDE_DIRS}
