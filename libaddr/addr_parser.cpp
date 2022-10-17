@@ -101,6 +101,11 @@
 #include    <advgetopt/validator_integer.h>
 
 
+// snapdev
+//
+#include    <snapdev/trim_string.h>
+
+
 // C++
 //
 #include    <algorithm>
@@ -1059,7 +1064,20 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
             && (!get_allow(allow_t::ALLOW_COMMENT_HASH)      || in[s] != '#')    // commented out line?
             && (!get_allow(allow_t::ALLOW_COMMENT_SEMICOLON) || in[s] != ';'))   // commented out line?
             {
-                parse_cidr(in.substr(s, e - s), result);
+                std::string::size_type ec(e);
+                if(get_allow(allow_t::ALLOW_COMMENT_HASH)
+                || get_allow(allow_t::ALLOW_COMMENT_SEMICOLON))
+                {
+                    std::string const comment_chars(
+                              std::string(get_allow(allow_t::ALLOW_COMMENT_HASH) ? "#" : "")
+                            + (get_allow(allow_t::ALLOW_COMMENT_SEMICOLON) ? ";" : ""));
+                    auto const comment(std::find_first_of(in.begin() + s, in.begin() + ec, comment_chars.begin(), comment_chars.end()));
+                    if(comment != in.begin() + ec)
+                    {
+                        ec = comment - in.begin();
+                    }
+                }
+                parse_cidr(in.substr(s, ec - s), result);
             }
             s = e + 1;
         }
@@ -1152,22 +1170,18 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
  */
 void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & result)
 {
+    std::string address(snapdev::trim_string(in));
     if(get_allow(allow_t::ALLOW_MASK))
     {
         // check whether there is a mask
         //
         std::string mask;
 
-        std::string address;
-        std::string::size_type const p(in.find('/'));
+        std::string::size_type const p(address.find('/'));
         if(p != std::string::npos)
         {
-            address = in.substr(0, p);
-            mask = in.substr(p + 1);
-        }
-        else
-        {
-            address = in;
+            mask = address.substr(p + 1);
+            address = address.substr(0, p);
         }
 
         int const errcnt(f_error_count);
@@ -1218,7 +1232,7 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
     {
         // no mask allowed, if there is one, this call will fail
         //
-        parse_address(in, std::string(), result);
+        parse_address(address, std::string(), result);
     }
 }
 
