@@ -54,11 +54,18 @@
  *   sure that an address is viewed as an IPv6 address, make sure to use
  *   brackets around the address and the mask.
  *
- * * `comment=yes|no`
+ * * `comment=yes|all|hash|semicolon|no`
  *
  *   Whether comments are allowed or not. In most likelihood, it should not
  *   be used with the validator since parameters passed on the command line
  *   cannot be separated by newlines.
+ *
+ *   The "yes" and "all" mean the same thing. All the different types of
+ *   comments will be allowed.
+ *
+ *   The "hash" means the '#' character starts a comment.
+ *
+ *   The "semicolon" means the ';' character starts a comment.
  *
  * * `port=yes|no|required`
  *
@@ -72,7 +79,7 @@
  *    If `no` then no mask is allowed.
  *
  *    If `address` then a mask is allowed and it can be written as an IP
- *    address (opposed to just a number).
+ *    address (opposed to just a CIDR number).
  *
  * \todo
  * Once support for multi-ports and ranges is available, add such to the
@@ -296,28 +303,38 @@ validator_address::validator_address(advgetopt::string_list_t const & data)
         case 'c':
             if(name == "comment")
             {
-                f_parser.set_allow(allow_t::ALLOW_COMMENT, false);
+                f_parser.set_allow(allow_t::ALLOW_COMMENT_HASH, false);
+                f_parser.set_allow(allow_t::ALLOW_COMMENT_SEMICOLON, false);
 
                 if(values.size() != 1)
                 {
                     cppthread::log
                         << cppthread::log_level_t::error
-                        << "the \"comment\" option expects one of \"yes\" or \"no\"."
+                        << "the \"comment\" option expects one of \"yes\", \"all\", \"hash\", \"semicolon\" or \"no\"."
                         << cppthread::end;
+                }
+                else if(values[0] == "yes"
+                     || values[0] == "all")
+                {
+                    f_parser.set_allow(allow_t::ALLOW_COMMENT_HASH, true);
+                    f_parser.set_allow(allow_t::ALLOW_COMMENT_SEMICOLON, true);
+                }
+                else if(values[0] == "hash")
+                {
+                    f_parser.set_allow(allow_t::ALLOW_COMMENT_HASH, true);
+                }
+                else if(values[0] == "semicolon")
+                {
+                    f_parser.set_allow(allow_t::ALLOW_COMMENT_SEMICOLON, true);
                 }
                 else if(values[0] != "no")
                 {
-                    f_parser.set_allow(allow_t::ALLOW_COMMENT, true);
-
-                    if(values[0] != "yes")
-                    {
-                        cppthread::log
-                            << cppthread::log_level_t::error
-                            << "value \""
-                            << values[0]
-                            << "\" is unexpected for the \"comment\" option which expects one of \"yes\" or \"no\"."
-                            << cppthread::end;
-                    }
+                    cppthread::log
+                        << cppthread::log_level_t::error
+                        << "value \""
+                        << values[0]
+                        << "\" is unexpected for the \"comment\" option which expects one of \"yes\", \"all\", \"hash\", \"semicolon\" or \"no\"."
+                        << cppthread::end;
                 }
                 continue;
             }

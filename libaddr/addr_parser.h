@@ -55,7 +55,8 @@ enum class allow_t
     ALLOW_MASK,                             // mask
     ALLOW_ADDRESS_MASK,                     // mask like an address (opposed to just a number, which is the only new valid version)
 
-    ALLOW_COMMENT,                          // if address starts with '#', it's a comment, ignore; useful with ALLOW_MULTI_ADDRESSES_NEWLINES
+    ALLOW_COMMENT_HASH,                     // if address starts with '#', it's a comment, ignore; useful with ALLOW_MULTI_ADDRESSES_NEWLINES
+    ALLOW_COMMENT_SEMICOLON,                // if address starts with ':', it's a comment, ignore; useful with ALLOW_MULTI_ADDRESSES_NEWLINES
 
     // TODO: the following are not yet implemented
     ALLOW_MULTI_PORTS_SEMICOLONS,           // port1;port2;...

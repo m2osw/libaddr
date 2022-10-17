@@ -301,7 +301,7 @@ CATCH_TEST_CASE("ipv4::invalid_input", "[ipv4]")
                 addr::addr_range::vector_t ips(p.parse("172.19.6.91:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Mask number too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
+                CATCH_REQUIRE(p.error_messages() == "Mask size too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
                 CATCH_REQUIRE(ips.size() == 0);
             }
         }

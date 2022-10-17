@@ -231,7 +231,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Mask number too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
+                CATCH_REQUIRE(p.error_messages() == "Mask size too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
                 CATCH_REQUIRE(ips.size() == 0);
             }
 
@@ -252,7 +252,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/[" + std::to_string(mask) + "]"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Mask number too large ([" + std::to_string(mask) + "], expected a maximum of 128).\n");
+                CATCH_REQUIRE(p.error_messages() == "Mask size too large ([" + std::to_string(mask) + "], expected a maximum of 128).\n");
                 CATCH_REQUIRE(ips.size() == 0);
             }
 
@@ -269,7 +269,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
                 addr::addr_range::vector_t ips(p.parse(":" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Mask number too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
+                CATCH_REQUIRE(p.error_messages() == "Mask size too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
                 CATCH_REQUIRE(ips.size() == 0);
             }
 
@@ -1465,13 +1465,13 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("ipv6::addr: parse & sort multi-address separated by \\n")
+    CATCH_START_SECTION("ipv6::addr: parse & sort multi-address separated by '\\n' with '#' comments")
     {
         addr::addr_parser p;
         p.set_protocol(IPPROTO_TCP);
         p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_NEWLINES, true);
         p.set_allow(addr::allow_t::ALLOW_ADDRESS_RANGE, true);
-        p.set_allow(addr::allow_t::ALLOW_COMMENT, true);
+        p.set_allow(addr::allow_t::ALLOW_COMMENT_HASH, true);
 
         CATCH_REQUIRE(p.get_sort_order() == addr::SORT_NO); // verify default
         addr::sort_t const order(addr::SORT_NO_EMPTY | addr::SORT_MERGE | addr::SORT_IPV6_FIRST);
@@ -1483,6 +1483,50 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
                 "10.1.0.32\n"
                 "192.168.2.23-192.168.2.18\n"
                 "#0:0:300f:f00f:3355::3\n"  // commented
+                "::1\n"
+                "25.8.9.11\n\n"             // extra empty line
+                "f801::3332\n"
+                "192.168.2.1-192.168.2.14\n"
+                "-:45\n"                    // for a range, at least one IP is required
+                "a::1-b::3\n\n"             // extra empty line at the end too
+                "# an actual comment\n");
+        addr::addr_range::vector_t const ips(p.parse(ip_list));
+
+        // note that even though we had errors, the valid IP entries
+        // appear in the ips vector and we can test them
+        //
+        CATCH_REQUIRE(p.has_errors());
+        CATCH_REQUIRE(p.error_messages() == "An address range requires at least one of the \"from\" or \"to\" addresses.\n");
+
+        CATCH_REQUIRE(ips.size() == 6);
+        CATCH_REQUIRE(ips[0].to_string(addr::STRING_IP_ADDRESS) == "::1");
+        CATCH_REQUIRE(ips[1].to_string(addr::STRING_IP_ADDRESS) == "9::-b::3");
+        CATCH_REQUIRE(ips[2].to_string(addr::STRING_IP_ADDRESS) == "f801::3332");
+        CATCH_REQUIRE(ips[3].to_string(addr::STRING_IP_ADDRESS) == "10.1.0.32");
+        CATCH_REQUIRE(ips[4].to_string(addr::STRING_IP_ADDRESS) == "25.8.9.11");
+        CATCH_REQUIRE(ips[5].to_string(addr::STRING_IP_ADDRESS) == "192.168.2.1-192.168.2.14");
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("ipv6::addr: parse & sort multi-address separated by '\\n' with ';' comments")
+    {
+        addr::addr_parser p;
+        p.set_protocol(IPPROTO_TCP);
+        p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_NEWLINES, true);
+        p.set_allow(addr::allow_t::ALLOW_ADDRESS_RANGE, true);
+        p.set_allow(addr::allow_t::ALLOW_COMMENT_SEMICOLON, true);
+
+        CATCH_REQUIRE(p.get_sort_order() == addr::SORT_NO); // verify default
+        addr::sort_t const order(addr::SORT_NO_EMPTY | addr::SORT_MERGE | addr::SORT_IPV6_FIRST);
+        p.set_sort_order(order);
+        CATCH_REQUIRE(p.get_sort_order() == order);
+
+        std::string const ip_list(
+                "; list of IPs\n"
+                "9::-a::\n"
+                "10.1.0.32\n"
+                "192.168.2.23-192.168.2.18\n"
+                ";0:0:300f:f00f:3355::3\n"  // commented
                 "::1\n"
                 "25.8.9.11\n\n"             // extra empty line
                 "f801::3332\n"

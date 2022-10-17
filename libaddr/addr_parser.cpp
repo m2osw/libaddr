@@ -1007,10 +1007,10 @@ void addr_parser::clear_errors()
  * of your services and tools).
  *
  * \todo
- * The ALLOW_COMMENT currently gives the user a way to comment with any
- * type of separator (commas, spaces or new lines). I think that in the
- * following, everything after the # should be viewed as a comment. Right
- * now, the 3rd IP:port is viewed as a valid entry:
+ * The ALLOW_COMMENT_HASH and ALLOW_COMMENT_SEMICOLON currently gives the
+ * user a way to comment with any type of separator (commas, spaces or new
+ * lines). I think that in the following, everything after the # should be
+ * viewed as a comment. Right now, the 3rd IP:port is viewed as a valid entry:
  * \todo
  * \code
  *     127.0.0.1,#10.0.0.1,192.168.0.1
@@ -1056,7 +1056,8 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
             auto const it(std::find_first_of(in.begin() + s, in.end(), separators.begin(), separators.end()));
             std::string::size_type const e(it - in.begin());
             if(e > s
-            && (!get_allow(allow_t::ALLOW_COMMENT) || in[s] != '#'))   // commented out line?
+            && (!get_allow(allow_t::ALLOW_COMMENT_HASH)      || in[s] != '#')    // commented out line?
+            && (!get_allow(allow_t::ALLOW_COMMENT_SEMICOLON) || in[s] != ';'))   // commented out line?
             {
                 parse_cidr(in.substr(s, e - s), result);
             }
