@@ -1,5 +1,5 @@
 
-* List of addresses optimizer
+* Optimizer of "List of Addresses"
 
   When loading a list of addresses, especially with masks, it is often
   possible to optimize the resulting list by removing entries that are
