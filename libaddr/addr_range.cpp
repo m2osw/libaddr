@@ -1081,13 +1081,17 @@ bool optimize_vector(addr::vector_t & v)
             addr_range const u(ra.union_if_possible(rb));
             if(u.is_defined())
             {
-                // union was possible
+                // union was possible -- check whether result has valid CIDR
                 //
-                addr q;
-                if(u.to_cidr(q))
+                addr p(u.get_from());
+                addr q(p);
+                p.apply_mask();
+                q.apply_mask(true);
+                if(p == u.get_from()
+                && q == u.get_to())
                 {
                     ra = u;
-                    v[i] = q;
+                    v[i] = p;
                     v.erase(v.begin() + j);
                     --max;
                     --j; // cancel the ++j in the for() loop
