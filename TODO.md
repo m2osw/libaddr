@@ -1,25 +1,4 @@
 
-* Optimizer of "List of Addresses"
-
-  When loading a list of addresses, especially with masks, it is often
-  possible to optimize the resulting list by removing entries that are
-  there twice or a network that is fully included in another network.
-
-  For example, in the following three network definitions, only the last
-  one can be kept:
-
-      192.168.5.0/24
-      192.168.192.0/20
-      192.168.0.0/16
-
-  This would be useful to optimize the lists we add to an ipset. We really
-  only need to add 192.168.0.0/16 if we expected an address to match any one
-  of those three networks.
-
-  The optimizer would go through the list of IP addresses and testing whether
-  A is equal or included in B, in which case A gets removed. Then it tests
-  whether B is included in A and if so, remove B.
-
 * Add support for adding our own set of "service to port" or
   "port to service"--i.e. `getservbyname()` or `getservbyport()`
 
