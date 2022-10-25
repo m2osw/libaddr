@@ -1451,6 +1451,120 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
         }
         CATCH_END_SECTION()
     }
+
+    CATCH_GIVEN("addr_range() create address with CIDR")
+    {
+        addr::addr_range range;
+
+        CATCH_START_SECTION("addr_range: valid network range /16")
+        {
+            // from 192.168.0.0
+            struct sockaddr_in fin = sockaddr_in();
+            fin.sin_family = AF_INET;
+            int const fport(rand() & 0xFFFF);
+            fin.sin_port = htons(fport);
+            uint32_t const faddress((192 << 24)
+                          | (168 << 16)
+                          | (0 << 8)
+                          | 0);
+            fin.sin_addr.s_addr = htonl(faddress);
+            addr::addr f;
+            f.set_ipv4(fin);
+            f.set_mask_count(128 - 16);
+
+            // to 192.168.255.255
+            addr::addr t(f);
+            t.apply_mask(true);
+
+            addr::addr_range r;
+            r.set_from(f);
+            r.set_to(t);
+
+            CATCH_REQUIRE(r.is_defined());
+            CATCH_REQUIRE(r.is_range());
+
+            addr::addr a;
+            CATCH_REQUIRE(r.to_cidr(a));
+            CATCH_REQUIRE(a.ip_to_uint128() == f.ip_to_uint128());
+            CATCH_REQUIRE(a.get_mask_size() == 128 - 16);
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("addr_range: valid network range /24")
+        {
+            // from 10.0.0.0
+            struct sockaddr_in fin = sockaddr_in();
+            fin.sin_family = AF_INET;
+            int const fport(rand() & 0xFFFF);
+            fin.sin_port = htons(fport);
+            uint32_t const faddress((10 << 24)
+                          | (0 << 16)
+                          | (0 << 8)
+                          | 0);
+            fin.sin_addr.s_addr = htonl(faddress);
+            addr::addr f;
+            f.set_ipv4(fin);
+            f.set_mask_count(128 - 24);
+
+            // to 10.255.255.255
+            addr::addr t(f);
+            t.apply_mask(true);
+
+            addr::addr_range r;
+            r.set_from(f);
+            r.set_to(t);
+
+            CATCH_REQUIRE(r.is_defined());
+            CATCH_REQUIRE(r.is_range());
+
+            addr::addr a;
+            CATCH_REQUIRE(r.to_cidr(a));
+            CATCH_REQUIRE(a.ip_to_uint128() == f.ip_to_uint128());
+            CATCH_REQUIRE(a.get_mask_size() == 128 - 24);
+        }
+        CATCH_END_SECTION()
+    }
+
+    CATCH_GIVEN("addr_range() optimize address with CIDR")
+    {
+        addr::addr_range range;
+
+        CATCH_START_SECTION("addr_range: optimize IPv4 addresses")
+        {
+            addr::addr::vector_t list;
+
+            // from 192.168.0.0
+            struct sockaddr_in fin = sockaddr_in();
+            fin.sin_family = AF_INET;
+            int const fport(rand() & 0xFFFF);
+            fin.sin_port = htons(fport);
+            uint32_t const faddress((192 << 24)
+                          | (168 << 16)
+                          | (45 << 8)
+                          | 3);
+            fin.sin_addr.s_addr = htonl(faddress);
+            addr::addr f;
+            f.set_ipv4(fin);
+            int final_mask_size(0);
+            for(int count(0); count < 5; ++count)
+            {
+                int const mask_size(rand() % 32);
+                if(mask_size > final_mask_size)
+                {
+                    final_mask_size = mask_size;
+                }
+                addr::addr a(f);
+                a.set_mask_count(128 - mask_size);
+                a.apply_mask();
+                list.push_back(a);
+            }
+
+            CATCH_REQUIRE(addr::optimize_vector(list));
+            CATCH_REQUIRE(list.size() == 1);
+            CATCH_REQUIRE(list[0].get_mask_size() == 128 - final_mask_size);
+        }
+        CATCH_END_SECTION()
+    }
 }
 
 

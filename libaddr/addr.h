@@ -165,7 +165,7 @@ public:
     void                            set_protocol(char const * protocol);
     void                            set_protocol(int protocol);
     void                            set_mask_defined(bool defined = true);
-    void                            set_mask(uint8_t const * mask);
+    void                            set_mask(std::uint8_t const * mask);
     void                            set_mask_count(int mask_size);
     void                            apply_mask(bool inversed = false);
 
@@ -205,7 +205,7 @@ public:
     bool                            is_protocol_defined() const;
     int                             get_protocol() const;
     std::string                     get_protocol_name() const;
-    void                            get_mask(uint8_t * mask) const;
+    void                            get_mask(std::uint8_t * mask) const;
     int                             get_mask_size() const;
     bool                            is_mask_ipv4_compatible() const;
     bool                            is_mask_defined() const;
@@ -238,7 +238,7 @@ private:
     // always keep address in an IPv6 structure
     //
     sockaddr_in6                    f_address = init_in6();
-    uint8_t                         f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
+    std::uint8_t                    f_mask[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
     bool                            f_port_defined = false;
     bool                            f_protocol_defined = false;
     bool                            f_mask_defined = false;

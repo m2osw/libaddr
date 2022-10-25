@@ -1,3 +1,11 @@
+libaddr (1.0.32.0~bionic) bionic; urgency=high
+
+  * Added the to_cidr() to the addr_range class.
+  * Added the optimize_vector() to remove equal/included addresses.
+  * Various clean ups.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2022 20:37:15 -0700
+
 libaddr (1.0.31.1~bionic) bionic; urgency=high
 
   * For newer versions of g++, #include <limits>.

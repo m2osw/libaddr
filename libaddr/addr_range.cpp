@@ -365,6 +365,60 @@ void addr_range::from_cidr(addr const & a)
 }
 
 
+/** \brief Try to transform a range in a CIDR address.
+ *
+ * This function checks whether the range represents a network address as
+ * in 192.168.0.0/24. For that example, it is the case if the "from"
+ * address is 192.168.0.0 and the "to" address is 192.168.255.255.
+ *
+ * \param[out] a  The resulting address. Changed only if the function returns
+ * true.
+ *
+ * \return true and \p a set to the from address and the mask to the
+ * corresponding CIDR if it was possible.
+ */
+bool addr_range::to_cidr(addr & a) const
+{
+    if(!is_range()
+    || is_empty())
+    {
+        return false;
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+    unsigned __int128 const from(f_from.ip_to_uint128());
+    unsigned __int128 const to(f_to.ip_to_uint128());
+    int cidr(128);
+    for(int count(0); count < 128; ++count)
+    {
+        unsigned __int128 bit(1);
+        bit <<= count;
+        if((from & bit) != 0
+        || (to & bit) == 0)
+        {
+            do
+            {
+                if((from & bit) != (to & bit))
+                {
+                    return false;
+                }
+                ++count;
+            }
+            while(count < 128);
+            break;
+        }
+        --cidr;
+    }
+#pragma GCC diagnostic pop
+
+    a.ip_from_uint128(from);
+    a.set_mask_count(cidr);
+
+    return true;
+}
+
+
 /** \brief Transform a range in a vector of separate addresses.
  *
  * This function goes through a range and transforms it in a set of addresses.
@@ -640,12 +694,33 @@ addr_range addr_range::intersection(addr_range const & rhs) const
  * it computes the union of both ranges. Otherwise it returns a non-range
  * object (i.e. an addr_range which is_range() predicate returns false).
  *
+ * Note that if both inputs are the same IP address, then the result is just
+ * one address (i.e. only "from" will be defined in the resulting range).
+ *
  * \note
  * The masks are ignored.
  *
+ * \note
+ * To test two network addresses (i.e. an address with a CIDR), create two
+ * ranges using the from_cidr() function.
+ * \note
+ * \code
+ *     addr_range ra, rb;
+ *     ra.from_cidr(a);
+ *     rb.from_cidr(b);
+ *     addr_range u(ra.union_if_possible(rb));
+ *     if(u.is_defined())
+ *     {
+ *         // 'a' is equal or included in 'b'
+ *         // or 'b' is equal or included in 'a'
+ *         //
+ *         ...
+ *     }
+ * \endcode
+ *
  * \param[in] rhs  The other range to compute the intersection with.
  *
- * \return The resulting union range or no range (use is_range() on result).
+ * \return The resulting union range or no range (use is_defined() on result).
  *
  * \sa is_empty()
  */
@@ -967,6 +1042,62 @@ bool address_match_ranges(addr_range::vector_t ranges, addr const & address)
             ));
 
     return it != ranges.end();
+}
+
+
+/** \brief Optimize a vector of addresses.
+ *
+ * This function checks whether an address is equal or included in another.
+ * If so, it gets removed from the \p v vector.
+ *
+ * \note
+ * This function makes use of the mask to know whether an address is include
+ * in address. More precisely, it checks whether a network is included in
+ * another. For example, 10.0.0.0/24 is included in 10.0.0.0/16 so it can
+ * be optimized out.
+ *
+ * \warning
+ * The function ignores the port information. So two networks that match,
+ * ignoring the port, will be optimized.
+ *
+ * \param[in,out] v  The vector of addresses to optimize.
+ *
+ * \return true if the input vector was updated.
+ */
+bool optimize_vector(addr::vector_t & v)
+{
+    bool result(false);
+
+    std::size_t max(v.size());
+    for(std::size_t i(0); i < max; ++i)
+    {
+        addr_range ra;
+        ra.from_cidr(v[i]);
+        for(std::size_t j(i + 1); j < max; ++j)
+        {
+            addr_range rb;
+            rb.from_cidr(v[j]);
+
+            addr_range const u(ra.union_if_possible(rb));
+            if(u.is_defined())
+            {
+                // union was possible
+                //
+                addr q;
+                if(u.to_cidr(q))
+                {
+                    ra = u;
+                    v[i] = q;
+                    v.erase(v.begin() + j);
+                    --max;
+                    --j; // cancel the ++j in the for() loop
+                    result = true;
+                }
+            }
+        }
+    }
+
+    return result;
 }
 
 

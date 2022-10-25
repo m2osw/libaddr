@@ -64,7 +64,8 @@ public:
     addr &                          get_to();
     addr const &                    get_to() const;
     void                            swap_from_to();
-    void                            from_cidr(addr const & range);
+    void                            from_cidr(addr const & a);
+    bool                            to_cidr(addr & a) const;
     addr::vector_t                  to_addresses(std::size_t limit = 1000) const;
     std::string                     to_string(string_ip_t const mode = STRING_IP_ALL) const;
     static std::string              to_string(
@@ -90,7 +91,7 @@ private:
 
 
 bool address_match_ranges(addr_range::vector_t ranges, addr const & address);
-
+bool optimize_vector(addr::vector_t & v);
 
 
 template<typename _CharT, typename _Traits>
