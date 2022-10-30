@@ -79,16 +79,16 @@ constexpr struct sockaddr_un init_un()
 }
 
 
-class unix
+class addr_unix
 {
 public:
-    typedef std::shared_ptr<unix>   pointer_t;
-    typedef std::vector<unix>       vector_t;
-    typedef int                     socket_flag_t;
+    typedef std::shared_ptr<addr_unix>  pointer_t;
+    typedef std::vector<addr_unix>      vector_t;
+    typedef int                         socket_flag_t;
 
-                                    unix();
-                                    unix(sockaddr_un const & un);
-                                    unix(std::string const & address, bool abstract = false);
+                                    addr_unix();
+                                    addr_unix(sockaddr_un const & un);
+                                    addr_unix(std::string const & address, bool abstract = false);
 
     void                            set_scheme(std::string const & scheme);
     void                            set_un(sockaddr_un const & un);
@@ -107,12 +107,12 @@ public:
     std::string                     to_uri() const;
     int                             unlink();
 
-    bool                            operator == (unix const & rhs) const;
-    bool                            operator != (unix const & rhs) const;
-    bool                            operator <  (unix const & rhs) const;
-    bool                            operator <= (unix const & rhs) const;
-    bool                            operator >  (unix const & rhs) const;
-    bool                            operator >= (unix const & rhs) const;
+    bool                            operator == (addr_unix const & rhs) const;
+    bool                            operator != (addr_unix const & rhs) const;
+    bool                            operator <  (addr_unix const & rhs) const;
+    bool                            operator <= (addr_unix const & rhs) const;
+    bool                            operator >  (addr_unix const & rhs) const;
+    bool                            operator >= (addr_unix const & rhs) const;
 
 private:
     std::string                     verify_path(std::string const & path, bool abstract);

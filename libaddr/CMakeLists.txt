@@ -37,9 +37,9 @@ add_library(${PROJECT_NAME} SHARED
     addr.cpp
     addr_parser.cpp
     addr_range.cpp
+    addr_unix.cpp
     iface.cpp
     route.cpp
-    unix.cpp
     validator_address.cpp
     version.cpp
 )

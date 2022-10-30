@@ -23,15 +23,15 @@
 
 
 /** \file
- * \brief The implementation of the unix class.
+ * \brief The implementation of the addr_unix class.
  *
- * This file includes the implementation of the unix class. The one that
+ * This file includes the implementation of the addr_unix class. The one that
  * deals with low level Unix addresses.
  */
 
 // self
 //
-#include    "libaddr/unix.h"
+#include    "libaddr/addr_unix.h"
 #include    "libaddr/exception.h"
 
 
@@ -73,24 +73,24 @@ namespace addr
 
 
 
-/** \brief Create a unix object that represents an unnamed socket.
+/** \brief Create a addr_unix object that represents an unnamed socket.
  *
  * The default is to create an unnamed address. Note that you can later
  * change an address with functions such as the set_abstract() function.
  */
-unix::unix()
+addr_unix::addr_unix()
 {
 }
 
 
-/** \brief Create a unix object from a binary Unix address structure.
+/** \brief Create a addr_unix object from a binary Unix address structure.
  *
  * This function initializes this Unix object with the specified sockaddr_un
  * address.
  *
  * \param[in] un  The Unix address.
  */
-unix::unix(sockaddr_un const & un)
+addr_unix::addr_unix(sockaddr_un const & un)
 {
     set_un(un);
 }
@@ -104,12 +104,12 @@ unix::unix(sockaddr_un const & un)
  * \note
  * In this case, the \p address parameter is expected to be a bare
  * address. If you have a URI address, make sure to create the
- * unix address and then call the set_uri() function.
+ * addr_unix address and then call the set_uri() function.
  *
  * \param[in] address  A Unix address in a string.
  * \param[in] abstract  Whether this address is considered abstract.
  */
-unix::unix(std::string const & address, bool abstract)
+addr_unix::addr_unix(std::string const & address, bool abstract)
 {
     if(abstract)
     {
@@ -138,21 +138,21 @@ unix::unix(std::string const & address, bool abstract)
  *
  * \param[in] scheme  The name of the scheme.
  */
-void unix::set_scheme(std::string const & scheme)
+void addr_unix::set_scheme(std::string const & scheme)
 {
     f_scheme = scheme == "unix" ? std::string() : scheme;
 }
 
 
-/** \brief Save a Unix address in this unix object.
+/** \brief Save a Unix address in this addr_unix object.
  *
- * This function saves the specified Unix address in this unix object.
+ * This function saves the specified Unix address in this addr_unix object.
  *
  * Any type of address can be saved. The function determines what type
  * this address represents (i.e. file, abstract, or unnamed).
  *
  * \warning
- * This function does not just copy the input address in this unix
+ * This function does not just copy the input address in this addr_unix
  * object. It applies our detection mechanism to detect which type
  * of address you are supplying and then call one of the set_file(),
  * set_abstract(), or make_unnamed() functions. Therefore, the function
@@ -168,20 +168,20 @@ void unix::set_scheme(std::string const & scheme)
  * \exception addr_invalid_argument
  * The input address must be of type AF_UNIX or AF_LOCAL.
  *
- * \param[in] in  The Unix address to save in this unix object.
+ * \param[in] in  The Unix address to save in this addr_unix object.
  */
-void unix::set_un(struct sockaddr_un const & un)
+void addr_unix::set_un(struct sockaddr_un const & un)
 {
     if(un.sun_family != AF_UNIX)
     {
-        throw addr_invalid_structure("unix::set_un(): the input address does not represent a Unix address (family is not AF_UNIX).");
+        throw addr_invalid_structure("addr_unix::set_un(): the input address does not represent a Unix address (family is not AF_UNIX).");
     }
 
     if(un.sun_path[0] != '\0')
     {
         if(strnlen(un.sun_path, sizeof(un.sun_path)) == sizeof(un.sun_path))
         {
-            throw addr_invalid_argument("unix::set_un(): the input address filename is too long.");
+            throw addr_invalid_argument("addr_unix::set_un(): the input address filename is too long.");
         }
 
         // this is considered a file address
@@ -197,7 +197,7 @@ void unix::set_un(struct sockaddr_un const & un)
         std::size_t const len(strnlen(un.sun_path + 1, sizeof(un.sun_path) - 1));
         if(len == sizeof(un.sun_path) - 1)
         {
-            throw addr_invalid_argument("unix::set_un(): the input abstract name is too long.");
+            throw addr_invalid_argument("addr_unix::set_un(): the input abstract name is too long.");
         }
 
         // in case we are missing a '\0' at the end
@@ -229,7 +229,7 @@ void unix::set_un(struct sockaddr_un const & un)
  * including all '\0'. We handle our abstract addresses as not supporting
  * zeroes. Therefore, we do not 100% match Linux.
  */
-void unix::make_unnamed()
+void addr_unix::make_unnamed()
 {
     memset(f_address.sun_path, 0, sizeof(f_address.sun_path));
 }
@@ -248,7 +248,7 @@ void unix::make_unnamed()
  *
  * \param[in] file  The path to a file.
  */
-void unix::set_file(std::string const & file)
+void addr_unix::set_file(std::string const & file)
 {
     std::string const address(verify_path(file, false));
 
@@ -297,7 +297,7 @@ void unix::set_file(std::string const & file)
  *
  * \param[in] abstract  The abstract path to save in this Unix address.
  */
-void unix::set_abstract(std::string const & abstract)
+void addr_unix::set_abstract(std::string const & abstract)
 {
     std::string const address(verify_path(abstract, true));
 
@@ -369,7 +369,7 @@ void unix::set_abstract(std::string const & abstract)
  *
  * \param[in] uri  The URI to save in this address.
  */
-void unix::set_uri(std::string const & uri)
+void addr_unix::set_uri(std::string const & uri)
 {
     enum class uri_force_t
     {
@@ -508,7 +508,7 @@ void unix::set_uri(std::string const & uri)
  *
  * \return true if the address was successfully retrieved.
  */
-bool unix::set_from_socket(int s)
+bool addr_unix::set_from_socket(int s)
 {
     // WARNING: the sockaddr (or sockaddr_storage) structure that the
     //          getsockname() expects is not large enough for a Unix
@@ -548,7 +548,7 @@ bool unix::set_from_socket(int s)
  *
  * \return true if this addr represents a file based Unix address.
  */
-bool unix::is_file() const
+bool addr_unix::is_file() const
 {
     return f_address.sun_path[0] != '\0';
 }
@@ -564,7 +564,7 @@ bool unix::is_file() const
  *
  * \return true if this address represents an abstract Unix address.
  */
-bool unix::is_abstract() const
+bool addr_unix::is_abstract() const
 {
     return f_address.sun_path[0] == '\0'
         && f_address.sun_path[1] != '\0';
@@ -580,7 +580,7 @@ bool unix::is_abstract() const
  *
  * \return true if the address represents an unnamed Unix address.
  */
-bool unix::is_unnamed() const
+bool addr_unix::is_unnamed() const
 {
     return f_address.sun_path[0] == '\0'
         && f_address.sun_path[1] == '\0';
@@ -596,7 +596,7 @@ bool unix::is_unnamed() const
  *
  * \return The current scheme.
  */
-std::string unix::get_scheme() const
+std::string addr_unix::get_scheme() const
 {
     return f_scheme.empty() ? "unix" : f_scheme;
 }
@@ -605,7 +605,7 @@ std::string unix::get_scheme() const
 /** \brief Retrieve a copy of this Unix address.
  *
  * This function returns the Unix address as currently defined in this
- * unix object.
+ * addr_unix object.
  *
  * The address is distinguished between an unnamed address and an
  * abstract name by the fact that `sun_path[1] != '\0'` for the
@@ -613,7 +613,7 @@ std::string unix::get_scheme() const
  *
  * \param[out] un  The structure where the address gets saved.
  */
-void unix::get_un(sockaddr_un & un) const
+void addr_unix::get_un(sockaddr_un & un) const
 {
     memcpy(&un, &f_address, sizeof(un));
 }
@@ -628,7 +628,7 @@ void unix::get_un(sockaddr_un & un) const
  *
  * \return the path of this Unix address.
  */
-std::string unix::to_string() const
+std::string addr_unix::to_string() const
 {
     if(is_abstract())
     {
@@ -649,7 +649,7 @@ std::string unix::to_string() const
  *
  * \return The string representing the type of network.
  */
-std::string unix::to_uri() const
+std::string addr_unix::to_uri() const
 {
     std::string result;
     result.reserve(125);
@@ -700,7 +700,7 @@ std::string unix::to_uri() const
  *
  * \return 0 if the unlink worked, -1 on error and errno is set.
  */
-int unix::unlink()
+int addr_unix::unlink()
 {
     if(is_file())
     {
@@ -728,7 +728,7 @@ int unix::unlink()
  *
  * \return true if \p this is equal to \p rhs.
  */
-bool unix::operator == (unix const & rhs) const
+bool addr_unix::operator == (addr_unix const & rhs) const
 {
     return f_address == rhs.f_address;
 }
@@ -748,7 +748,7 @@ bool unix::operator == (unix const & rhs) const
  *
  * \return true if \p this is not equal to \p rhs.
  */
-bool unix::operator != (unix const & rhs) const
+bool addr_unix::operator != (addr_unix const & rhs) const
 {
     return f_address != rhs.f_address;
 }
@@ -769,7 +769,7 @@ bool unix::operator != (unix const & rhs) const
  *
  * \return true if \p this is smaller than \p rhs.
  */
-bool unix::operator < (unix const & rhs) const
+bool addr_unix::operator < (addr_unix const & rhs) const
 {
     return f_address < rhs.f_address;
 }
@@ -789,7 +789,7 @@ bool unix::operator < (unix const & rhs) const
  *
  * \return true if \p this is smaller than \p rhs.
  */
-bool unix::operator <= (unix const & rhs) const
+bool addr_unix::operator <= (addr_unix const & rhs) const
 {
     return f_address <= rhs.f_address;
 }
@@ -810,7 +810,7 @@ bool unix::operator <= (unix const & rhs) const
  *
  * \return true if \p this is smaller than \p rhs.
  */
-bool unix::operator > (unix const & rhs) const
+bool addr_unix::operator > (addr_unix const & rhs) const
 {
     return f_address > rhs.f_address;
 }
@@ -831,7 +831,7 @@ bool unix::operator > (unix const & rhs) const
  *
  * \return true if \p this is smaller than \p rhs.
  */
-bool unix::operator >= (unix const & rhs) const
+bool addr_unix::operator >= (addr_unix const & rhs) const
 {
     return f_address >= rhs.f_address;
 }
@@ -855,7 +855,7 @@ bool unix::operator >= (unix const & rhs) const
  *
  * \return A canonicalized version of \p path.
  */
-std::string unix::verify_path(std::string const & path, bool abstract)
+std::string addr_unix::verify_path(std::string const & path, bool abstract)
 {
     if(path.empty())
     {

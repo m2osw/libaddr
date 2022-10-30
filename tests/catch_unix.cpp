@@ -37,7 +37,7 @@
 
 // addr lib
 //
-#include    <libaddr/unix.h>
+#include    <libaddr/addr_unix.h>
 
 
 // self
@@ -71,11 +71,11 @@
 
 
 
-CATCH_TEST_CASE("unix::unnamed", "[unix]")
+CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
 {
-    CATCH_START_SECTION("unix() defaults (a.k.a. unnamed address)")
+    CATCH_START_SECTION("addr_unix() defaults (a.k.a. unnamed address)")
     {
-        addr::unix u;
+        addr::addr_unix u;
 
         CATCH_REQUIRE_FALSE(u.is_file());
         CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -93,7 +93,7 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with an unnamed address")
+    CATCH_START_SECTION("addr_unix() with an unnamed address")
     {
         sockaddr_un init = addr::init_un();
         CATCH_REQUIRE(init.sun_family == AF_UNIX);
@@ -102,7 +102,7 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
             CATCH_CHECK(init.sun_path[idx] == 0);
         }
 
-        addr::unix u(init);
+        addr::addr_unix u(init);
 
         CATCH_REQUIRE_FALSE(u.is_file());
         CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -120,10 +120,10 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with an unnamed string")
+    CATCH_START_SECTION("addr_unix() with an unnamed string")
     {
         std::string no_name;
-        addr::unix u(no_name);
+        addr::addr_unix u(no_name);
 
         CATCH_REQUIRE_FALSE(u.is_file());
         CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -141,9 +141,9 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a forced unnamed URI")
+    CATCH_START_SECTION("addr_unix() with a forced unnamed URI")
     {
-        addr::unix u;
+        addr::addr_unix u;
 
         u.set_uri("unix:?unnamed");
 
@@ -164,11 +164,11 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with an unnamed which we re-collect from socket")
+    CATCH_START_SECTION("addr_unix() with an unnamed which we re-collect from socket")
     {
         sockaddr_un un;
 
-        addr::unix u;
+        addr::addr_unix u;
 
         CATCH_REQUIRE_FALSE(u.is_file());
         CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -188,7 +188,7 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
 
         // unnamed sockets are unbound...
 
-        addr::unix retrieve;
+        addr::addr_unix retrieve;
         retrieve.set_from_socket(s.get());
         CATCH_REQUIRE(retrieve == u);
     }
@@ -196,9 +196,9 @@ CATCH_TEST_CASE("unix::unnamed", "[unix]")
 }
 
 
-CATCH_TEST_CASE("unix::file", "[unix]")
+CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
 {
-    CATCH_START_SECTION("unix() with a relative file name")
+    CATCH_START_SECTION("addr_unix() with a relative file name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -219,7 +219,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
             }
             strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
-            addr::unix u(init);
+            addr::addr_unix u(init);
 
             CATCH_REQUIRE(u.is_file());
             CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -239,7 +239,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a relative file name; string constructor")
+    CATCH_START_SECTION("addr_unix() with a relative file name; string constructor")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -250,7 +250,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
                 name += '0' + rand() % 10;
             }
 
-            addr::unix u(name);
+            addr::addr_unix u(name);
 
             CATCH_REQUIRE(u.is_file());
             CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -270,9 +270,9 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a relative file name using set_file()")
+    CATCH_START_SECTION("addr_unix() with a relative file name using set_file()")
     {
-        addr::unix u;
+        addr::addr_unix u;
 
         for(int count(0); count < 10; ++count)
         {
@@ -313,7 +313,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a full file name")
+    CATCH_START_SECTION("addr_unix() with a full file name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -334,7 +334,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
             }
             strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
-            addr::unix u(init);
+            addr::addr_unix u(init);
 
             CATCH_REQUIRE(u.is_file());
             CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -354,7 +354,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a long file name")
+    CATCH_START_SECTION("addr_unix() with a long file name")
     {
         sockaddr_un un;
         for(int count(1); count < static_cast<int>(sizeof(un.sun_path) - 1); ++count)
@@ -365,13 +365,13 @@ CATCH_TEST_CASE("unix::file", "[unix]")
                 name += '0' + rand() % 10;
             }
 
-            addr::unix u(name);
+            addr::addr_unix u(name);
 
             CATCH_REQUIRE(u.is_file());
             CATCH_REQUIRE_FALSE(u.is_abstract());
             CATCH_REQUIRE_FALSE(u.is_unnamed());
             CATCH_REQUIRE(u.to_string() == name);
-            CATCH_REQUIRE(u.to_uri() == "unix:" + name);
+            CATCH_REQUIRE(u.to_uri() == "addr_unix:" + name);
 
             u.get_un(un);
             CATCH_REQUIRE(un.sun_family == AF_UNIX);
@@ -384,7 +384,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() verify that file gets unlink()'ed")
+    CATCH_START_SECTION("addr_unix() verify that file gets unlink()'ed")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -397,7 +397,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
 
             // verify the init_un() as we're at it
             //
-            addr::unix u(name);
+            addr::addr_unix u(name);
 
             std::string cmd("touch ");
             cmd += name;
@@ -413,7 +413,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a file name which we re-collect from socket")
+    CATCH_START_SECTION("addr_unix() with a file name which we re-collect from socket")
     {
         sockaddr_un un;
 
@@ -425,7 +425,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
         }
         unlink(name.c_str());
 
-        addr::unix u(name);
+        addr::addr_unix u(name);
 
         CATCH_REQUIRE(u.is_file());
         CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -447,7 +447,7 @@ CATCH_TEST_CASE("unix::file", "[unix]")
         u.get_un(address);
         CATCH_REQUIRE(bind(s.get(), reinterpret_cast<sockaddr *>(&address), sizeof(address)) == 0);
 
-        addr::unix retrieve;
+        addr::addr_unix retrieve;
         retrieve.set_from_socket(s.get());
         CATCH_REQUIRE(retrieve == u);
     }
@@ -455,9 +455,9 @@ CATCH_TEST_CASE("unix::file", "[unix]")
 }
 
 
-CATCH_TEST_CASE("unix::abstract", "[unix]")
+CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
 {
-    CATCH_START_SECTION("unix() with a relative abstract name")
+    CATCH_START_SECTION("addr_unix() with a relative abstract name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -478,7 +478,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             }
             strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path) - 2);
 
-            addr::unix u(init);
+            addr::addr_unix u(init);
 
             CATCH_REQUIRE_FALSE(u.is_file());
             CATCH_REQUIRE(u.is_abstract());
@@ -500,7 +500,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a relative abstract name with string constructor")
+    CATCH_START_SECTION("addr_unix() with a relative abstract name with string constructor")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -511,7 +511,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
                 name += '0' + rand() % 10;
             }
 
-            addr::unix u(name, true);
+            addr::addr_unix u(name, true);
 
             CATCH_REQUIRE_FALSE(u.is_file());
             CATCH_REQUIRE(u.is_abstract());
@@ -532,9 +532,9 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with an abstract name using set_abstract()")
+    CATCH_START_SECTION("addr_unix() with an abstract name using set_abstract()")
     {
-        addr::unix u;
+        addr::addr_unix u;
 
         for(int count(0); count < 10; ++count)
         {
@@ -576,7 +576,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a full abstract name")
+    CATCH_START_SECTION("addr_unix() with a full abstract name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -597,7 +597,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             }
             strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path) - 2);
 
-            addr::unix u(init);
+            addr::addr_unix u(init);
 
             CATCH_REQUIRE_FALSE(u.is_file());
             CATCH_REQUIRE(u.is_abstract());
@@ -618,7 +618,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a long abstract name")
+    CATCH_START_SECTION("addr_unix() with a long abstract name")
     {
         sockaddr_un un;
         for(int count(1); count < static_cast<int>(sizeof(un.sun_path) - 2); ++count)
@@ -629,7 +629,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
                 name += '0' + rand() % 10;
             }
 
-            addr::unix u(name, true);
+            addr::addr_unix u(name, true);
 
             CATCH_REQUIRE_FALSE(u.is_file());
             CATCH_REQUIRE(u.is_abstract());
@@ -649,7 +649,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with an abstract name which we re-collect from socket")
+    CATCH_START_SECTION("addr_unix() with an abstract name which we re-collect from socket")
     {
         sockaddr_un un;
 
@@ -660,7 +660,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
             name += '0' + rand() % 10;
         }
 
-        addr::unix u(name, true);
+        addr::addr_unix u(name, true);
 
         CATCH_REQUIRE_FALSE(u.is_file());
         CATCH_REQUIRE(u.is_abstract());
@@ -684,7 +684,7 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
         socklen_t const len(sizeof(address.sun_family) + 1 + strlen(address.sun_path + 1));
         CATCH_REQUIRE(bind(s.get(), reinterpret_cast<sockaddr *>(&address), len) == 0);
 
-        addr::unix retrieve;
+        addr::addr_unix retrieve;
         retrieve.set_from_socket(s.get());
         CATCH_REQUIRE(retrieve == u);
     }
@@ -692,12 +692,12 @@ CATCH_TEST_CASE("unix::abstract", "[unix]")
 }
 
 
-CATCH_TEST_CASE("unix::compare", "[unix]")
+CATCH_TEST_CASE("addr_unix::compare", "[addr_unix]")
 {
-    CATCH_START_SECTION("two unix() to compare with ==, !=, <, <=, >, >=")
+    CATCH_START_SECTION("two addr_unix() to compare with ==, !=, <, <=, >, >=")
     {
-        addr::unix a;
-        addr::unix b;
+        addr::addr_unix a;
+        addr::addr_unix b;
 
         CATCH_REQUIRE(a == b);
         CATCH_REQUIRE_FALSE(a != b);
@@ -762,9 +762,9 @@ CATCH_TEST_CASE("unix::compare", "[unix]")
 }
 
 
-CATCH_TEST_CASE("unix::mix", "[unix]")
+CATCH_TEST_CASE("addr_unix::mix", "[addr_unix]")
 {
-    CATCH_START_SECTION("unix() with a relative file name then unnamed")
+    CATCH_START_SECTION("addr_unix() with a relative file name then unnamed")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -785,7 +785,7 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
             }
             strncpy(init.sun_path, name.c_str(), sizeof(init.sun_path) - 1);
 
-            addr::unix u(init);
+            addr::addr_unix u(init);
 
             CATCH_REQUIRE(u.is_file());
             CATCH_REQUIRE_FALSE(u.is_abstract());
@@ -820,7 +820,7 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a full abstract name then unnamed")
+    CATCH_START_SECTION("addr_unix() with a full abstract name then unnamed")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -841,7 +841,7 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
             }
             strncpy(init.sun_path + 1, name.c_str(), sizeof(init.sun_path) - 2);
 
-            addr::unix u(init);
+            addr::addr_unix u(init);
 
             CATCH_REQUIRE_FALSE(u.is_file());
             CATCH_REQUIRE(u.is_abstract());
@@ -877,9 +877,9 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with various set_uri()")
+    CATCH_START_SECTION("addr_unix() with various set_uri()")
     {
-        addr::unix u;
+        addr::addr_unix u;
 
         for(int count(0); count < 222; ++count)
         {
@@ -962,9 +962,9 @@ CATCH_TEST_CASE("unix::mix", "[unix]")
 }
 
 
-CATCH_TEST_CASE("unix::invalid", "[unix]")
+CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
 {
-    CATCH_START_SECTION("unix() with an invalid address family")
+    CATCH_START_SECTION("addr_unix() with an invalid address family")
     {
         for(int family(-25); family <= 25; ++family)
         {
@@ -978,30 +978,30 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
 
             // constructor
             //
-            CATCH_REQUIRE_THROWS_AS(addr::unix(init), addr::addr_invalid_structure);
+            CATCH_REQUIRE_THROWS_AS(addr::addr_unix(init), addr::addr_invalid_structure);
 
             // set_un()
             //
-            addr::unix u;
+            addr::addr_unix u;
             CATCH_REQUIRE_THROWS_AS(u.set_un(init), addr::addr_invalid_structure);
         }
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with an unnamed string but marked abstract")
+    CATCH_START_SECTION("addr_unix() with an unnamed string but marked abstract")
     {
-        CATCH_REQUIRE_THROWS_AS(addr::unix(std::string(), true), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_AS(addr::addr_unix(std::string(), true), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a URI and a missing path")
+    CATCH_START_SECTION("addr_unix() with a URI and a missing path")
     {
-        addr::unix u;
+        addr::addr_unix u;
         CATCH_REQUIRE_THROWS_AS(u.set_uri("unix://"), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with too long a file name")
+    CATCH_START_SECTION("addr_unix() with too long a file name")
     {
         sockaddr_un un;
         for(int count(static_cast<int>(sizeof(un.sun_path)));
@@ -1014,15 +1014,15 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
                 name += '0' + rand() % 10;
             }
 
-            CATCH_REQUIRE_THROWS_AS(addr::unix(name), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name), addr::addr_invalid_argument);
 
-            addr::unix u;
+            addr::addr_unix u;
             CATCH_REQUIRE_THROWS_AS(u.set_uri("unix:" + name), addr::addr_invalid_argument);
         }
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with too long an abstract name")
+    CATCH_START_SECTION("addr_unix() with too long an abstract name")
     {
         sockaddr_un un;
         for(int count(static_cast<int>(sizeof(un.sun_path) - 1));
@@ -1035,15 +1035,15 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
                 name += '0' + rand() % 10;
             }
 
-            CATCH_REQUIRE_THROWS_AS(addr::unix(name, true), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name, true), addr::addr_invalid_argument);
 
-            addr::unix u;
+            addr::addr_unix u;
             CATCH_REQUIRE_THROWS_AS(u.set_uri("unix:" + name + "?abstract"), addr::addr_invalid_argument);
         }
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a long filename (missing '\\0')")
+    CATCH_START_SECTION("addr_unix() with a long filename (missing '\\0')")
     {
         sockaddr_un init = addr::init_un();
         for(std::size_t idx(0); idx < sizeof(init.sun_path); ++idx)
@@ -1053,16 +1053,16 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
 
         // constructor
         //
-        CATCH_REQUIRE_THROWS_AS(addr::unix(init), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_AS(addr::addr_unix(init), addr::addr_invalid_argument);
 
         // set_un()
         //
-        addr::unix u;
+        addr::addr_unix u;
         CATCH_REQUIRE_THROWS_AS(u.set_un(init), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a long abstrat name (missing '\\0')")
+    CATCH_START_SECTION("addr_unix() with a long abstrat name (missing '\\0')")
     {
         sockaddr_un init = addr::init_un();
         for(std::size_t idx(1); idx < sizeof(init.sun_path); ++idx)
@@ -1072,18 +1072,18 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
 
         // constructor
         //
-        CATCH_REQUIRE_THROWS_AS(addr::unix(init), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_AS(addr::addr_unix(init), addr::addr_invalid_argument);
 
         // set_un()
         //
-        addr::unix u;
+        addr::addr_unix u;
         CATCH_REQUIRE_THROWS_AS(u.set_un(init), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with a long abstrat name (missing '\\0')")
+    CATCH_START_SECTION("addr_unix() with a long abstrat name (missing '\\0')")
     {
-        addr::unix u;
+        addr::addr_unix u;
 
         // missing ":"
         //
@@ -1103,13 +1103,13 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with invalid characters (controls)")
+    CATCH_START_SECTION("addr_unix() with invalid characters (controls)")
     {
         for(int c(1); c < 0x20; ++c)
         {
             std::string name;
             name += c;
-            CATCH_REQUIRE_THROWS_AS(addr::unix(name), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name), addr::addr_invalid_argument);
         }
 
         for(int c(0x7F); c < 0xA0; ++c)
@@ -1117,25 +1117,25 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
             std::u32string u32;
             u32 += c;
             std::string name(libutf8::to_u8string(u32));
-            CATCH_REQUIRE_THROWS_AS(addr::unix(name), addr::addr_invalid_argument);
+            CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name), addr::addr_invalid_argument);
         }
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("unix() with invalid UTF-8 characters")
+    CATCH_START_SECTION("addr_unix() with invalid UTF-8 characters")
     {
         std::string name;
         for(int c(0); c < 10; ++c)
         {
             name += static_cast<char>(0x80);
         }
-        CATCH_REQUIRE_THROWS_AS(addr::unix(name), libutf8::libutf8_exception_decoding);
+        CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name), libutf8::libutf8_exception_decoding);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("get unix() of socket set to -1")
+    CATCH_START_SECTION("get addr_unix() of socket set to -1")
     {
-        addr::unix u;
+        addr::addr_unix u;
         bool const result(u.set_from_socket(-1));
         int const e(errno);
         CATCH_REQUIRE_FALSE(result);
@@ -1143,7 +1143,7 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("get unix() of socket set to UDP")
+    CATCH_START_SECTION("get addr_unix() of socket set to UDP")
     {
         addr::addr udp(addr::string_to_addr(
                   "127.0.0.1:3999"
@@ -1156,7 +1156,7 @@ CATCH_TEST_CASE("unix::invalid", "[unix]")
         udp.get_ipv4(in);
         CATCH_REQUIRE(bind(s.get(), reinterpret_cast<sockaddr *>(&in), sizeof(in)) == 0);
 
-        addr::unix u;
+        addr::addr_unix u;
         bool const result(u.set_from_socket(s.get()));
         int const e(errno);
         CATCH_REQUIRE_FALSE(result);
