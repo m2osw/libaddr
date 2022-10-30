@@ -80,10 +80,10 @@ install(
         addr.h
         addr_parser.h
         addr_range.h
+        addr_unix.h
         exception.h
         iface.h
         route.h
-        unix.h
         ${CMAKE_CURRENT_BINARY_DIR}/version.h
 
     DESTINATION
