@@ -744,8 +744,13 @@ addr_range addr_range::union_if_possible(addr_range const & rhs) const
     || lhs_from.is_previous(rhs_to)
     || lhs_to.is_next(rhs_from))
     {
-        addr const & from(lhs_from < rhs_from ? lhs_from : rhs_from);
-        addr const & to  (lhs_to   > rhs_to   ? lhs_to   : rhs_to);
+        addr from(lhs_from < rhs_from ? lhs_from : rhs_from);
+        addr to  (lhs_to   > rhs_to   ? lhs_to   : rhs_to);
+
+        // keep the smallest mask if defined
+        //
+        from.set_mask_count(std::min(f_from.get_mask_size(), rhs.f_from.get_mask_size()));
+        to.set_mask_count(std::min(f_to.get_mask_size(), rhs.f_to.get_mask_size()));
 
         if(is_range()
         || rhs.is_range()

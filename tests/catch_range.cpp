@@ -1545,6 +1545,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
             fin.sin_addr.s_addr = htonl(faddress);
             addr::addr f;
             f.set_ipv4(fin);
+            list.push_back(f);
             int final_mask_size(0);
             for(int count(0); count < 5; ++count)
             {

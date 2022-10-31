@@ -371,7 +371,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
             CATCH_REQUIRE_FALSE(u.is_abstract());
             CATCH_REQUIRE_FALSE(u.is_unnamed());
             CATCH_REQUIRE(u.to_string() == name);
-            CATCH_REQUIRE(u.to_uri() == "addr_unix:" + name);
+            CATCH_REQUIRE(u.to_uri() == "unix:" + name);
 
             u.get_un(un);
             CATCH_REQUIRE(un.sun_family == AF_UNIX);
