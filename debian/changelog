@@ -2,6 +2,16 @@ libaddr (1.0.32.0~bionic) bionic; urgency=high
 
   * Added the to_cidr() to the addr_range class.
   * Added the optimize_vector() to remove equal/included addresses.
+  * Renamed the unix.h as addr_unix.h so it works with gnu++17.
+  * Added support of comments within the address.
+  * Added support for comments introduced by ';'.
+  * Added support for set_port() with a string.
+  * Fixed the CIDR/mask parsing when the address was an IPv4 in an IPv6.
+  * Output the mask "if needed" (if exactly 128 or 32).
+  * Redesigned the ip to string code to use flags instead of an enum.
+  * Added a sento() for UDP packets.
+  * Added flags to know what was defined in the parser.
+  * Added the .dirs files.
   * Various clean ups.
 
  -- Alexis Wilke <alexis@m2osw.com>  Mon, 24 Oct 2022 20:37:15 -0700
