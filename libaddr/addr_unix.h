@@ -79,6 +79,9 @@ constexpr struct sockaddr_un init_un()
 }
 
 
+constexpr int const                 DEFAULT_MODE = 0600;
+
+
 class addr_unix
 {
 public:
@@ -94,6 +97,7 @@ public:
     void                            set_un(sockaddr_un const & un);
     void                            make_unnamed();
     void                            set_file(std::string const & address);
+    void                            set_mode(int mode);
     void                            set_abstract(std::string const & address);
     void                            set_uri(std::string const & address);
     bool                            set_from_socket(int s);
@@ -103,6 +107,7 @@ public:
     bool                            is_unnamed() const;
     std::string                     get_scheme() const;
     void                            get_un(sockaddr_un & un) const;
+    int                             get_mode() const;
     std::string                     to_string() const;
     std::string                     to_uri() const;
     int                             unlink();
@@ -119,6 +124,7 @@ private:
 
     std::string                     f_scheme = std::string();
     sockaddr_un                     f_address = init_un();
+    int                             f_mode = DEFAULT_MODE;
 };
 
 

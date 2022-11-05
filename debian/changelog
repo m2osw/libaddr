@@ -1,3 +1,9 @@
+libaddr (1.0.33.0~bionic) bionic; urgency=high
+
+  * Added a set_mode()/get_mode() for Unix file-based sockets.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Fri, 04 Nov 2022 21:48:18 -0700
+
 libaddr (1.0.32.0~bionic) bionic; urgency=high
 
   * Added the to_cidr() to the addr_range class.

@@ -265,6 +265,38 @@ void addr_unix::set_file(std::string const & file)
 }
 
 
+/** \brief Define the permissions of the socket file.
+ *
+ * This is used to set the permissions of the socket when creating a socket
+ * file. Under Linux we can set that on the socket with:
+ *
+ * \code
+ *     int s = socket(...);
+ *     fchmod(s, mode);
+ * \endcode
+ *
+ * Other systems may require to set the mode after the `bind()` using a
+ * standard `chmod()` on the file by name. Also some system ignore the
+ * permissions so it would not matter at all.
+ *
+ * The default value is DEFAULT_MODE (0600 at time of writing) which means
+ * only programs running as the same user can access the socket. To make
+ * the socket accessible by others in the same group, use 0660. To let
+ * anyone running on the same server access the socket, use 0666.
+ *
+ * Note that the parent folder permissions are also checked. It needs to
+ * have the 'x' flag set for the type of user that you autorize. The folder
+ * should not have the 'w' access or those users could temper with the file
+ * (i.e. delete it).
+ *
+ * \param[in] mode  The mode to set the socket to once created.
+ */
+void addr_unix::set_mode(int mode)
+{
+    f_mode = mode;
+}
+
+
 /** \brief Set the address to an Abstract Unix Address.
  *
  * This function saves the specified \p abstract path as an Abstract Unix
@@ -616,6 +648,24 @@ std::string addr_unix::get_scheme() const
 void addr_unix::get_un(sockaddr_un & un) const
 {
     memcpy(&un, &f_address, sizeof(un));
+}
+
+
+/** \brief Retrieve the mode as set by set_mode().
+ *
+ * This function returns the mode expected to be used if creating a file
+ * socket.
+ *
+ * If the set_mode() function doesn't get called, the default permissions
+ * are to be set to 0600.
+ *
+ * \return The mode to use as in: `fchmod(s, mode)`.
+ *
+ * \sa set_mode()
+ */
+int addr_unix::get_mode() const
+{
+    return f_mode;
 }
 
 
