@@ -297,6 +297,24 @@ void addr_unix::set_mode(int mode)
 }
 
 
+/** \brief Name of a group used to change the socket ownership.
+ *
+ * This function saves the name of a group that will be used to change the
+ * ownership of the socket after the bind() and before the chmod().
+ *
+ * This way you can better control which users have access to your services.
+ *
+ * If \p group is set to the empty string, then the socket file group
+ * ownerhship will not be changed.
+ *
+ * \param[in] group  The name of the group to use on the socket file.
+ */
+void addr_unix::set_group(std::string const & group)
+{
+    f_group = group;
+}
+
+
 /** \brief Set the address to an Abstract Unix Address.
  *
  * This function saves the specified \p abstract path as an Abstract Unix
@@ -666,6 +684,21 @@ void addr_unix::get_un(sockaddr_un & un) const
 int addr_unix::get_mode() const
 {
     return f_mode;
+}
+
+
+/** \brief Get the name of the group.
+ *
+ * This function returns the name of the group to be used on the socket file.
+ * If the string is empty, then the group does not get changed. Otherwise,
+ * you are expected to use chgrp() in order to change the ownership to this
+ * named group.
+ *
+ * \return The name of the expected socket file group ownership.
+ */
+std::string addr_unix::get_group() const
+{
+    return f_group;
 }
 
 
