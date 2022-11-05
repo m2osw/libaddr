@@ -889,13 +889,29 @@ bool addr_unix::operator >= (addr_unix const & rhs) const
 
 /** \brief Check whether the specified \p path is a valid path.
  *
- * Although there are even less restriction on the path of an abstract
+ * Although there are even less restrictions on the path of an abstract
  * socket, we force you to have a valid UTF-8 string without any control
  * characters (especially not a '\0' character).
  *
+ * The function makes sure to remove double slashes from the path. So a
+ * path such as:
+ *
+ * \code
+ *     /run/communicatord//communicator.sock
+ * \endcode
+ *
+ * is canonicalized to:
+ *
+ * \code
+ *     /run/communicatord/communicator.sock
+ * \endcode
+ *
+ * The length of the string is also checked. If it cannot fit in the `sun_path`
+ * buffer with a terminal '\0', then an exception is raised.
+ *
  * \exception addr_invalid_argument
- * If \p path is empty or any invalid character is found within the string,
- * then this exception is raised.
+ * If \p path is empty, too long, or any invalid character is found within
+ * the string, then this exception is raised.
  *
  * \exception libutf8::libutf8_exception_decoding
  * If an invalid UTF-8 character is found, then this exception is raised.
@@ -927,6 +943,8 @@ std::string addr_unix::verify_path(std::string const & path, bool abstract)
         p.insert(0, 1, '/');
     }
 
+    // this forces a '\0' at the end of the sun_path buffer
+    //
     if(p.length() >= max_length)
     {
         throw addr_invalid_argument(
@@ -939,7 +957,7 @@ std::string addr_unix::verify_path(std::string const & path, bool abstract)
     std::u32string u32(libutf8::to_u32string(p));
     for(auto const & c : u32)
     {
-        if(c <= 0x1F                     // controls
+        if(c <= 0x1F                    // controls
         || (c >= 0x7F && c <= 0x9F))    // graphic controls
         {
             throw addr_invalid_argument(
