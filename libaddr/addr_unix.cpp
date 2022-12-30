@@ -179,7 +179,8 @@ void addr_unix::set_un(struct sockaddr_un const & un)
 
     if(un.sun_path[0] != '\0')
     {
-        if(strnlen(un.sun_path, sizeof(un.sun_path)) == sizeof(un.sun_path))
+        std::size_t const len(strnlen(un.sun_path, sizeof(un.sun_path)));
+        if(len == sizeof(un.sun_path))
         {
             throw addr_invalid_argument("addr_unix::set_un(): the input address filename is too long.");
         }
@@ -189,7 +190,6 @@ void addr_unix::set_un(struct sockaddr_un const & un)
         // the input could be missing it so we have to make sure by creating
         // a temp version of the name)
         //
-        std::size_t const len(strnlen(un.sun_path, sizeof(un.sun_path)));
         set_file(std::string(un.sun_path, len));
     }
     else if(un.sun_path[1] != '\0')
@@ -199,17 +199,6 @@ void addr_unix::set_un(struct sockaddr_un const & un)
         {
             throw addr_invalid_argument("addr_unix::set_un(): the input abstract name is too long.");
         }
-
-        // in case we are missing a '\0' at the end
-        // (we are not compatible in that way too)
-        //
-        //char temp[sizeof(un.sun_path) + 1];
-        //for(int idx(0); idx < sizeof(temp) - 1 && un.sun_path[idx + 1] != '\0'; ++idx)
-        //{
-        //    temp[idx] = un.sun_path[idx + 1];
-        //}
-        ////memcpy(temp, un.sun_path + 1, sizeof(temp) - 1);
-        //temp[sizeof(temp) - 1] = '\0';
         set_abstract(std::string(un.sun_path + 1, len));
     }
     else
