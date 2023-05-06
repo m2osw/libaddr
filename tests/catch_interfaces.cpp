@@ -62,19 +62,19 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
 {
     CATCH_GIVEN("iface::get_local_addresses()")
     {
-        addr::iface::vector_t list(addr::iface::get_local_addresses());
+        addr::iface::pointer_vector_t list(addr::iface::get_local_addresses());
 
         CATCH_START_SECTION("verify list")
         {
-            CATCH_REQUIRE_FALSE(list.empty()); // at least "lo"
+            CATCH_REQUIRE_FALSE(list->empty()); // at least "lo"
 
             // add stuff like verify there is an "lo" entry?
-            for(auto i : list)
+            for(auto i : *list)
             {
-                CATCH_REQUIRE_FALSE(i.get_name().empty());
-                CATCH_REQUIRE(i.get_flags() != 0);
+                CATCH_REQUIRE_FALSE(i->get_name().empty());
+                CATCH_REQUIRE(i->get_flags() != 0);
 
-                switch(i.get_address().get_network_type())
+                switch(i->get_address().get_network_type())
                 {
                 case addr::network_type_t::NETWORK_TYPE_PRIVATE:
                 case addr::network_type_t::NETWORK_TYPE_PUBLIC:
@@ -83,23 +83,23 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
                     break;
 
                 default:
-std::cerr << "unexpected interface type " << static_cast<int>(i.get_address().get_network_type()) << "\n";
-                    CATCH_REQUIRE(i.get_address().get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+//std::cerr << "unexpected interface type " << static_cast<int>(i->get_address().get_network_type()) << "\n";
+                    CATCH_REQUIRE(i->get_address().get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
                     break;
 
                 }
 
-                CATCH_REQUIRE(i.has_broadcast_address() == ((i.get_flags() & IFF_BROADCAST) != 0));
-                CATCH_REQUIRE(i.has_destination_address() == ((i.get_flags() & IFF_POINTOPOINT) != 0));
+                CATCH_REQUIRE(i->has_broadcast_address() == ((i->get_flags() & IFF_BROADCAST) != 0));
+                CATCH_REQUIRE(i->has_destination_address() == ((i->get_flags() & IFF_POINTOPOINT) != 0));
 
-                addr::addr const & b(i.get_broadcast_address());
-                if(!i.has_broadcast_address())
+                addr::addr const & b(i->get_broadcast_address());
+                if(!i->has_broadcast_address())
                 {
                     CATCH_REQUIRE(b.is_default());
                 }
 
-                addr::addr const & d(i.get_destination_address());
-                if(!i.has_destination_address())
+                addr::addr const & d(i->get_destination_address());
+                if(!i->has_destination_address())
                 {
                     CATCH_REQUIRE(d.is_default());
                 }

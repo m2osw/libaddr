@@ -60,10 +60,13 @@ iface_index_name::vector_t          get_interface_name_index();
 class iface
 {
 public:
-    typedef std::shared_ptr<iface>  pointer_t;
-    typedef std::vector<iface>      vector_t;
+    typedef std::shared_ptr<iface>      pointer_t;
+    typedef std::vector<pointer_t>      vector_t;
+    typedef std::shared_ptr<vector_t>   pointer_vector_t;
 
-    static iface::vector_t          get_local_addresses();
+    static iface::pointer_vector_t  get_local_addresses();
+    static void                     reset_local_addresses_cache();
+    static void                     set_local_addresses_cache_ttl(std::uint32_t duration_seconds);
 
     std::string                     get_name() const;
     unsigned int                    get_flags() const;

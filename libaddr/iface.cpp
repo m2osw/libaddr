@@ -30,19 +30,30 @@
  */
 
 
-// addr library
+// libaddr
 //
 #include    "libaddr/iface.h"
 #include    "libaddr/route.h"
 
 
-// C++ library
+// cppthread
+//
+#include    <cppthread/guard.h>
+#include    <cppthread/mutex.h>
+
+
+// snapdev
+//
+#include    <snapdev/not_reached.h>
+
+
+// C++
 //
 #include    <algorithm>
 #include    <iostream>
 
 
-// C library
+// C
 //
 #include    <ifaddrs.h>
 #include    <net/if.h>
@@ -69,6 +80,38 @@ namespace addr
 namespace
 {
 
+
+
+/** \brief Cache TTL.
+ *
+ * The time the cache survices another call to iface::get_local_addresses().
+ *
+ * After the TTL is elapsed, the next call ignores the cache and re-reads
+ * the list of interfaces from the kernel.
+ */
+std::uint32_t g_cache_ttl = 5 * 60;
+
+
+/** \brief Cache lifetime.
+ *
+ * This parameter is set to time(nullptr) + TTL whenever a new set of
+ * interfaces is gathered from the OS.
+ */
+time_t g_cache_timeout = 0;
+
+
+/** \brief Array of interfaces.
+ *
+ * This vector keeps the interfaces in our cache for a few minutes. This
+ * way, functions that make heavy use of interfaces will still go fast.
+ *
+ * You can call the reset_cache() function if you want to reset the
+ * cache and make sure what you load is fresh. This is not necessary if
+ * you just started your process.
+ */
+iface::pointer_vector_t g_cache_iface = iface::pointer_vector_t();
+
+
 /** \brief Delete an ifaddrs structure.
  *
  * This deleter is used to make sure all the ifaddrs get released when
@@ -80,6 +123,7 @@ void ifaddrs_deleter(struct ifaddrs * ia)
 {
     freeifaddrs(ia);
 }
+
 
 
 }
@@ -167,7 +211,7 @@ iface_index_name::vector_t get_interface_name_index()
         iface_index_name const in(index, name);
         result.push_back(in);
     }
-    // NOT REACHED, the loop is broken by a "return"
+    snapdev::NOT_REACHED();
 }
 
 
@@ -202,10 +246,34 @@ unsigned int get_interface_index_by_name(std::string const & name)
  * \li A set of flags defining the current status of the network interface
  *     (i.e. IFF_UP, IFF_BROADCAST, IFF_NOARP, etc.)
  *
+ * \note
+ * The function caches the list of interfaces. On a second call, and if
+ * the cache did not yet time out (see set_local_addresses_cache_ttl()
+ * for details), then the same list is returned. You can prevent the
+ * behavior by first clearing the cache (see reset_local_addresses_cache()
+ * for details).
+ * \note
+ * The cache is managed in a thread safe manner.
+ *
  * \return A vector of all the local interface IP addresses.
+ *
+ * \sa set_local_addresses_cache_ttl()
+ * \sa reset_local_addresses_cache()
  */
-iface::vector_t iface::get_local_addresses()
+iface::pointer_vector_t iface::get_local_addresses()
 {
+    // check whether we have that vector in our cache, if so use that
+    {
+        cppthread::guard lock(*cppthread::g_system_mutex);
+
+        if(g_cache_timeout >= time(nullptr)
+        && g_cache_iface != nullptr)
+        {
+            return g_cache_iface;
+        }
+        g_cache_iface = std::make_shared<vector_t>();
+    }
+
     // get the list of interface addresses
     //
     struct ifaddrs * ifa_start(nullptr);
@@ -213,16 +281,16 @@ iface::vector_t iface::get_local_addresses()
     {
         // TODO: Should this throw, or just return an empty list quietly?
         //
-        return iface::vector_t(); // LCOV_EXCL_LINE
+        return iface::pointer_vector_t(); // LCOV_EXCL_LINE
     }
 
     std::shared_ptr<struct ifaddrs> auto_free(ifa_start, ifaddrs_deleter);
 
     uint8_t mask[16];
-    iface::vector_t iface_list;
+    iface::pointer_vector_t iface_list(std::make_shared<vector_t>());
     for(struct ifaddrs * ifa(ifa_start); ifa != nullptr; ifa = ifa->ifa_next)
     {
-        // the documentation says there may be no address at all
+        // the documentation says there may be no addresses at all
         // skip such entries at the moment
         //
         if(ifa->ifa_addr == nullptr)
@@ -231,14 +299,15 @@ iface::vector_t iface::get_local_addresses()
         }
 
         // initialize an interface
-        iface the_interface;
+        //
+        iface::pointer_t the_interface(std::make_shared<iface>());
 
         // copy the name and flags as is
         //
         // TBD: can the ifa_name even be a null pointer?
         //
-        the_interface.f_name = ifa->ifa_name;
-        the_interface.f_flags = ifa->ifa_flags; // IFF_... flags (see `man 7 netdevice` search for SIOCGIFFLAGS)
+        the_interface->f_name = ifa->ifa_name;
+        the_interface->f_flags = ifa->ifa_flags; // IFF_... flags (see `man 7 netdevice` search for SIOCGIFFLAGS)
 
         // get the family to know how to treat the address
         //
@@ -250,17 +319,17 @@ iface::vector_t iface::get_local_addresses()
         switch(family)
         {
         case AF_INET:
-            the_interface.f_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)));
+            the_interface->f_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)));
 
             if((ifa->ifa_flags & IFF_BROADCAST) != 0
             && ifa->ifa_broadaddr != nullptr)
             {
-                the_interface.f_broadcast_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_broadaddr)));
+                the_interface->f_broadcast_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_broadaddr)));
             }
             if((ifa->ifa_flags & IFF_POINTOPOINT) != 0
             && ifa->ifa_dstaddr != nullptr)  // LCOV_EXCL_LINE
             {
-                the_interface.f_destination_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
+                the_interface->f_destination_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
             }
 
             // if present, add the mask as well
@@ -275,43 +344,85 @@ iface::vector_t iface::get_local_addresses()
                 mask[13] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  8;
                 mask[14] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 16;
                 mask[15] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 24;
-                the_interface.f_address.set_mask(mask);
+                the_interface->f_address.set_mask(mask);
             }
             break;
 
         case AF_INET6:
-            the_interface.f_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)));
+            the_interface->f_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)));
 
             if((ifa->ifa_flags & IFF_BROADCAST) != 0
             && ifa->ifa_broadaddr != nullptr)
             {
-                the_interface.f_broadcast_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_broadaddr)));  // LCOV_EXCL_LINE
+                the_interface->f_broadcast_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_broadaddr)));  // LCOV_EXCL_LINE
             }
             if((ifa->ifa_flags & IFF_POINTOPOINT) != 0
             && ifa->ifa_dstaddr != nullptr)  // LCOV_EXCL_LINE
             {
-                the_interface.f_destination_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
+                the_interface->f_destination_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
             }
 
             // if present, add the mask as well
             //
             if(ifa->ifa_netmask != nullptr)
             {
-                the_interface.f_address.set_mask(reinterpret_cast<uint8_t *>(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_netmask)->sin6_addr));
+                the_interface->f_address.set_mask(reinterpret_cast<uint8_t *>(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_netmask)->sin6_addr));
             }
             break;
 
-        default:
+        default: // AF_PACKET happens on Linux (Raw Packet)
             // TODO: can we just ignore unexpected address families?
-            //throw addr_invalid_structure("Unknown address family!");
+            //throw addr_invalid_structure("Unknown address family.");
             continue;
 
         }
 
-        iface_list.push_back(the_interface);
+        iface_list->push_back(the_interface);
     }
 
-    return iface_list;
+    {
+        cppthread::guard lock(*cppthread::g_system_mutex);
+
+        g_cache_timeout = time(nullptr) + g_cache_ttl;
+        g_cache_iface.swap(iface_list);
+        return g_cache_iface;
+    }
+}
+
+
+/** \brief Explicitly reset the interface cache.
+ *
+ * This function resets the cache timeout to 0 and resets the vector of
+ * interfaces. If you use the list of interfaces just once and then will
+ * never call the function again, it is a good idea to reset the cache.
+ */
+void iface::reset_local_addresses_cache()
+{
+    cppthread::guard lock(*cppthread::g_system_mutex);
+
+    g_cache_timeout = 0;
+    g_cache_iface.reset();
+}
+
+
+/** \brief Change the TTL of the interface cache.
+ *
+ * By default the TTL of the interface cache is set to 5 minutes. If you do
+ * not expect any changes, you could grow this number quite a bit. If you
+ * do expect a lot of changes all the time, then a much smaller number
+ * should be used.
+ *
+ * 0 does not cancel the use of the cache entirely. Instead, it will be
+ * used for up to one second.
+ *
+ * \note
+ * This function is thread safe.
+ *
+ * \param[in] duration_seconds  The duration of the interface cache.
+ */
+void iface::set_local_addresses_cache_ttl(std::uint32_t duration_seconds)
+{
+    g_cache_ttl = duration_seconds;
 }
 
 
@@ -447,10 +558,25 @@ bool iface::has_destination_address() const
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /** \brief Search for the interface corresponding to this address.
  *
  * Peruse the list of available interfaces and return the one that matches
- * this address if any, otherwise return a null pointer.
+ * the \p a address if any, otherwise return a null pointer.
  *
  * Say you create an addr object with the IP address "127.0.0.1" and then
  * call this function. You will get a pointer to the "lo" interface and
@@ -459,12 +585,6 @@ bool iface::has_destination_address() const
  *
  * If the address is a remote address, then this function returns a null
  * pointer.
- *
- * \note
- * This function replaces the addr::is_computer_interface_address() function.
- * If this function returns a non-null pointer when allow_default_destination
- * set to false, then you've got the same result plus you have access to all
- * the available information from that interface.
  *
  * \warning
  * If you allow for the default destination, this function calls the
@@ -480,13 +600,13 @@ bool iface::has_destination_address() const
  */
 iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destination)
 {
-    iface::vector_t interfaces(iface::get_local_addresses());
+    iface::pointer_vector_t interfaces(iface::get_local_addresses());
 
-    for(auto i : interfaces)
+    for(auto i : *interfaces)
     {
-        if(i.get_address().match(a))
+        if(i->get_address().match(a))
         {
-            return iface::pointer_t(new iface(i));
+            return i;
         }
     }
 
@@ -512,107 +632,19 @@ iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destinat
 
     std::string const & default_iface(default_route->get_interface_name());
     auto it(std::find_if(
-              interfaces.cbegin()
-            , interfaces.cend()
-            , [default_iface](auto & i)
+              interfaces->cbegin()
+            , interfaces->cend()
+            , [default_iface](auto const & i)
             {
-                return i.get_name() == default_iface;
+                return i->get_name() == default_iface;
             }));
-    if(it == interfaces.cend())
+    if(it == interfaces->cend())
     {
         return iface::pointer_t(); // LCOV_EXCL_LINE
     }
 
-    return iface::pointer_t(new iface(*it));
+    return *it;
 }
-
-
-#if 0
-/** \brief Check whether this address represents this computer.
- *
- * This function reads the addresses as given to us by the getifaddrs()
- * function. This is a system function that returns a complete list of
- * all the addresses this computer is managing / represents. In other
- * words, a list of address that other computers can use to connect
- * to this computer (assuming proper firewall, of course.)
- *
- * \warning
- * The list of addresses from getifaddrs() is not being cached. So you
- * probably do not want to call this function in a loop. That being
- * said, I still would imagine that retrieving that list is fast.
- *
- * \todo
- * We need to apply the mask to make this work properly. This is why
- * the current implementation fails big time (used by snapcommunicator.cpp).
- *
- * \return a computer_interface_address_t enumeration: error, true, or
- *         false at this time; on error errno should be set to represent
- *         what the error was.
- */
-
-// replaced by with a pointer_t == nullptr if there was no match,
-// although make sure to set allow_default_destination to false
-//
-iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destination)
-
-bool is_computer_interface_address(addr const & a)
-{
-    iface::vector_t interfaces(iface::get_local_addresses());
-
-    for(auto i : interfaces)
-    {
-    }
-
-
-    // TBD: maybe we could cache the ifaddrs for a small amount of time
-    //      (i.e. 1 minute) so additional calls within that time
-    //      can go even faster?
-    //
-
-    // get the list of interface addresses
-    //
-    struct ifaddrs * ifa_start(nullptr);
-    if(getifaddrs(&ifa_start) != 0)
-    {
-        return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_ERROR; // LCOV_EXCL_LINE
-    }
-    std::shared_ptr<struct ifaddrs> auto_free(ifa_start, ifaddrs_deleter);
-
-    bool const ipv4(a.is_ipv4());
-    uint16_t const family(ipv4 ? AF_INET : AF_INET6);
-    for(struct ifaddrs * ifa(ifa_start); ifa != nullptr; ifa = ifa->ifa_next)
-    {
-        if(ifa->ifa_addr != nullptr
-        && ifa->ifa_addr->sa_family == family)
-        {
-            if(ipv4)
-            {
-                // the interface address structure is a 'struct sockaddr_in'
-                //
-                if(memcmp(&reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)->sin_addr,
-                            f_address.sin6_addr.s6_addr32 + 3, //&reinterpret_cast<struct sockaddr_in const *>(&f_address)->sin_addr,
-                            sizeof(struct in_addr)) == 0)
-                {
-                    return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE;
-                }
-            }
-            else
-            {
-                // the interface address structure is a 'struct sockaddr_in6'
-                //
-                if(memcmp(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)->sin6_addr,
-                            &f_address.sin6_addr,
-                            sizeof(f_address.sin6_addr)) == 0)
-                {
-                    return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_TRUE;
-                }
-            }
-        }
-    }
-
-    return computer_interface_address_t::COMPUTER_INTERFACE_ADDRESS_FALSE;
-}
-#endif
 
 
 /** \brief Check whether \p a represents an interface's broadcast address.

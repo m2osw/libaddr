@@ -101,7 +101,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
     {
         addr::addr a;
 
-        CATCH_START_SECTION("ipv6::addr: set IPv6 with an invalid family")
+        CATCH_START_SECTION("ipv6::invalid_input: set IPv6 with an invalid family")
         {
             struct sockaddr_in6 in6 = sockaddr_in6();
             do
@@ -122,7 +122,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
 
     CATCH_GIVEN("addr_parser() with IPv6 addresses")
     {
-        CATCH_START_SECTION("ipv6::addr: bad address")
+        CATCH_START_SECTION("ipv6::invalid_input: bad address")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("[{bad-ip}]"));
@@ -133,7 +133,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: missing ']'")
+        CATCH_START_SECTION("ipv6::invalid_input: missing ']'")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7"));
@@ -144,7 +144,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: required address")
+        CATCH_START_SECTION("ipv6::invalid_input: required address")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
@@ -160,7 +160,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
 
     CATCH_GIVEN("addr_parser() with IPv4 ports")
     {
-        CATCH_START_SECTION("ipv6::addr: required port")
+        CATCH_START_SECTION("ipv6::invalid_input: required port")
         {
             // optional + required -> required
             {
@@ -189,7 +189,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: port not allowed")
+        CATCH_START_SECTION("ipv6::invalid_input: port not allowed")
         {
             {
                 addr::addr_parser p;
@@ -218,7 +218,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
 
     CATCH_GIVEN("addr_parser() with invalid masks")
     {
-        CATCH_START_SECTION("ipv6::addr: really large numbers (over 1000)")
+        CATCH_START_SECTION("ipv6::invalid_input: really large numbers (over 1000)")
         {
             for(int idx(0); idx < 5; ++idx)
             {
@@ -293,7 +293,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: ipv6 mask is limited between 0 and 128")
+        CATCH_START_SECTION("ipv6::invalid_input: ipv6 mask is limited between 0 and 128")
         {
             for(int idx(0); idx < 5; ++idx)
             {
@@ -312,7 +312,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: ipv6 mask cannot use name")
+        CATCH_START_SECTION("ipv6::invalid_input: ipv6 mask cannot use name")
         {
             for(int idx(0); idx < 5; ++idx)
             {
@@ -331,7 +331,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: ipv6 mask must be between '[...]'")
+        CATCH_START_SECTION("ipv6::invalid_input: ipv6 mask must be between '[...]'")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -347,7 +347,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: ipv6 mask missing the ']'")
+        CATCH_START_SECTION("ipv6::invalid_input: ipv6 mask missing the ']'")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -363,7 +363,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: ipv6 mask with an ipv4 in the '[...]'")
+        CATCH_START_SECTION("ipv6::invalid_input: ipv6 mask with an ipv4 in the '[...]'")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -379,7 +379,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: verify default address")
+        CATCH_START_SECTION("ipv6::invalid_input: verify default address")
         {
             addr::addr_parser p;
 
@@ -409,7 +409,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: verify default mask")
+        CATCH_START_SECTION("ipv6::invalid_input: verify default mask")
         {
             addr::addr_parser p;
 
@@ -474,7 +474,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     {
         addr::addr a;
 
-        CATCH_START_SECTION("ipv6::addr: default is 128 bit set to zero")
+        CATCH_START_SECTION("ipv6::address: default is 128 bit set to zero")
         {
             CATCH_REQUIRE(a.ip_to_uint128() == 0_uint128);
 
@@ -504,7 +504,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION();
 
-        CATCH_START_SECTION("ipv6::addr: parse the default IPv6 address \"[::]\" and \"::\"")
+        CATCH_START_SECTION("ipv6::address: parse the default IPv6 address \"[::]\" and \"::\"")
         {
             int proto[] = { IPPROTO_TCP, IPPROTO_UDP, IPPROTO_IP };
 
@@ -551,7 +551,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-        CATCH_START_SECTION("ipv6::addr: verify last IPv6 address")
+        CATCH_START_SECTION("ipv6::address: verify last IPv6 address")
         {
             CATCH_REQUIRE(a.ip_to_uint128() == 0_uint128);
 
@@ -593,7 +593,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-        CATCH_START_SECTION("ipv6::addr: set_ipv6() / get_ipv6()")
+        CATCH_START_SECTION("ipv6::address: set_ipv6() / get_ipv6()")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -730,7 +730,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         CATCH_END_SECTION()
 #pragma GCC diagnostic pop
 
-        CATCH_START_SECTION("ipv6::addr: set_ipv6() check to_ipv6_string()")
+        CATCH_START_SECTION("ipv6::address: set_ipv6() check to_ipv6_string()")
         {
             std::vector<char const *> locales = {
                 "en_US.utf8",
@@ -988,7 +988,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: name of various IPs")
+        CATCH_START_SECTION("ipv6::address: name of various IPs")
         {
             struct sockaddr_in6 in6 = sockaddr_in6();
             in6.sin6_family = AF_INET6;
@@ -1022,7 +1022,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
     CATCH_GIVEN("addr_parser() with IPv6 addresses")
     {
-        CATCH_START_SECTION("ipv6::addr: verify basics")
+        CATCH_START_SECTION("ipv6::address: verify basics")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
@@ -1060,7 +1060,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: default address")
+        CATCH_START_SECTION("ipv6::address: default address")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
@@ -1092,7 +1092,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: address, no port allowed")
+        CATCH_START_SECTION("ipv6::address: address, no port allowed")
         {
             // specific address with a default
             {
@@ -1163,7 +1163,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
     CATCH_GIVEN("addr_parser() with numeric only IPv6 addresses")
     {
-        CATCH_START_SECTION("ipv6::addr: simple numeric IPv6")
+        CATCH_START_SECTION("ipv6::address: simple numeric IPv6")
         {
             addr::addr_parser p;
             p.set_protocol(IPPROTO_TCP);
@@ -1203,7 +1203,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: invalid IPv6 domain name address when we only accept numeric IPs")
+        CATCH_START_SECTION("ipv6::address: invalid IPv6 domain name address when we only accept numeric IPs")
         {
             // this is exactly the same path as the IPv4 test...
             // if we have a named domain then IPv4 fails, IPv6 fails, then we err on it
@@ -1219,7 +1219,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: invalid IPv6 domain name address when we only accept numeric IPs")
+        CATCH_START_SECTION("ipv6::address: invalid IPv6 domain name address when we only accept numeric IPs")
         {
             // this is exactly the same path as the IPv4 test...
             // if we have a named domain then IPv4 fails, IPv6 fails, then we err on it
@@ -1238,7 +1238,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         CATCH_END_SECTION()
     }
 
-    CATCH_GIVEN("ipv6::addr: a set of IPs and a sort")
+    CATCH_GIVEN("ipv6::address: a set of IPs and a sort")
     {
         std::string const ip_list("7::-3::,10.0.0.32,192.168.2.15-192.168.2.23,::,5.8.9.11,f801::5553,192.168.2.1-192.168.2.14,::3000-::2000");
         addr::addr_parser p;
@@ -1247,7 +1247,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         p.set_allow(addr::allow_t::ALLOW_ADDRESS_RANGE, true);
         CATCH_REQUIRE(p.get_sort_order() == addr::SORT_NO);
 
-        CATCH_START_SECTION("ipv6::addr: parse and no sort")
+        CATCH_START_SECTION("ipv6::address: parse and no sort")
         {
             addr::addr_range::vector_t const ips(p.parse(ip_list));
 
@@ -1264,7 +1264,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse and ignore empty")
+        CATCH_START_SECTION("ipv6::address: parse and ignore empty")
         {
             addr::sort_t const order(addr::SORT_NO_EMPTY);
             p.set_sort_order(order);
@@ -1282,7 +1282,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse and full sort")
+        CATCH_START_SECTION("ipv6::address: parse and full sort")
         {
             addr::sort_t const order(addr::SORT_FULL);
             p.set_sort_order(order);
@@ -1302,7 +1302,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse and put IPv6 addresses first")
+        CATCH_START_SECTION("ipv6::address: parse and put IPv6 addresses first")
         {
             addr::sort_t const order(addr::SORT_IPV6_FIRST);
             p.set_sort_order(order);
@@ -1322,7 +1322,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse and put IPv4 addresses first")
+        CATCH_START_SECTION("ipv6::address: parse and put IPv4 addresses first")
         {
             addr::sort_t const order(addr::SORT_IPV4_FIRST);
             p.set_sort_order(order);
@@ -1342,7 +1342,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse, sort, and merge")
+        CATCH_START_SECTION("ipv6::address: parse, sort, and merge")
         {
             addr::sort_t const order(addr::SORT_MERGE);
             p.set_sort_order(order);
@@ -1361,7 +1361,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse, sort, merge, and put IPv4 first")
+        CATCH_START_SECTION("ipv6::address: parse, sort, merge, and put IPv4 first")
         {
             addr::sort_t const order(addr::SORT_MERGE | addr::SORT_IPV4_FIRST);
             p.set_sort_order(order);
@@ -1380,7 +1380,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse, sort, merge, and put IPv6 first")
+        CATCH_START_SECTION("ipv6::address: parse, sort, merge, and put IPv6 first")
         {
             addr::sort_t const order(addr::SORT_MERGE | addr::SORT_IPV6_FIRST);
             p.set_sort_order(order);
@@ -1399,7 +1399,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: parse, sort, merge, and put IPv6 first")
+        CATCH_START_SECTION("ipv6::address: parse, sort, merge, and put IPv6 first")
         {
             // this is the one we expect most users to make use of to
             //   1. ignore empty entries (useless)
@@ -1422,7 +1422,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         CATCH_END_SECTION()
     }
 
-    CATCH_START_SECTION("ipv6::addr: one side ranges")
+    CATCH_START_SECTION("ipv6::address: one side ranges")
     {
         addr::addr_parser p;
         p.set_protocol(IPPROTO_TCP);
@@ -1441,7 +1441,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("ipv6::addr: test invalid sort (IPv4 vs IPv6)")
+    CATCH_START_SECTION("ipv6::address: test invalid sort (IPv4 vs IPv6)")
     {
         addr::addr_parser p;
 
@@ -1465,7 +1465,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("ipv6::addr: parse & sort multi-address separated by '\\n' with '#' comments")
+    CATCH_START_SECTION("ipv6::address: parse & sort multi-address separated by '\\n' with '#' comments")
     {
         addr::addr_parser p;
         p.set_protocol(IPPROTO_TCP);
@@ -1508,7 +1508,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("ipv6::addr: parse & sort multi-address separated by '\\n' with ';' comments")
+    CATCH_START_SECTION("ipv6::address: parse & sort multi-address separated by '\\n' with ';' comments")
     {
         addr::addr_parser p;
         p.set_protocol(IPPROTO_TCP);
@@ -1551,7 +1551,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("ipv6::addr: parse invalid range (IP which becomes multiple entries)")
+    CATCH_START_SECTION("ipv6::address: parse invalid range (IP which becomes multiple entries)")
     {
         addr::addr_parser p;
         p.set_protocol(IPPROTO_TCP);
@@ -1602,13 +1602,13 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
     {
         addr::addr a;
 
-        CATCH_START_SECTION("ipv6::addr: default port")
+        CATCH_START_SECTION("ipv6::ports: default port")
         {
             CATCH_REQUIRE(a.get_port() == 0);
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: set_port()")
+        CATCH_START_SECTION("ipv6::ports: set_port()")
         {
             // setup a random port to start with
             //
@@ -1647,7 +1647,7 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: known ports to test get_service()")
+        CATCH_START_SECTION("ipv6::ports: known ports to test get_service()")
         {
             a.set_port(80);
             CATCH_REQUIRE(a.get_service() == "http");
@@ -1672,7 +1672,7 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
 
     CATCH_GIVEN("addr_parser() with IPv6 addresses and port")
     {
-        CATCH_START_SECTION("ipv6::addr_parser(): verify port")
+        CATCH_START_SECTION("ipv6::ports: verify port by parser")
         {
             for(int port(0); port < 65536; ++port)
             {
@@ -1704,7 +1704,7 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr_parser(): default address with various port")
+        CATCH_START_SECTION("ipv6::port: default address with various port")
         {
             for(int idx(0); idx < 100; ++idx)
             {
@@ -1739,7 +1739,7 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr_parser(): port when not allowed check as IPv6")
+        CATCH_START_SECTION("ipv6::port: port when not allowed check as IPv6")
         {
             addr::addr_parser p;
             p.set_allow(addr::allow_t::ALLOW_PORT, false);
@@ -1754,7 +1754,7 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr_parser(): space before port")
+        CATCH_START_SECTION("ipv6::port: space before port")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("[fafa:fefe:ffaa:ffee::3] :456"));
@@ -1780,7 +1780,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         //
         addr::addr a;
 
-        CATCH_START_SECTION("ipv6::addr: default mask")
+        CATCH_START_SECTION("ipv6::masks: default mask")
         {
             uint8_t mask[16] = {};
             a.get_mask(mask);
@@ -1792,7 +1792,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: set_mask_count()")
+        CATCH_START_SECTION("ipv6::masks: set_mask_count()")
         {
             for(int idx(0); idx <= 128; ++idx)
             {
@@ -1820,7 +1820,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: set_mask()")
+        CATCH_START_SECTION("ipv6::masks: set_mask()")
         {
             uint8_t mask[16], verify_mask[16];
             for(int idx(0); idx < 5; ++idx)
@@ -1854,7 +1854,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: set_mask()")
+        CATCH_START_SECTION("ipv6::masks: set_mask()")
         {
             uint8_t mask[16];
             uint8_t verify_mask[16];
@@ -1909,7 +1909,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
 
     CATCH_GIVEN("addr_parser() of address:port/mask")
     {
-        CATCH_START_SECTION("ipv6::addr: mask allowed, but no mask")
+        CATCH_START_SECTION("ipv6::masks: mask allowed, but no mask")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -1933,7 +1933,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: empty mask")
+        CATCH_START_SECTION("ipv6::masks: empty mask")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -1957,7 +1957,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: empty mask including the '[]'")
+        CATCH_START_SECTION("ipv6::masks: empty mask including the '[]'")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -1982,7 +1982,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: empty mask '[]' with address mask not allowed")
+        CATCH_START_SECTION("ipv6::masks: empty mask '[]' with address mask not allowed")
         {
             int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
             int const port(rand() & 0xFFFF);
@@ -1997,7 +1997,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: one number masks")
+        CATCH_START_SECTION("ipv6::masks: one number masks")
         {
             for(int idx(0); idx <= 128; ++idx)
             {
@@ -2041,7 +2041,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: address like mask")
+        CATCH_START_SECTION("ipv6::masks: address like mask")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -2096,7 +2096,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: address like default mask")
+        CATCH_START_SECTION("ipv6::masks: address like default mask")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -2163,7 +2163,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: address like mask with a default")
+        CATCH_START_SECTION("ipv6::masks: address like mask with a default")
         {
             for(int idx(0); idx < 25; ++idx)
             {
@@ -2261,7 +2261,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: no address, but one IPv6 number masks")
+        CATCH_START_SECTION("ipv6::masks: no address, but one IPv6 number masks")
         {
             // with just a number, the mask is considered an IPv6 mask
             // if it is 33 or more
@@ -2309,7 +2309,7 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: no address, but one IPv6 masks")
+        CATCH_START_SECTION("ipv6::masks: no address, but one IPv6 masks")
         {
             // with just a number, the mask is considered an IPv6 mask
             // if it is 33 or more
@@ -2349,7 +2349,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
     {
         addr::addr a;
 
-        CATCH_START_SECTION("ipv6::addr: any (::)")
+        CATCH_START_SECTION("ipv6::network_type: any (::)")
         {
             {
                 struct sockaddr_in6 in6 = sockaddr_in6();
@@ -2452,7 +2452,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: private address fd00::/8")
+        CATCH_START_SECTION("ipv6::network_type: private address fd00::/8")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -2483,7 +2483,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: private address fe80::/10")
+        CATCH_START_SECTION("ipv6::network_type: private address fe80::/10")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -2514,7 +2514,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: private address ff02::/16")
+        CATCH_START_SECTION("ipv6::network_type: private address ff02::/16")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -2545,7 +2545,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: private address ff00::/8")
+        CATCH_START_SECTION("ipv6::network_type: private address ff00::/8")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -2583,7 +2583,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: private address ffx1::/8")
+        CATCH_START_SECTION("ipv6::network_type: private address ffx1::/8")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -2614,7 +2614,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: private address ::1")
+        CATCH_START_SECTION("ipv6::network_type: private address ::1")
         {
             for(int idx(0); idx < 10; ++idx)
             {
@@ -2672,7 +2672,7 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
 {
     CATCH_GIVEN("set_from_socket()")
     {
-        CATCH_START_SECTION("ipv6::addr: create a server, but do not test it (yet)...")
+        CATCH_START_SECTION("ipv6::network: create a server, but do not test it (yet)...")
         {
             addr::addr_parser p;
             addr::addr_range::vector_t ips(p.parse("[::1]:49999"));
@@ -2687,7 +2687,7 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: connect with TCP to [::1]")
+        CATCH_START_SECTION("ipv6::network: connect with TCP to [::1]")
         {
             if(SNAP_CATCH2_NAMESPACE::g_tcp_port != -1)
             {
@@ -2744,7 +2744,7 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
         }
         CATCH_END_SECTION()
 
-        CATCH_START_SECTION("ipv6::addr: connect with UDP to [::1]")
+        CATCH_START_SECTION("ipv6::network: connect with UDP to [::1]")
         {
             addr::addr_parser p;
             p.set_protocol("udp");
