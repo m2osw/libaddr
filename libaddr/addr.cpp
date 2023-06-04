@@ -1867,8 +1867,22 @@ void addr::set_hostname(std::string const & hostname)
  * Move this to our eventdispatcher once we create that separate library.
  * Probably within a form of low level socket class.
  *
+ * \exception addr_invalid_argument
+ * The function must be called with a valid socket (positive or 0) or this
+ * exception is raised.
+ *
+ * \exception addr_io_error
+ * When the retrieval of the socket address failed, this exception is raised.
+ * Assuming the socket is valid, this should never happen.
+ *
+ * \exception addr_invalid_state
+ * The type of addresses supported are INET (IPv4) and INET6 (IPv6). If
+ * another type is returned (i.e. you passed a Unix socket), then this
+ * exception is raised.
+ *
  * \param[in] s  The socket from which you want to retrieve peer information.
- * \param[in] peer  Whether to retrieve the peer or socket name.
+ * \param[in] peer  Whether to retrieve the peer (other side
+ * IP:<ephemeral port>) or socket name (your IP:<port used to connect>).
  */
 void addr::set_from_socket(int s, bool peer)
 {
