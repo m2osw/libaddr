@@ -1,4 +1,6 @@
 
+* Use the advgetopt in all the tools.
+
 * Add support for adding our own set of "service to port" or
   "port to service"--i.e. `getservbyname()` or `getservbyport()`
 

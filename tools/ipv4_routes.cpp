@@ -29,12 +29,12 @@
  * This tool is used to verify that our route class works as expected.
  */
 
-// libaddr library
+// libaddr
 //
 #include    <libaddr/route.h>
 
 
-// C++ library
+// C++
 //
 #include    <iomanip>
 #include    <iostream>
@@ -56,19 +56,18 @@ bool g_hide_headers = false;
 
 int main(int argc, char * argv[])
 {
-    addr::route::vector_t routes(addr::route::get_ipv4_routes());
-
     for(int idx(1); idx < argc; ++idx)
     {
         if(strcmp(argv[idx], "-h") == 0
         || strcmp(argv[idx], "--help") == 0)
         {
-            std::cout << "Usage: %s [-opts]" << std::endl;
-            std::cout << "where -opts is one or more of:" << std::endl;
-            std::cout << "  --help | -h        print out this help screen." << std::endl;
-            std::cout << "  --default | -d     only print the default route." << std::endl;
-            std::cout << "  --hide-headers     do not print the headers." << std::endl;
-            exit(1);
+            std::cout
+                << "Usage: " << argv[0] << " [-opts]\n"
+                   "where -opts is one or more of:\n"
+                   "  --help | -h        print out this help screen.\n"
+                   "  --default | -d     only print the default route.\n"
+                   "  --hide-headers     do not print the headers.\n";
+            return 1;
         }
         else if(strcmp(argv[idx], "-d") == 0
              || strcmp(argv[idx], "--default") == 0)
@@ -81,14 +80,18 @@ int main(int argc, char * argv[])
         }
         else
         {
-            std::cerr << "error: unknown command line option \"" << argv[idx] << "\". Try --help for additional info." << std::endl;
-            exit(1);
+            std::cerr
+                << "error: unknown command line option \""
+                << argv[idx]
+                << "\". Try --help for additional info.\n";
+            return 1;
         }
     }
 
+    addr::route::vector_t routes(addr::route::get_ipv4_routes());
     if(routes.empty())
     {
-        std::cerr << "error: no routes found, is your network up?" << std::endl;
+        std::cerr << "error: no routes found, is your network up?\n";
         return 1;
     }
 
@@ -107,7 +110,7 @@ int main(int argc, char * argv[])
                      "MTU     "
                      "Window  "
                      "IRTT    "
-                  << std::endl;
+                     "\n";
     }
 
     for(auto r : routes)
@@ -133,7 +136,7 @@ int main(int argc, char * argv[])
                       << std::left << std::setw( 8) << r->get_mtu()
                       << std::left << std::setw( 8) << r->get_window()
                       << std::left << std::setw( 8) << r->get_irtt()
-                      << std::endl;
+                      << '\n';
         }
     }
 

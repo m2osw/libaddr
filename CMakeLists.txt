@@ -40,17 +40,17 @@ find_package(LibExcept        REQUIRED)
 find_package(LibUtf8          REQUIRED)
 find_package(SnapDev          REQUIRED)
 
-SnapGetVersion( LIBADDR ${CMAKE_CURRENT_SOURCE_DIR} )
+SnapGetVersion(LIBADDR ${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(
     ${PROJECT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}
 )
 
-add_subdirectory( cmake   )
-add_subdirectory( libaddr )
-add_subdirectory( tools   )
-add_subdirectory( doc     )
-add_subdirectory( tests   )
+add_subdirectory(cmake)
+add_subdirectory(libaddr)
+add_subdirectory(tools)
+add_subdirectory(doc)
+add_subdirectory(tests)
 
 # vim: ts=4 sw=4 et

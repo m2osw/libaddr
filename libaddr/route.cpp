@@ -37,14 +37,14 @@
 #include    "libaddr/route.h"
 
 
-// C++ library
+// C++
 //
 #include    <algorithm>
 #include    <fstream>
 #include    <iostream>
 
 
-// C library
+// C
 //
 #include    <net/route.h>
 

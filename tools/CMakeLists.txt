@@ -78,4 +78,31 @@ install(
         bin
 )
 
+
+##
+## Route command line tool
+##
+project(ifaces)
+
+include_directories(
+    ${LIBEXCEPT_INCLUDE_DIRS}
+)
+
+add_executable(${PROJECT_NAME}
+    ifaces.cpp
+)
+
+target_link_libraries(${PROJECT_NAME}
+    addr
+)
+
+install(
+    TARGETS
+        ${PROJECT_NAME}
+
+    RUNTIME DESTINATION
+        bin
+)
+
+
 # vim: ts=4 sw=4 et

@@ -30,10 +30,11 @@
  */
 
 
-// libaddr
+// self
 //
 #include    "libaddr/iface.h"
 #include    "libaddr/route.h"
+
 
 
 // cppthread
@@ -84,7 +85,7 @@ namespace
 
 /** \brief Cache TTL.
  *
- * The time the cache survices another call to iface::get_local_addresses().
+ * The time the cache survies another call to iface::get_local_addresses().
  *
  * After the TTL is elapsed, the next call ignores the cache and re-reads
  * the list of interfaces from the kernel.

@@ -125,6 +125,11 @@ constexpr string_ip_t           STRING_IP_BRACKET_MASK    = 0x0020;        // pu
 constexpr string_ip_t           STRING_IP_MASK_AS_ADDRESS = 0x0040;        // output the mask as n.n.n.n or x:x:x:x:x:x:x:x
 constexpr string_ip_t           STRING_IP_MASK_IF_NEEDED  = 0x0080;        // output mask only if not equal to 128
 
+// default IP
+//
+constexpr string_ip_t           STRING_IP_DEFAULT_AS_ASTERISK =  0x0100;    // use "*" instead of "::"
+constexpr string_ip_t           STRING_IP_DEFAULT_AS_IPV4     =  0x0200;    // use "0.0.0.0" instead of "::" (useful in to_ipv4or6_string() and to_ipv6_string()
+
 // combo
 //
 constexpr string_ip_t           STRING_IP_ADDRESS_PORT = STRING_IP_BRACKET_ADDRESS

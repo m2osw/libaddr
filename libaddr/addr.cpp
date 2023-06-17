@@ -1169,20 +1169,28 @@ std::string addr::to_ipv4_string(string_ip_t const mode) const
             throw addr_invalid_state("Not an IPv4 compatible address.");
         }
 
+        if((mode & STRING_IP_DEFAULT_AS_ASTERISK) != 0
+        && is_default())
+        {
+            result << "*";
+        }
+        else
+        {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-        in_addr in = {
-            .s_addr = f_address.sin6_addr.s6_addr32[3],
-        };
+            in_addr in = {
+                .s_addr = f_address.sin6_addr.s6_addr32[3],
+            };
 #pragma GCC diagnostic pop
-        char buf[INET_ADDRSTRLEN + 1];
-        if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) == nullptr)
-        {
-            // this should just never happen
-            //
-            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+            char buf[INET_ADDRSTRLEN + 1];
+            if(inet_ntop(AF_INET, &in, buf, sizeof(buf)) == nullptr)
+            {
+                // this should just never happen
+                //
+                throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+            }
+            result << buf;
         }
-        result << buf;
     }
 
     if((mode & (STRING_IP_PORT | STRING_IP_PORT_NAME)) != 0)
@@ -1286,21 +1294,44 @@ std::string addr::to_ipv6_string(string_ip_t const mode) const
 
     if((mode & (STRING_IP_ADDRESS | STRING_IP_BRACKET_ADDRESS)) != 0)
     {
-        char buf[INET6_ADDRSTRLEN + 1];
-        if(inet_ntop(AF_INET6, &f_address.sin6_addr, buf, sizeof(buf)) == nullptr)
-        {
-            // this should just never happen
-            //
-            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET6 and IPv6 address");
-        }
-
         // insert the IP, even if ANY or "BROADCAST"
         //
         if(include_brackets)
         {
             result << '[';
         }
-        result << buf;
+
+        if(is_default())
+        {
+            if((mode & STRING_IP_DEFAULT_AS_ASTERISK) != 0)
+            {
+                result << "*";
+            }
+            else if((mode & STRING_IP_DEFAULT_AS_IPV4) != 0)
+            {
+                result << "0.0.0.0";
+            }
+            else
+            {
+                // this is exactly what inet_ntop() outputs for the default
+                // IPv6 address
+                //
+                result << "::";
+            }
+        }
+        else
+        {
+            char buf[INET6_ADDRSTRLEN + 1];
+            if(inet_ntop(AF_INET6, &f_address.sin6_addr, buf, sizeof(buf)) == nullptr)
+            {
+                // this should just never happen
+                //
+                throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET6 and IPv6 address");
+            }
+
+            result << buf;
+        }
+
         if(include_brackets)
         {
             result << ']';
