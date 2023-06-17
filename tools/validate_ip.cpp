@@ -73,6 +73,7 @@
 // snapdev
 //
 #include    <snapdev/not_used.h>
+#include    <snapdev/stringize.h>
 
 
 // C++
