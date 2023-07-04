@@ -1,4 +1,4 @@
-libaddr (1.0.34.1~bionic) bionic; urgency=high
+libaddr (1.0.34.1~jammy) jammy; urgency=high
 
   * Bumped build version to rebuild on Launchpad.
 

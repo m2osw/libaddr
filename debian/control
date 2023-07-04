@@ -2,16 +2,16 @@ Source: libaddr
 Priority: extra
 Maintainer: Alexis Wilke <alexis@m2osw.com>
 Build-Depends: cmake,
-    cppthread-dev (>= 1.1.12.1~bionic),
+    cppthread-dev (>= 1.1.12.1~jammy),
     debhelper,
     doxygen,
     graphviz,
-    libadvgetopt-dev (>= 2.0.4.0~bionic),
-    libexcept-dev (>= 1.1.4.0~bionic),
-    libutf8-dev (>= 1.0.6.0~bionic),
-    snapcatch2 (>= 2.9.1.0~bionic),
-    snapcmakemodules (>= 1.0.35.3~bionic),
-    snapdev (>= 1.1.20.0~bionic)
+    libadvgetopt-dev (>= 2.0.4.0~jammy),
+    libexcept-dev (>= 1.1.4.0~jammy),
+    libutf8-dev (>= 1.0.6.0~jammy),
+    snapcatch2 (>= 2.9.1.0~jammy),
+    snapcmakemodules (>= 1.0.35.3~jammy),
+    snapdev (>= 1.1.20.0~jammy)
 Standards-Version: 3.9.4
 Section: libs
 Homepage: https://snapwebsites.org/project/libaddr
