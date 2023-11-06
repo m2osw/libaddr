@@ -399,7 +399,10 @@ validator_address::validator_address(advgetopt::string_list_t const & data)
                                 {
                                     // add the '[...]' to make it an IPv6 mask
                                     //
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wrestrict"
                                     f_parser.set_default_mask("[" + std::to_string(mask) + "]");
+#pragma GCC diagnostic pop
                                 }
                             }
                         }
