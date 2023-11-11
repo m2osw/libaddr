@@ -1,3 +1,17 @@
+libaddr (1.0.35.0~jammy) jammy; urgency=high
+
+  * Added tool to list interfaces with filtering support.
+  * Added support for default IP address as "*".
+  * Enhanced output of ip4_route.
+  * Added a 5 minutes cache for the iface class.
+  * Added missing #include <cstdint>
+  * Added some #pragma -Wrestrict for lunar.
+  * Bumped copyright to 2023.
+  * Changed compat to latest (15).
+  * Removed boost dependency.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 12 Nov 2022 17:43:55 -0800
+
 libaddr (1.0.34.1~jammy) jammy; urgency=high
 
   * Bumped build version to rebuild on Launchpad.
