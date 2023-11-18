@@ -33,6 +33,7 @@
 //
 #include    <libaddr/iface.h>
 #include    <libaddr/route.h>
+#include    <libaddr/version.h>
 
 
 // C++
@@ -82,9 +83,11 @@ int main(int argc, char * argv[])
                    "  --hide-headers     do not print the headers.\n"
                    "  --public           only print name of public interfaces.\n"
                    "  --private          only print name of private interfaces.\n"
-                   "  --loopback         only print name of loopback interface.\n";
-                   "  --asterisk         print an asterisk for default addresses (instead of 0.0.0.0 or ::).\n";
-                   "  --name-only        only print the name of the interface.\n";
+                   "  --loopback         only print name of loopback interface.\n"
+                   "  --asterisk         print an asterisk for default addresses (instead of 0.0.0.0 or ::).\n"
+                   "  --name-only        only print the name of the interface.\n"
+                   "  --version | -V     print out the version of ifaces.\n"
+                ;
             return 1;
         }
         else if(strcmp(argv[idx], "--hide-headers") == 0)
@@ -115,6 +118,12 @@ int main(int argc, char * argv[])
         else if(strcmp(argv[idx], "--name-only") == 0)
         {
             g_name_only = true;
+        }
+        else if(strcmp(argv[idx], "-V") == 0
+             || strcmp(argv[idx], "--version") == 0)
+        {
+            std::cout << LIBADDR_VERSION_STRING << '\n';
+            return 0;
         }
         else
         {

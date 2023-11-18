@@ -1,3 +1,10 @@
+libaddr (1.0.36.0~jammy) jammy; urgency=high
+
+  * Added the --version command line option to ifaces tool.
+  * Added a manual page for the ifaces tool.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sat, 18 Nov 2023 10:38:19 -0800
+
 libaddr (1.0.35.0~jammy) jammy; urgency=high
 
   * Added tool to list interfaces with filtering support.

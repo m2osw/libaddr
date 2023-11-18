@@ -1,0 +1,60 @@
+.TH IFACES 1 "November 2023" "ifaces 1.x" "User Commands"
+.SH NAME
+ifaces \- List interface names
+.SH SYNOPSIS
+.B ifaces
+[\fIOPTION\fR]
+.SH DESCRIPTION
+The \fBifaces(1)\fR tool prints out the list of interfaces available on your
+computer.
+
+.SH "COMMAND LINE OPTIONS"
+.TP
+\fB\-\-asterisk\fR
+Print an asterisk (*) for the default address (instead of 0.0.0.0 or ::).
+
+.TP
+\fB\-d\fR, \fB\-\-default\fR
+Only print information about the default interface.
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print a brief document about the tool usage, then exit.
+
+.TP
+\fB\-\-hide\-headers\fR
+Do not print the headers of the output table.
+
+.TP
+\fB\-\-loopback\fR
+Only print the name of the loopback interface (usually "lo").
+
+.TP
+\fB\-\-name-only\fR
+Only print the interface names. No address, columns, headers.
+
+.TP
+\fB\-\-private\fR
+Only print private interfaces.
+
+.TP
+\fB\-\-public\fR
+Only print public interfaces.
+
+.SH AUTHOR
+Written by Alexis Wilke <alexis@m2osw.com>.
+.SH "REPORTING BUGS"
+Report bugs to <https://github.com/m2osw/libaddr/issues>.
+.br
+iplock home page: <https://snapwebsites.org/project/libaddr>.
+.SH COPYRIGHT
+Copyright \(co 2023 Made to Order Software Corporation
+.br
+License: GPLv3
+.br
+This is free software: you are free to change and redistribute it.
+.br
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+.BR ipv4-routes (1),
+.BR validate-ip (1)
