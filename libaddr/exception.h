@@ -37,7 +37,7 @@ namespace addr
 {
 
 
-DECLARE_LOGIC_ERROR(logic_error);
+DECLARE_LOGIC_ERROR(logic_error); // LCOV_EXCL_LINE
 DECLARE_OUT_OF_RANGE(out_of_range);
 
 DECLARE_MAIN_EXCEPTION(addr_error);
