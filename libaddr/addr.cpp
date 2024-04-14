@@ -51,6 +51,7 @@
 #include    <snapdev/int128_literal.h>
 #include    <snapdev/math.h>
 #include    <snapdev/not_reached.h>
+#include    <snapdev/ostream_int128.h>
 #include    <snapdev/static_to_dynamic_buffer.h>
 
 
