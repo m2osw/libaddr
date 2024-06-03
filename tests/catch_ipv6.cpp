@@ -235,26 +235,31 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
                 CATCH_REQUIRE(ips.size() == 0);
             }
 
+            // WARNING: I removed the first removal of the '[' and ']'
+            //          the mask as a number should never have to be between
+            //          square brackets, only addresses so here we have the
+            //          same case as the block beforehand
+            //
             // in case the number is between square brackets it looks like
             // an IPv4 to getaddrinfo() so we get a different error...
             // (i.e. the '[' is not a digit so we do not get the "too large"
             // error...)
             //
-            for(int idx(0); idx < 5; ++idx)
-            {
-                int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
-                int const port(rand() & 0xFFFF);
-                int const mask((rand() & 0xFF) + 10001);
-                addr::addr_parser p;
-                p.set_protocol(proto);
-                p.set_allow(addr::allow_t::ALLOW_MASK, true);
-                p.set_allow(addr::allow_t::ALLOW_ADDRESS_MASK, true);
-                addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/[" + std::to_string(mask) + "]"));
-                CATCH_REQUIRE(p.has_errors());
-                CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Mask size too large ([" + std::to_string(mask) + "], expected a maximum of 128).\n");
-                CATCH_REQUIRE(ips.size() == 0);
-            }
+            //for(int idx(0); idx < 5; ++idx)
+            //{
+            //    int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
+            //    int const port(rand() & 0xFFFF);
+            //    int const mask((rand() & 0xFF) + 10001);
+            //    addr::addr_parser p;
+            //    p.set_protocol(proto);
+            //    p.set_allow(addr::allow_t::ALLOW_MASK, true);
+            //    p.set_allow(addr::allow_t::ALLOW_ADDRESS_MASK, true);
+            //    addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/" + std::to_string(mask)));
+            //    CATCH_REQUIRE(p.has_errors());
+            //    CATCH_REQUIRE(p.error_count() == 1);
+            //    CATCH_REQUIRE(p.error_messages() == "Mask size too large (" + std::to_string(mask) + ", expected a maximum of 128).\n");
+            //    CATCH_REQUIRE(ips.size() == 0);
+            //}
 
             // an empty address with a mask too large gets us to another place
             //
@@ -1990,10 +1995,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
             p.set_protocol(proto);
             p.set_allow(addr::allow_t::ALLOW_MASK, true);
             addr::addr_range::vector_t ips(p.parse("[66:33:cc:11:7:11:bb:dd]:" + std::to_string(port) + "/[]"));
-            CATCH_REQUIRE_FALSE(p.has_errors());
-            CATCH_REQUIRE(ips.size() == 1);
-            std::string const result("[66:33:cc:11:7:11:bb:dd]:" + std::to_string(port) + "/128");
-            CATCH_REQUIRE(ips[0].get_from().to_ipv4or6_string(addr::STRING_IP_ALL) == result);
+            CATCH_REQUIRE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 0);
         }
         CATCH_END_SECTION()
 

@@ -2185,6 +2185,43 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
         }
         CATCH_END_SECTION()
 
+        CATCH_START_SECTION("addr: address like default mask")
+        {
+            for(int idx(0); idx < 25; ++idx)
+            {
+                int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
+                int const port(rand() & 0xFFFF);
+                addr::addr_parser p;
+                p.set_protocol(proto);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
+
+                //p.set_allow(addr::allow_t::ALLOW_ADDRESS_MASK, true); -- if we forget this one, the parsing fails with an error
+
+                // when specified as an IP, the mask can be absolutely anything
+                // (here the mask is a string an it will be parsed by the
+                // parser if required)
+                //
+                uint8_t mask[4];
+                for(int j(0); j < 4; ++j)
+                {
+                    mask[j] = rand();
+                }
+                std::string const mask_str(
+                              std::to_string(static_cast<int>(mask[0]))
+                            + "."
+                            + std::to_string(static_cast<int>(mask[1]))
+                            + "."
+                            + std::to_string(static_cast<int>(mask[2]))
+                            + "."
+                            + std::to_string(static_cast<int>(mask[3])));
+                p.set_default_mask(mask_str);
+                addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port)));
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 0);
+            }
+        }
+        CATCH_END_SECTION()
+
         CATCH_START_SECTION("addr: two addresses and a mask for a match / no match")
         {
             int const port1(rand() & 0xFFFF);

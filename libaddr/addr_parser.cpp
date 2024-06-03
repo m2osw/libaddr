@@ -1208,10 +1208,16 @@ void addr_parser::parse_cidr(std::string const & in, addr_range::vector_t & resu
                 else if(!f_default_mask6.empty())
                 {
                     // parse_mask() expects '[...]' around IPv6 addresses
-                    // we remove them when set_mask() is called and they
-                    // are present
+                    // we remove them when set_mask() is called
                     //
-                    m = "[" + f_default_mask6 + "]";
+                    // however, we have to make sure that we do not add
+                    // brackets around a simple decimal number (i.e. a
+                    // CIDR opposed to an IPv6 address)
+                    //
+                    if(f_default_mask6.find(':') != std::string::npos)
+                    {
+                        m = "[" + f_default_mask6 + "]";
+                    }
                 }
             }
 
@@ -1940,7 +1946,7 @@ void addr_parser::parse_address_port(
 void addr_parser::parse_mask(
       std::string const & mask
     , addr & cidr
-    , bool is_ipv4)
+    , bool const is_ipv4)
 {
     // no mask?
     //
@@ -1956,29 +1962,13 @@ void addr_parser::parse_mask(
     // the mask may be a decimal number or an address, if just one number
     // then it's not an address, so test that first
     //
-    uint8_t mask_bits[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
+    std::uint8_t mask_bits[16] = { 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
 
     // convert the mask to an integer, if possible
     //
     int mask_count(0);
     {
-        // TODO: compute `m` only once
-        //
         std::string m(mask);
-        if(mask.length() >= 2
-        && mask.front() == '['
-        && mask.back() == ']')
-        {
-            m = mask.substr(1, mask.length() - 2);
-            if(m.empty())
-            {
-                // "[]" is also considered empty and that has to use the
-                // default mask, not 0
-                //
-                return;
-            }
-        }
-
         for(char const * s(m.c_str()); *s != '\0'; ++s)
         {
             if(*s >= '0' && *s <= '9')
@@ -2048,8 +2038,7 @@ void addr_parser::parse_mask(
 
         // prepare hints for the the getaddrinfo() function
         //
-        addrinfo hints;
-        memset(&hints, 0, sizeof(hints));
+        addrinfo hints = {};
         hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV | AI_ADDRCONFIG | AI_V4MAPPED;
         hints.ai_family = AF_UNSPEC;
 
