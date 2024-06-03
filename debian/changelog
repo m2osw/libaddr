@@ -1,3 +1,9 @@
+libaddr (1.0.37.0~jammy) jammy; urgency=high
+
+  * Fixed the tests and added a few more to slightly better coverage.
+
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 02 Jun 2024 20:28:11 -0700
+
 libaddr (1.0.36.0~jammy) jammy; urgency=high
 
   * Added the --version command line option to ifaces tool.
