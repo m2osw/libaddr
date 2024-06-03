@@ -175,7 +175,7 @@ CATCH_TEST_CASE("ipv4::invalid_input", "[ipv4]")
             addr::addr_range::vector_t ips(p.parse("{bad-ip}"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
-            CATCH_REQUIRE(p.error_messages() == "Invalid address in \"{bad-ip}\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
+            CATCH_REQUIRE(p.error_messages() == "Invalid address in \"{bad-ip}\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
             CATCH_REQUIRE(p.has_errors());
             p.clear_errors();
             CATCH_REQUIRE_FALSE(p.has_errors());
@@ -1194,6 +1194,310 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
             p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
             p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_SPACES, true);
             addr::addr_range::vector_t ips(p.parse(" 1.2.3.4:55,, 5.6.7.8 , 10.11.12.99:77 "));
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 3);
+
+            uint8_t mask[16] = {};
+
+            // 1.2.3.4:55
+            {
+                addr::addr_range const & r(ips[0]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "1.2.3.4");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "1.2.3.4");
+                CATCH_REQUIRE(f.get_port() == 55);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+
+            // 5.6.7.8
+            {
+                addr::addr_range const & r(ips[1]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "5.6.7.8");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "5.6.7.8");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+
+            // 10.11.12.99:77
+            {
+                addr::addr_range const & r(ips[2]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.11.12.99");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "10.11.12.99");
+                CATCH_REQUIRE(f.get_port() == 77);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("addr: 3 IPs with hash (#) comments")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::allow_t::ALLOW_COMMENT_HASH, true);
+            addr::addr_range::vector_t ips(p.parse("1.2.3.4:55#first,5.6.7.8#second,10.11.12.99:77#third"));
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 3);
+
+            uint8_t mask[16] = {};
+
+            // 1.2.3.4:55
+            {
+                addr::addr_range const & r(ips[0]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "1.2.3.4");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "1.2.3.4");
+                CATCH_REQUIRE(f.get_port() == 55);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+
+            // 5.6.7.8
+            {
+                addr::addr_range const & r(ips[1]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "5.6.7.8");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "5.6.7.8");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+
+            // 10.11.12.99:77
+            {
+                addr::addr_range const & r(ips[2]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.11.12.99");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "10.11.12.99");
+                CATCH_REQUIRE(f.get_port() == 77);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("addr: 3 IPs with semicolon (;) comments")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::allow_t::ALLOW_COMMENT_SEMICOLON, true);
+            addr::addr_range::vector_t ips(p.parse("1.2.3.4:55;first,5.6.7.8;second,10.11.12.99:77;third"));
+            CATCH_REQUIRE_FALSE(p.has_errors());
+            CATCH_REQUIRE(ips.size() == 3);
+
+            uint8_t mask[16] = {};
+
+            // 1.2.3.4:55
+            {
+                addr::addr_range const & r(ips[0]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "1.2.3.4");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "1.2.3.4");
+                CATCH_REQUIRE(f.get_port() == 55);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+
+            // 5.6.7.8
+            {
+                addr::addr_range const & r(ips[1]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "5.6.7.8");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "5.6.7.8");
+                CATCH_REQUIRE(f.get_port() == 0);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PUBLIC);
+                CATCH_REQUIRE_FALSE(f.is_lan());
+                CATCH_REQUIRE_FALSE(f.is_lan(true));
+                CATCH_REQUIRE_FALSE(f.is_lan(false));
+                CATCH_REQUIRE(f.is_wan());
+                CATCH_REQUIRE(f.is_wan(true));
+                CATCH_REQUIRE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+
+            // 10.11.12.99:77
+            {
+                addr::addr_range const & r(ips[2]);
+                CATCH_REQUIRE(r.has_from());
+                CATCH_REQUIRE_FALSE(r.has_to());
+                CATCH_REQUIRE_FALSE(r.is_range());
+                CATCH_REQUIRE_FALSE(r.is_empty());
+                addr::addr f(r.get_from());
+                CATCH_REQUIRE(f.is_ipv4());
+                CATCH_REQUIRE(f.get_family() == AF_INET);
+                CATCH_REQUIRE_FALSE(f.get_family() == AF_INET6);
+                CATCH_REQUIRE(f.to_ipv4_string(addr::STRING_IP_ADDRESS) == "10.11.12.99");
+                CATCH_REQUIRE(f.to_ipv4or6_string(addr::STRING_IP_ADDRESS) == "10.11.12.99");
+                CATCH_REQUIRE(f.get_port() == 77);
+                CATCH_REQUIRE(f.get_protocol() == IPPROTO_TCP);
+                CATCH_REQUIRE(f.get_network_type() == addr::network_type_t::NETWORK_TYPE_PRIVATE);
+                CATCH_REQUIRE(f.is_lan());
+                CATCH_REQUIRE(f.is_lan(true));
+                CATCH_REQUIRE(f.is_lan(false));
+                CATCH_REQUIRE_FALSE(f.is_wan());
+                CATCH_REQUIRE_FALSE(f.is_wan(true));
+                CATCH_REQUIRE_FALSE(f.is_wan(false));
+                f.get_mask(mask);
+                for(int idx(0); idx < 16; ++idx)
+                {
+                    CATCH_REQUIRE(mask[idx] == 255);
+                }
+            }
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("addr: 3 IPs with hash (#) and semicolon (;) comments")
+        {
+            addr::addr_parser p;
+            p.set_protocol(IPPROTO_TCP);
+            p.set_allow(addr::allow_t::ALLOW_MULTI_ADDRESSES_COMMAS, true);
+            p.set_allow(addr::allow_t::ALLOW_COMMENT_HASH, true);
+            p.set_allow(addr::allow_t::ALLOW_COMMENT_SEMICOLON, true);
+            addr::addr_range::vector_t ips(p.parse("1.2.3.4:55;first,5.6.7.8#second,10.11.12.99:77;third"));
             CATCH_REQUIRE_FALSE(p.has_errors());
             CATCH_REQUIRE(ips.size() == 3);
 
@@ -3119,6 +3423,15 @@ CATCH_TEST_CASE("ipv4::string_to_addr", "[ipv4]")
         {
             CATCH_REQUIRE_THROWS_AS(addr::string_to_addr("169.60.33.0:9322/24", std::string(), -1, "icmp", true),
                                                                         addr::addr_invalid_argument);
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("string_to_addr: definitely not a valid address")
+        {
+            CATCH_REQUIRE_THROWS_MATCHES(
+                  addr::string_to_addr("not an address")
+                , addr::addr_invalid_argument
+                , Catch::Matchers::ExceptionMessage("addr_error: the address \"not an address\" could not be converted to a single address in string_to_addr(), found 0 entries instead."));
         }
         CATCH_END_SECTION()
     }

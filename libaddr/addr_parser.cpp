@@ -2275,14 +2275,15 @@ addr string_to_addr(
         if(result.size() != 1)
         {
             // an invalid protocol is caught by the set_protocol()
-            // function so we should never be able to reach here
+            // function, but a totally invalid address or domain name
+            // will get us here with an empty list (result.empty() == true)
             //
-            throw addr_invalid_argument(                                                            // LCOV_EXCL_LINE
-                      "the address \""                                                              // LCOV_EXCL_LINE
-                    + a                                                                             // LCOV_EXCL_LINE
-                    + "\" could not be converted to a single address in string_to_addr(), found "   // LCOV_EXCL_LINE
-                    + std::to_string(result.size())                                                 // LCOV_EXCL_LINE
-                    + " entries instead.");                                                         // LCOV_EXCL_LINE
+            throw addr_invalid_argument(
+                      "the address \""
+                    + a
+                    + "\" could not be converted to a single address in string_to_addr(), found "
+                    + std::to_string(result.size())
+                    + " entries instead.");
         }
     }
 

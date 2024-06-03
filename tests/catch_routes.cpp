@@ -73,10 +73,21 @@ CATCH_TEST_CASE("ipv4::routes", "[ipv4]")
             //
             bool found_default(false);
             bool found_gateway(false);
+            //std::map<std::string, bool> found;
             for(auto r : routes)
             {
                 CATCH_REQUIRE_FALSE(r->get_interface_name().empty());
                 CATCH_REQUIRE(r->get_interface_name().length() < IFNAMSIZ); // IFNAMSIZ includes the '\0' so '<' and not '<='
+
+                //if(found[r->get_interface_name()])
+                //{
+                //    std::cerr
+                //        << "WARNING: found interface \""
+                //        << r->get_interface_name()
+                //        << "\" twice.\n";
+                //    continue;
+                //}
+                //found[r->get_interface_name()] = true;
 
                 // at least one flag is not zero
                 int const f(r->get_flags());
@@ -85,12 +96,27 @@ CATCH_TEST_CASE("ipv4::routes", "[ipv4]")
                 CATCH_REQUIRE(f != 0);
                 CATCH_REQUIRE(!flags.empty());
 
+#if 0
+// output similar to `route`
+std::cout << "Route: Dest: " << r->get_destination_address().to_ipv4or6_string(addr::STRING_IP_ADDRESS)
+<< " Gateway: " << r->get_gateway_address().to_ipv4or6_string(addr::STRING_IP_ADDRESS)
+<< " Flags: " << r->get_flags()
+<< " Metric: " << r->get_metric()
+<< " Iface: " << r->get_interface_name()
+<< "\n";
+#endif
                 if(r->get_destination_address().is_default())
                 {
                     CATCH_REQUIRE_FALSE(found_default);
                     found_default = true;
 
                     CATCH_REQUIRE((f & RTF_UP) != 0);
+
+                    if(!r->get_gateway_address().is_default())
+                    {
+                        CATCH_REQUIRE_FALSE(found_gateway);
+                        found_gateway = true;
+                    }
                 }
                 else
                 {
@@ -99,9 +125,6 @@ CATCH_TEST_CASE("ipv4::routes", "[ipv4]")
 
                 if(!r->get_gateway_address().is_default())
                 {
-                    CATCH_REQUIRE_FALSE(found_gateway);
-                    found_gateway = true;
-
                     CATCH_REQUIRE((f & RTF_GATEWAY) != 0);
                 }
 

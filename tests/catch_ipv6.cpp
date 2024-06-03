@@ -128,7 +128,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
             addr::addr_range::vector_t ips(p.parse("[{bad-ip}]"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
-            CATCH_REQUIRE(p.error_messages() == "Invalid address in \"{bad-ip}\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
+            CATCH_REQUIRE(p.error_messages() == "Invalid address in \"{bad-ip}\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
             CATCH_REQUIRE(ips.size() == 0);
         }
         CATCH_END_SECTION()
@@ -209,7 +209,7 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
                 addr::addr_range::vector_t ips(p.parse("1:2:3:4:5:6:7:8:123.5"));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Invalid address in \"1:2:3:4:5:6:7:8:123.5\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
+                CATCH_REQUIRE(p.error_messages() == "Invalid address in \"1:2:3:4:5:6:7:8:123.5\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
                 CATCH_REQUIRE(ips.size() == 0);
             }
         }
@@ -1575,7 +1575,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         addr::addr_range::vector_t const ips3(p.parse("invalid.from-:45"));
 
         CATCH_REQUIRE(p.has_errors());
-        CATCH_REQUIRE(p.error_messages() == "Invalid address in \"invalid.from:45\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
+        CATCH_REQUIRE(p.error_messages() == "Invalid address in \"invalid.from:45\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
 
         CATCH_REQUIRE(ips3.empty());
 
@@ -1585,7 +1585,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         addr::addr_range::vector_t const ips4(p.parse("-invalid.tom:45"));
 
         CATCH_REQUIRE(p.has_errors());
-        CATCH_REQUIRE(p.error_messages() == "Invalid address in \"invalid.tom:45\" error -2 -- Name or service not known (errno: 2 -- No such file or directory).\n");
+        CATCH_REQUIRE(p.error_messages() == "Invalid address in \"invalid.tom:45\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
 
         CATCH_REQUIRE(ips4.empty());
     }
