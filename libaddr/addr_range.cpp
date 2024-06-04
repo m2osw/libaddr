@@ -38,6 +38,7 @@
 // snapdev
 //
 #include    <snapdev/not_reached.h>
+#include    <snapdev/ostream_int128.h>
 
 
 // C++
@@ -390,10 +391,9 @@ bool addr_range::to_cidr(addr & a) const
     unsigned __int128 const from(f_from.ip_to_uint128());
     unsigned __int128 const to(f_to.ip_to_uint128());
     int cidr(128);
-    for(int count(0); count < 128; ++count)
+    unsigned __int128 bit(1);
+    for(int count(0); count < 128; ++count, bit <<= 1)
     {
-        unsigned __int128 bit(1);
-        bit <<= count;
         if((from & bit) != 0
         || (to & bit) == 0)
         {
@@ -404,6 +404,7 @@ bool addr_range::to_cidr(addr & a) const
                     return false;
                 }
                 ++count;
+                bit <<= 1;
             }
             while(count < 128);
             break;
@@ -496,7 +497,7 @@ addr::vector_t addr_range::to_addresses(vector_t ranges, std::size_t limit)
     }
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Transform the range into a string.
@@ -617,7 +618,7 @@ std::string addr_range::to_string(
     }
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Compute the number of addresses this range represents.
@@ -684,7 +685,7 @@ addr_range addr_range::intersection(addr_range const & rhs) const
     result.set_to  (f_to   < rhs.f_to   ? f_to   : rhs.f_to);
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Compute a new range representing the union of two address ranges.
@@ -766,7 +767,7 @@ addr_range addr_range::union_if_possible(addr_range const & rhs) const
     }
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Check whether an address matches a range.

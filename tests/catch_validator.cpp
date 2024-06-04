@@ -95,6 +95,24 @@ CATCH_TEST_CASE("validator", "[validator]")
     }
     CATCH_END_SECTION()
 
+    CATCH_START_SECTION("validator: allow \"nothing\"")
+    {
+        advgetopt::string_list_t const flags{
+            "address=no",
+            "port=yes",
+        };
+        advgetopt::validator::pointer_t address_validator(advgetopt::validator::create("address", flags));
+
+        CATCH_REQUIRE(address_validator != nullptr);
+        CATCH_REQUIRE(address_validator->name() == "address");
+
+        CATCH_REQUIRE(address_validator->validate("192.168.1.1"));
+        CATCH_REQUIRE(address_validator->validate("10.0.0.10:5434"));
+        CATCH_REQUIRE(address_validator->validate("::"));
+        CATCH_REQUIRE(address_validator->validate("f801::5"));
+    }
+    CATCH_END_SECTION()
+
     CATCH_START_SECTION("validator: unknown option")
     {
         SNAP_CATCH2_NAMESPACE::push_expected_log("error: \"coment=\" is not a known option for the address validator.");
@@ -110,6 +128,152 @@ CATCH_TEST_CASE("validator", "[validator]")
         CATCH_REQUIRE(address_validator->name() == "address");
 
         CATCH_REQUIRE(address_validator->validate("5.6.7.8"));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("validator: address=no prevents any other option")
+    {
+        std::vector<std::string> options = {
+            "commas",
+            "lookup",
+            "newlines",
+            "range",
+            "required",
+            "spaces",
+            "yes",
+        };
+        for(auto const & opt : options)
+        {
+            std::string address("address=");
+            if((rand() & 1) == 0)
+            {
+                address += "no " + opt;
+            }
+            else
+            {
+                address += opt + " no";
+            }
+            advgetopt::string_list_t const flags{
+                address,
+                "port=yes",
+            };
+            SNAP_CATCH2_NAMESPACE::push_expected_log("error: the \"no\" option in the address=... option must be used by itself.");
+            advgetopt::validator::pointer_t address_validator(advgetopt::validator::create("address", flags));
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+            CATCH_REQUIRE(address_validator != nullptr);
+            CATCH_REQUIRE(address_validator->name() == "address");
+
+            CATCH_REQUIRE(address_validator->validate("192.168.1.1"));
+            CATCH_REQUIRE(address_validator->validate("10.0.0.10:5434"));
+            CATCH_REQUIRE(address_validator->validate("::"));
+            CATCH_REQUIRE(address_validator->validate("f801::5"));
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("validator: address=<invalid flag name>")
+    {
+        // first character of each supported/valid flag to hit that break;
+        // statement in the address sub-switch()
+        //
+        std::vector<std::string> options = {
+            "console",
+            "loop",
+            "now",
+            "real",
+            "slice",
+            "yield",
+            "zero", // plus one that has no case ...
+        };
+        for(auto const & opt : options)
+        {
+            advgetopt::string_list_t const flags{
+                "address=" + opt + " required",
+                "port=yes",
+            };
+            SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: the \""
+                + opt
+                + "\" parameter is not understood by the \"address\" options.");
+            advgetopt::validator::pointer_t address_validator(advgetopt::validator::create("address", flags));
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+            CATCH_REQUIRE(address_validator != nullptr);
+            CATCH_REQUIRE(address_validator->name() == "address");
+
+            CATCH_REQUIRE(address_validator->validate("192.168.1.1"));
+            CATCH_REQUIRE(address_validator->validate("10.0.0.10:5434"));
+            CATCH_REQUIRE(address_validator->validate("::"));
+            CATCH_REQUIRE(address_validator->validate("f801::5"));
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("validator: address=<required vs yes>")
+    {
+        // first character of each supported/valid flag to hit that break;
+        // statement in the address sub-switch()
+        //
+        std::vector<std::string> options = {
+            "address=required yes",
+            "address=yes required",
+        };
+        for(auto const & opt : options)
+        {
+            advgetopt::string_list_t const flags{
+                opt,
+                "port=yes",
+            };
+            SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: the \"yes\" and \"required\" options are mutually exclusive, use one or the other (or none, which defaults to \"yes\").");
+            advgetopt::validator::pointer_t address_validator(advgetopt::validator::create("address", flags));
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+            CATCH_REQUIRE(address_validator != nullptr);
+            CATCH_REQUIRE(address_validator->name() == "address");
+
+            CATCH_REQUIRE(address_validator->validate("192.168.1.1"));
+            CATCH_REQUIRE(address_validator->validate("10.0.0.10:5434"));
+            CATCH_REQUIRE(address_validator->validate("::"));
+            CATCH_REQUIRE(address_validator->validate("f801::5"));
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("validator: <invalid parameter name>=<whatever>")
+    {
+        // first character of each supported/valid flag to hit that break;
+        // statement in the address sub-switch()
+        //
+        std::vector<std::string> parameters = {
+            "audio",
+            "call",
+            "drawing",
+            "mug",
+            "paint",
+            "zero", // plus one that has no case ...
+        };
+        for(auto const & p : parameters)
+        {
+            advgetopt::string_list_t const flags{
+                p + "=yes",
+            };
+            SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: \""
+                + p
+                + "=yes\" is not a known option for the address validator.");
+            advgetopt::validator::pointer_t address_validator(advgetopt::validator::create("address", flags));
+            SNAP_CATCH2_NAMESPACE::expected_logs_stack_is_empty();
+
+            CATCH_REQUIRE(address_validator != nullptr);
+            CATCH_REQUIRE(address_validator->name() == "address");
+
+            CATCH_REQUIRE(address_validator->validate("192.168.1.1"));
+            CATCH_REQUIRE(address_validator->validate("10.0.0.10:5434"));
+            CATCH_REQUIRE(address_validator->validate("::"));
+            CATCH_REQUIRE(address_validator->validate("f801::5"));
+        }
     }
     CATCH_END_SECTION()
 }

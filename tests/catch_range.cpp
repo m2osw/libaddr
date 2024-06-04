@@ -1454,7 +1454,13 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
 
     CATCH_GIVEN("addr_range() create address with CIDR")
     {
-        addr::addr_range range;
+        CATCH_START_SECTION("addr_range: to_cidr() without ranges")
+        {
+            addr::addr_range r;
+            addr::addr a;
+            CATCH_REQUIRE_FALSE(r.to_cidr(a));
+        }
+        CATCH_END_SECTION()
 
         CATCH_START_SECTION("addr_range: valid network range /16")
         {
@@ -1523,12 +1529,51 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
             CATCH_REQUIRE(a.get_mask_size() == 128 - 24);
         }
         CATCH_END_SECTION()
+
+        CATCH_START_SECTION("addr_range: valid network range but not for a cidr")
+        {
+            int const port(rand() & 0xFFFF);
+
+            // from 10.0.0.0
+            struct sockaddr_in fin = sockaddr_in();
+            fin.sin_family = AF_INET;
+            fin.sin_port = htons(port);
+            std::uint32_t const faddress((10 << 24)
+                          | (0 << 16)
+                          | (0 << 8)
+                          | 0);
+            fin.sin_addr.s_addr = htonl(faddress);
+            addr::addr f;
+            f.set_ipv4(fin);
+            f.set_mask_count(128 - 24);
+
+            // to 10.255.255.255
+            struct sockaddr_in tin = sockaddr_in();
+            tin.sin_family = AF_INET;
+            tin.sin_port = htons(port);
+            std::uint32_t const taddress((10 << 24)
+                          | (205 << 16)
+                          | (111 << 8)
+                          | 64);
+            tin.sin_addr.s_addr = htonl(taddress);
+            addr::addr t;
+            t.set_ipv4(tin);
+
+            addr::addr_range r;
+            r.set_from(f);
+            r.set_to(t);
+
+            CATCH_REQUIRE(r.is_defined());
+            CATCH_REQUIRE(r.is_range());
+
+            addr::addr a;
+            CATCH_REQUIRE_FALSE(r.to_cidr(a));
+        }
+        CATCH_END_SECTION()
     }
 
     CATCH_GIVEN("addr_range() optimize address with CIDR")
     {
-        addr::addr_range range;
-
         CATCH_START_SECTION("addr_range: optimize IPv4 addresses")
         {
             addr::addr::vector_t list;

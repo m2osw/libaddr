@@ -216,7 +216,7 @@ validator_address::validator_address(advgetopt::string_list_t const & data)
                     {
                         cppthread::log
                             << cppthread::log_level_t::error
-                            << "the \"no\" option in the address=... option must be used by itsefl."
+                            << "the \"no\" option in the address=... option must be used by itself."
                             << cppthread::end;
                     }
                 }

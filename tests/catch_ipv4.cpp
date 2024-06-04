@@ -2046,6 +2046,64 @@ CATCH_TEST_CASE("ipv4::masks", "[ipv4]")
         }
         CATCH_END_SECTION()
 
+        CATCH_START_SECTION("addr: address like mask when not allowed")
+        {
+            for(int idx(0); idx < 25; ++idx)
+            {
+                int const proto(rand() & 1 ? IPPROTO_TCP : IPPROTO_UDP);
+                int const port(rand() & 0xFFFF);
+                addr::addr_parser p;
+                p.set_protocol(proto);
+                p.set_allow(addr::allow_t::ALLOW_MASK, true);
+                p.set_allow(addr::allow_t::ALLOW_ADDRESS_MASK, false);
+                // when specified as an IP, the mask can be absolutely anything
+                uint8_t mask[4];
+                do
+                {
+                    for(int j(0); j < 4; ++j)
+                    {
+                        mask[j] = rand();
+                    }
+                }
+                while(mask[0] == 0      // make sure the mask is no just a number
+                   && mask[1] == 0
+                   && mask[2] == 0
+                   && mask[3] == 0);
+                switch(mask[0])
+                {
+                case 0xFF:
+                    mask[0] &= ~(1 << (rand() & 7));
+                    break;
+
+                case 0xFE:
+                case 0xFC:
+                case 0xF8:
+                case 0xF0:
+                case 0xE0:
+                case 0xC0:
+                    mask[0] &= 0x7F;
+                    break;
+
+                case 0x80:
+                    mask[0] |= 1 << (rand() % 6);
+                    break;
+
+                }
+                std::string const mask_str(
+                              std::to_string(static_cast<int>(mask[0]))
+                            + "."
+                            + std::to_string(static_cast<int>(mask[1]))
+                            + "."
+                            + std::to_string(static_cast<int>(mask[2]))
+                            + "."
+                            + std::to_string(static_cast<int>(mask[3])));
+                addr::addr_range::vector_t ips(p.parse("172.17.3.91:" + std::to_string(port) + "/" + mask_str));
+                CATCH_REQUIRE(p.has_errors());
+                CATCH_REQUIRE(ips.size() == 0);
+            }
+        }
+        CATCH_END_SECTION()
+
         CATCH_START_SECTION("addr: address like default mask")
         {
             for(int idx(0); idx < 25; ++idx)
