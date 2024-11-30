@@ -56,24 +56,19 @@ if(SnapCatch2_FOUND)
         ${SNAPCATCH2_LIBRARIES}
     )
 
-    # if running a service for test purposes, we can add:
-    #          --tcp-port <number>
-    # on the command line...
-    #
-    add_test(
-        NAME
-            unittest
-
-        COMMAND
-            ${PROJECT_NAME}
-
-        WORKING_DIRECTORY
-            ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-
 else(SnapCatch2_FOUND)
 
     message("snapcatch2 not found... no test will be built.")
+
+endif(SnapCatch2_FOUND)
+
+if(SnapCatch2_FOUND)
+
+    find_package(SnapTestRunner)
+    AddUnitTestsTarget(
+        PROJECT_NAME
+            rununittests
+    )
 
 endif(SnapCatch2_FOUND)
 
