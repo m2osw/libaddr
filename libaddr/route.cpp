@@ -163,7 +163,7 @@ addr hex_to_addr(std::string const & address)
 {
     if(address.length() != 8)
     {
-        throw addr_invalid_argument("invalid length for an hex address"); // LCOV_EXCL_LINE
+        throw addr_invalid_argument("invalid length for a hex address"); // LCOV_EXCL_LINE
     }
 
     struct sockaddr_in in = sockaddr_in();
