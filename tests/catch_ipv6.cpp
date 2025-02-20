@@ -2369,7 +2369,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
 
                 CATCH_REQUIRE(a.is_default());
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_ANY);
-                CATCH_REQUIRE(a.get_network_type_string() == "Any");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Any");
                 CATCH_REQUIRE_FALSE(a.is_lan());
                 CATCH_REQUIRE_FALSE(a.is_lan(true));
                 CATCH_REQUIRE_FALSE(a.is_lan(false));
@@ -2403,7 +2403,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
 
-                CATCH_REQUIRE(a.get_network_type_string() != "Any");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) != "Any");
 
                 // addresses that start with 0xFD are private
                 //
@@ -2422,6 +2422,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
 
                 case addr::network_type_t::NETWORK_TYPE_PRIVATE:
                 case addr::network_type_t::NETWORK_TYPE_LOOPBACK:
+                    CATCH_REQUIRE(a.is_valid());
                     CATCH_REQUIRE(a.is_lan());
                     CATCH_REQUIRE(a.is_lan(true));
                     CATCH_REQUIRE(a.is_lan(false));
@@ -2433,6 +2434,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 case addr::network_type_t::NETWORK_TYPE_CARRIER:
                 case addr::network_type_t::NETWORK_TYPE_LINK_LOCAL:
                 case addr::network_type_t::NETWORK_TYPE_MULTICAST:
+                    CATCH_REQUIRE(a.is_valid());
                     CATCH_REQUIRE_FALSE(a.is_lan());
                     CATCH_REQUIRE(a.is_lan(true));
                     CATCH_REQUIRE_FALSE(a.is_lan(false));
@@ -2441,7 +2443,18 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                     CATCH_REQUIRE_FALSE(a.is_wan(false));
                     break;
 
+                case addr::network_type_t::NETWORK_TYPE_DOCUMENTATION:
+                    CATCH_REQUIRE_FALSE(a.is_valid());
+                    CATCH_REQUIRE_FALSE(a.is_lan());
+                    CATCH_REQUIRE_FALSE(a.is_lan(true));
+                    CATCH_REQUIRE_FALSE(a.is_lan(false));
+                    CATCH_REQUIRE_FALSE(a.is_wan());
+                    CATCH_REQUIRE_FALSE(a.is_wan(true));
+                    CATCH_REQUIRE_FALSE(a.is_wan(false));
+                    break;
+
                 case addr::network_type_t::NETWORK_TYPE_PUBLIC:
+                    CATCH_REQUIRE(a.is_valid());
                     CATCH_REQUIRE_FALSE(a.is_lan());
                     CATCH_REQUIRE_FALSE(a.is_lan(true));
                     CATCH_REQUIRE_FALSE(a.is_lan(false));
@@ -2475,7 +2488,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_PRIVATE);
-                CATCH_REQUIRE(a.get_network_type_string() == "Private");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Private");
                 CATCH_REQUIRE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE(a.is_lan(false));
@@ -2506,7 +2519,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
-                CATCH_REQUIRE(a.get_network_type_string() == "Local Link");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Local Link");
                 CATCH_REQUIRE_FALSE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE_FALSE(a.is_lan(false));
@@ -2537,7 +2550,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_LINK_LOCAL);
-                CATCH_REQUIRE(a.get_network_type_string() == "Local Link");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Local Link");
                 CATCH_REQUIRE_FALSE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE_FALSE(a.is_lan(false));
@@ -2575,7 +2588,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_MULTICAST);
-                CATCH_REQUIRE(a.get_network_type_string() == "Multicast");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Multicast");
                 CATCH_REQUIRE_FALSE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE_FALSE(a.is_lan(false));
@@ -2606,7 +2619,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_LOOPBACK);
-                CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Loopback");
                 CATCH_REQUIRE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE(a.is_lan(false));
@@ -2637,7 +2650,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 //
                 a.set_ipv6(in6);
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_LOOPBACK);
-                CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Loopback");
                 CATCH_REQUIRE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE(a.is_lan(false));
@@ -2656,7 +2669,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 CATCH_REQUIRE(addrlist->ai_addrlen == sizeof(struct sockaddr_in6));
                 a.set_ipv6(*reinterpret_cast<sockaddr_in6 *>(addrlist->ai_addr));
                 CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_LOOPBACK);
-                CATCH_REQUIRE(a.get_network_type_string() == "Loopback");
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Loopback");
                 CATCH_REQUIRE(a.is_lan());
                 CATCH_REQUIRE(a.is_lan(true));
                 CATCH_REQUIRE(a.is_lan(false));

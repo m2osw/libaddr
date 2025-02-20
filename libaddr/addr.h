@@ -102,6 +102,7 @@ enum class network_type_t
     NETWORK_TYPE_MULTICAST,
     NETWORK_TYPE_LOOPBACK,
     NETWORK_TYPE_ANY,
+    NETWORK_TYPE_DOCUMENTATION,
     NETWORK_TYPE_UNKNOWN,
     NETWORK_TYPE_PUBLIC = NETWORK_TYPE_UNKNOWN  // we currently do not distinguish public and unknown
 };
@@ -180,6 +181,7 @@ public:
     bool                            is_hostname_an_ip() const;
     int                             get_family() const;
     bool                            is_default() const;
+    bool                            is_valid() const;
     bool                            is_lan(bool include_all = false) const;
     bool                            is_wan(bool include_default = true) const;
     bool                            is_ipv4() const;
@@ -195,7 +197,7 @@ public:
 #pragma GCC diagnostic pop
 
     network_type_t                  get_network_type() const;
-    std::string                     get_network_type_string() const;
+    char const *                    get_network_type_string() const;
 
     int                             create_socket(socket_flag_t flags) const;
     int                             connect(int s) const;

@@ -961,6 +961,39 @@ bool addr::is_default() const
 }
 
 
+/** \brief Check whether the IP address is considered valid.
+ *
+ * Some IPv6 IP addresses are not considered valid. They represent things
+ * such as documentation or were deprecated.
+ *
+ * \note
+ * The IPv6 addresses used to represent IPv4 are considered valid, although
+ * as IPv6 addresses they are not (that is, such IPs cannot be used with
+ * the IPv6 stack).
+ *
+ * \todo
+ * Actually find a document about all the prefixes and determine the
+ * ones that do not represent a valid IPv6 address. At the moment, we
+ * only include documentation IPs (prefix 2001:db8::/32 and 3fff::/20).
+ *
+ * \return true is the address is considered valid.
+ */
+bool addr::is_valid() const
+{
+    network_type_t const type(addr::get_network_type());
+    switch(type)
+    {
+    case network_type_t::NETWORK_TYPE_DOCUMENTATION:
+    case network_type_t::NETWORK_TYPE_UNDEFINED: // this should not happen here
+        return false;
+
+    default:
+        return true;
+
+    }
+}
+
+
 /** \brief Check whether the address is a LAN IP.
  *
  * For some connections, you may want to prevent them on a WAN connection
@@ -1547,7 +1580,7 @@ network_type_t addr::get_network_type() const
             }
             else
             {
-                uint16_t const prefix(ntohs(f_address.sin6_addr.s6_addr16[0]));
+                std::uint16_t const prefix(ntohs(f_address.sin6_addr.s6_addr16[0]));
 
                 if((prefix & 0xFF00) == 0xFD00)                 // fd00::/8
                 {
@@ -1572,6 +1605,22 @@ network_type_t addr::get_network_type() const
                     // this one must be after the link-local and loopback networks
                     f_private_network = network_type_t::NETWORK_TYPE_MULTICAST;
                 }
+                else if(prefix == 0x2001)
+                {
+                    std::uint16_t const next_prefix(ntohs(f_address.sin6_addr.s6_addr16[1]));
+                    if(next_prefix == 0x0DB8)
+                    {
+                        f_private_network = network_type_t::NETWORK_TYPE_DOCUMENTATION;
+                    }
+                }
+                else if(prefix == 0x3FFF)
+                {
+                    std::uint16_t const next_prefix(ntohs(f_address.sin6_addr.s6_addr16[1]));
+                    if((next_prefix & 0xF000) == 0x0000)
+                    {
+                        f_private_network = network_type_t::NETWORK_TYPE_DOCUMENTATION;
+                    }
+                }
             }
         }
     }
@@ -1590,21 +1639,39 @@ network_type_t addr::get_network_type() const
  *
  * \return The string representing the type of network.
  */
-std::string addr::get_network_type_string() const
+char const * addr::get_network_type_string() const
 {
-    std::string name;
-    switch( get_network_type() )
+    switch(get_network_type())
     {
-    case network_type_t::NETWORK_TYPE_UNDEFINED  : name = "Undefined";  break; // LCOV_EXCL_LINE -- get_network_type() defines it...
-    case network_type_t::NETWORK_TYPE_PRIVATE    : name = "Private";    break;
-    case network_type_t::NETWORK_TYPE_CARRIER    : name = "Carrier";    break;
-    case network_type_t::NETWORK_TYPE_LINK_LOCAL : name = "Local Link"; break;
-    case network_type_t::NETWORK_TYPE_MULTICAST  : name = "Multicast";  break;
-    case network_type_t::NETWORK_TYPE_LOOPBACK   : name = "Loopback";   break;
-    case network_type_t::NETWORK_TYPE_ANY        : name = "Any";        break;
-    case network_type_t::NETWORK_TYPE_UNKNOWN    : name = "Unknown";    break; // == NETWORK_TYPE_PUBLIC
+    case network_type_t::NETWORK_TYPE_UNDEFINED: // LCOV_EXCL_LINE -- get_network_type() defines it...
+        return "Undefined";
+
+    case network_type_t::NETWORK_TYPE_PRIVATE:
+        return "Private";
+
+    case network_type_t::NETWORK_TYPE_CARRIER:
+        return "Carrier";
+
+    case network_type_t::NETWORK_TYPE_LINK_LOCAL:
+        return "Local Link";
+
+    case network_type_t::NETWORK_TYPE_MULTICAST:
+        return "Multicast";
+
+    case network_type_t::NETWORK_TYPE_LOOPBACK:
+        return "Loopback";
+
+    case network_type_t::NETWORK_TYPE_ANY:
+        return "Any";
+
+    case network_type_t::NETWORK_TYPE_DOCUMENTATION:
+        return "Documentation";
+
+    case network_type_t::NETWORK_TYPE_UNKNOWN: // == NETWORK_TYPE_PUBLIC
+        return "Unknown";
+
     }
-    return name;
+    snapdev::NOT_REACHED();
 }
 
 
