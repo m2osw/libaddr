@@ -2209,7 +2209,7 @@ void addr_parser::parse_mask(
  * \param[in] default_port  The default port or -1
  * \param[in] protocol  The protocol the address has to be of, or the
  *                      empty string to allow any protocol.
- * \param[in] m  Whether to allow a mask (true) or not (false).
+ * \param[in] mask  Whether to allow a mask (true) or not (false).
  *
  * \return The address converted in an `addr` object.
  *
