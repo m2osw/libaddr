@@ -737,6 +737,21 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
         CATCH_START_SECTION("ipv6::address: set_ipv6() check to_ipv6_string()")
         {
+            // this requires those locales to be installed
+            // in my case, I install them all with:
+            //
+            //    sudo dpkg-reconfigure locales
+            //    (and in the dialog, choose "Select All" to get everything)
+            //
+            // you can also do them one at a time
+            //
+            //    sudo locale-gen fr_FR.utf8
+            //    sudo update-locale
+            //
+            // to see the list of locales you have defined use:
+            //
+            //    locale -a
+            //
             std::vector<char const *> locales = {
                 "en_US.utf8",
                 "fr_FR.utf8",
@@ -745,6 +760,7 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             };
             for(auto const & l : locales)
             {
+                std::cout << "--- testing locale \"" << l << "\"" << std::endl;
                 std::locale const loc(l);
 
                 std::map<addr::string_ip_t, std::string> addr_vec;
@@ -1556,27 +1572,34 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("ipv6::address: parse invalid range (IP which becomes multiple entries)")
+    CATCH_START_SECTION("ipv6::address: parse invalid range (unknown domain name)")
     {
         addr::addr_parser p;
         p.set_protocol(IPPROTO_TCP);
         p.set_allow(addr::allow_t::ALLOW_ADDRESS_RANGE, true);
-        addr::addr_range::vector_t const ips1(p.parse("localhost-:45"));
 
-        CATCH_REQUIRE(p.has_errors());
-        CATCH_REQUIRE(p.error_messages() == "The \"from\" of an address range must be exactly one address.\n");
-
-        CATCH_REQUIRE(ips1.empty());
-
-        p.clear_errors();
-        addr::addr_range::vector_t const ips2(p.parse("-localhost:45"));
-
-        CATCH_REQUIRE(p.has_errors());
-        CATCH_REQUIRE(p.error_messages() == "The \"to\" of an address range must be exactly one address.\n");
-
-        CATCH_REQUIRE(ips2.empty());
-
-        p.clear_errors();
+// the ::1 address in /etc/hosts used to also be named "localhost"; so we
+// were testing a system bug... [the error is still happening if we do not
+// set the protocol, although that was not the purpose of this test and
+// now we ignore the different protocols in a parsed range]
+//
+//        addr::addr_range::vector_t const ips1(p.parse("localhost-:45"));
+//std::cerr << "got localhost as just one IP?! [" << ips1 << "]\n";
+//
+//        CATCH_REQUIRE(p.has_errors());
+//        CATCH_REQUIRE(p.error_messages() == "The \"from\" of an address range must be exactly one address.\n");
+//
+//        CATCH_REQUIRE(ips1.empty());
+//
+//        p.clear_errors();
+//        addr::addr_range::vector_t const ips2(p.parse("-localhost:45"));
+//
+//        CATCH_REQUIRE(p.has_errors());
+//        CATCH_REQUIRE(p.error_messages() == "The \"to\" of an address range must be exactly one address.\n");
+//
+//        CATCH_REQUIRE(ips2.empty());
+//
+//        p.clear_errors();
         addr::addr_range::vector_t const ips3(p.parse("invalid.from-:45"));
 
         CATCH_REQUIRE(p.has_errors());
@@ -1609,22 +1632,53 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
 
         CATCH_START_SECTION("ipv6::ports: default port")
         {
+            CATCH_REQUIRE_FALSE(a.is_port_defined());
             CATCH_REQUIRE(a.get_port() == 0);
+
+            CATCH_REQUIRE_FALSE(a.is_protocol_defined());
+            CATCH_REQUIRE(a.get_protocol() == IPPROTO_TCP);
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("ipv6::ports: named ports")
+        {
+            CATCH_REQUIRE(a.set_port("ftp"));
+            CATCH_REQUIRE(a.get_port() == 21);
+            CATCH_REQUIRE(a.set_port("ssh"));
+            CATCH_REQUIRE(a.get_port() == 22);
+            CATCH_REQUIRE(a.set_port("http"));
+            CATCH_REQUIRE(a.get_port() == 80);
+            CATCH_REQUIRE(a.set_port("https"));
+            CATCH_REQUIRE(a.get_port() == 443);
+
+            // and a couple of invalid ones
+            //
+            CATCH_REQUIRE_FALSE(a.set_port("invalid"));
+            CATCH_REQUIRE(a.get_port() == 443); // port not updated
+            CATCH_REQUIRE_FALSE(a.set_port("32.5"));
+            CATCH_REQUIRE(a.get_port() == 443); // port not updated
         }
         CATCH_END_SECTION()
 
         CATCH_START_SECTION("ipv6::ports: set_port()")
         {
-            // setup a random port to start with
+            // setup a valid random port to start with
             //
             int const start_port(rand() & 0xFFFF);
             a.set_port(start_port);
+            CATCH_REQUIRE(a.is_port_defined());
+
+            // try again with a string
+            //
+            a.set_port(std::to_string(start_port).c_str());
+            CATCH_REQUIRE(a.get_port() == start_port);
 
             // test 100 invalid ports
             //
             for(int idx(0); idx < 100; ++idx)
             {
                 // first try a negative port
+                //
                 int port_too_small;
                 do
                 {
@@ -1633,11 +1687,13 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
                 while(port_too_small == 0);
                 CATCH_REQUIRE_THROWS_AS(a.set_port(port_too_small), addr::addr_invalid_argument);
 
-                // first try a negative port
+                // second try too large a port
+                //
                 int const port_too_large = (rand() & 0xFFFF) + 65536;
                 CATCH_REQUIRE_THROWS_AS(a.set_port(port_too_large), addr::addr_invalid_argument);
 
                 // make sure port does not get modified on errors
+                //
                 CATCH_REQUIRE(a.get_port() == start_port);
             }
 
@@ -1654,6 +1710,10 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
 
         CATCH_START_SECTION("ipv6::ports: known ports to test get_service()")
         {
+            // the default is TCP, but it's considered undefined
+            //
+            CATCH_REQUIRE_FALSE(a.is_protocol_defined());
+
             a.set_port(80);
             CATCH_REQUIRE(a.get_service() == "http");
 
@@ -1662,7 +1722,9 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
 
             // again with UDP
             // 
+            CATCH_REQUIRE_FALSE(a.is_protocol_defined());
             a.set_protocol(IPPROTO_UDP);
+            CATCH_REQUIRE(a.is_protocol_defined());
 
             a.set_port(80);
             std::string service(a.get_service());
@@ -1671,6 +1733,14 @@ CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
             a.set_port(443);
             service = a.get_service();
             CATCH_REQUIRE((service == "https"|| service == "443"));
+
+            // to change the default we offer the user to mark the protocol as undefined
+            //
+            CATCH_REQUIRE(a.is_protocol_defined());
+            a.set_protocol_defined(false);
+            CATCH_REQUIRE_FALSE(a.is_protocol_defined());
+            a.set_protocol_defined(true);
+            CATCH_REQUIRE(a.is_protocol_defined());
         }
         CATCH_END_SECTION()
     }
@@ -1787,6 +1857,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
 
         CATCH_START_SECTION("ipv6::masks: default mask")
         {
+            CATCH_REQUIRE_FALSE(a.is_mask_defined());
+
             uint8_t mask[16] = {};
             a.get_mask(mask);
             for(int idx(0); idx < 16; ++idx)
@@ -1794,16 +1866,25 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                 CATCH_REQUIRE(mask[idx] == 255);
             }
             CATCH_REQUIRE(a.get_mask_size() == 128);
+
+            CATCH_REQUIRE_FALSE(a.is_mask_defined());
         }
         CATCH_END_SECTION()
 
         CATCH_START_SECTION("ipv6::masks: set_mask_count()")
         {
+            CATCH_REQUIRE_FALSE(a.is_mask_defined());
+
             for(int idx(0); idx <= 128; ++idx)
             {
                 a.set_mask_count(idx);
+                CATCH_REQUIRE(a.is_mask_defined());
                 CATCH_REQUIRE(a.get_mask_size() == idx);
             }
+
+            CATCH_REQUIRE(a.is_mask_defined());
+            a.set_mask_defined(false);
+            CATCH_REQUIRE_FALSE(a.is_mask_defined());
 
             for(int idx(-10); idx < 0; ++idx)
             {
@@ -1812,6 +1893,8 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                         , addr::out_of_range
                         , Catch::Matchers::ExceptionMessage(
                                   "out_of_range: the mask size " + std::to_string(idx) + " is out of range."));
+
+                CATCH_REQUIRE_FALSE(a.is_mask_defined());
             }
 
             for(int idx(129); idx <= 130; ++idx)
@@ -1821,7 +1904,12 @@ CATCH_TEST_CASE( "ipv6::masks", "[ipv6]" )
                         , addr::out_of_range
                         , Catch::Matchers::ExceptionMessage(
                                   "out_of_range: the mask size " + std::to_string(idx) + " is out of range."));
+
+                CATCH_REQUIRE_FALSE(a.is_mask_defined());
             }
+
+            a.set_mask_defined(true);
+            CATCH_REQUIRE(a.is_mask_defined());
         }
         CATCH_END_SECTION()
 

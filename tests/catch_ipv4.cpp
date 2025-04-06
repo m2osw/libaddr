@@ -1654,7 +1654,7 @@ CATCH_TEST_CASE("ipv4::address", "[ipv4]")
             addr::addr_range::vector_t ips(p.parse("192.168.255.32:https"));
             CATCH_REQUIRE(p.has_errors());
             CATCH_REQUIRE(p.error_count() == 1);
-            CATCH_REQUIRE(p.error_messages() == "Invalid port in \"https\" (no service name lookup allowed).\n");
+            CATCH_REQUIRE(p.error_messages() == "invalid port in \"https\" (no service name lookup allowed).\n");
             CATCH_REQUIRE(ips.size() == 0);
         }
         CATCH_END_SECTION()

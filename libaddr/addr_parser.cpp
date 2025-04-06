@@ -298,8 +298,8 @@ std::string const & addr_parser::get_default_address6() const
  * happens quite frequently) we offer a string version. The string is
  * expected to be an exact integer between 0 and 65535 inclusive.
  *
- * The function will also accept -1 to reset the default port to
- * the default (i.e. "no default port").
+ * The function will also accept -1 and the empty string to reset the
+ * default port to its default value (i.e. "no default port").
  *
  * \exception addr_invalid_argument
  * When the input \p port_str is not a valid integer, this exception is
@@ -309,14 +309,17 @@ std::string const & addr_parser::get_default_address6() const
  */
 void addr_parser::set_default_port(std::string const & port_str)
 {
-    std::int64_t port(0);
-    if(!advgetopt::validator_integer::convert_string(port_str, port))
+    std::int64_t port(-1);
+    if(!port_str.empty())
     {
-        // TODO: add a lookup for string to port number via /etc/service
-        throw addr_invalid_argument(
-                  "Invalid port in \""
-                + port_str
-                + "\" (no service name lookup allowed).");
+        if(!advgetopt::validator_integer::convert_string(port_str, port))
+        {
+            // TODO: add a lookup for string to port number via /etc/service
+            throw addr_invalid_argument(
+                      "invalid port in \""
+                    + port_str
+                    + "\" (no service name lookup allowed).");
+        }
     }
 
     set_default_port(port);
@@ -328,7 +331,7 @@ void addr_parser::set_default_port(std::string const & port_str)
  * This function is used to define the default port to use in the address
  * parser object. By default this is set to -1 meaning: no default port.
  *
-* This function accepts any port number from 0 to 65535. It also accepts
+ * This function accepts any port number from 0 to 65535. It also accepts
  * -1 to reset the port back to "no default".
  *
  * To prevent the parser from working when no default and no port
@@ -349,7 +352,7 @@ void addr_parser::set_default_port(std::string const & port_str)
  * \endcode
  *
  * \exception addr_invalid_argument_exception
- * If the port number is out of range, then this expcetion is raised.
+ * If the port number is out of range, then this exception is raised.
  * The allowed range for a port is 0 to 65535. This function also
  * accepts -1 meaning that no default port is specified.
  *
@@ -1034,6 +1037,7 @@ void addr_parser::clear_errors()
 addr_range::vector_t addr_parser::parse(std::string const & in)
 {
     addr_range::vector_t result;
+    bool new_lines_allowed(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_NEWLINES));
 
     std::string separators;
     if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_COMMAS))
@@ -1044,14 +1048,47 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
     {
         separators += ' ';
     }
-    if(get_allow(allow_t::ALLOW_MULTI_ADDRESSES_NEWLINES))
+    if(new_lines_allowed)
     {
+        // TBD: consider supporting '\r'?
+        //
         separators += '\n';
     }
 
+    std::string const comment_chars(
+              std::string(get_allow(allow_t::ALLOW_COMMENT_HASH) ? "#" : "")
+                       + (get_allow(allow_t::ALLOW_COMMENT_SEMICOLON) ? ";" : ""));
+
     if(separators.empty())
     {
-        parse_cidr(in, result);
+        std::string::size_type ec(in.length());
+        std::string::size_type s(0);
+        while(s < in.length() && isspace(in[s]))
+        {
+            ++s;
+        }
+        if(!comment_chars.empty())
+        {
+            auto const comment(std::find_first_of(in.begin() + s, in.end(), comment_chars.begin(), comment_chars.end()));
+            if(comment != in.end())
+            {
+                ec = comment - in.begin();
+            }
+        }
+        while(ec > 0 && isspace(in[ec - 1]))
+        {
+            --ec;
+        }
+
+        if(s != 0
+        || ec != in.length())
+        {
+            parse_cidr(in.substr(s, ec - s), result);
+        }
+        else
+        {
+            parse_cidr(in, result);
+        }
     }
     else
     {
@@ -1059,25 +1096,32 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
         while(s < in.length())
         {
             auto const it(std::find_first_of(in.begin() + s, in.end(), separators.begin(), separators.end()));
-            std::string::size_type const e(it - in.begin());
-            if(e > s
-            && (!get_allow(allow_t::ALLOW_COMMENT_HASH)      || in[s] != '#')    // commented out line?
-            && (!get_allow(allow_t::ALLOW_COMMENT_SEMICOLON) || in[s] != ';'))   // commented out line?
+            std::string::size_type e(it - in.begin());
+            if(e > s)
             {
                 std::string::size_type ec(e);
-                if(get_allow(allow_t::ALLOW_COMMENT_HASH)
-                || get_allow(allow_t::ALLOW_COMMENT_SEMICOLON))
+                if(!comment_chars.empty())
                 {
-                    std::string const comment_chars(
-                              std::string(get_allow(allow_t::ALLOW_COMMENT_HASH) ? "#" : "")
-                            + (get_allow(allow_t::ALLOW_COMMENT_SEMICOLON) ? ";" : ""));
                     auto const comment(std::find_first_of(in.begin() + s, in.begin() + ec, comment_chars.begin(), comment_chars.end()));
                     if(comment != in.begin() + ec)
                     {
                         ec = comment - in.begin();
                     }
+                    if(new_lines_allowed
+                    && e < in.length()
+                    && in[e] != '\n')
+                    {
+                        auto const nl(std::find(in.begin() + e, in.end(), '\n'));
+                        e = nl - in.begin();
+                    }
                 }
-                parse_cidr(in.substr(s, ec - s), result);
+
+                // ignore lines with just a comment
+                //
+                if(ec > s)
+                {
+                    parse_cidr(in.substr(s, ec - s), result);
+                }
             }
             s = e + 1;
         }
@@ -1576,15 +1620,16 @@ void addr_parser::parse_address_range_port(
     addr_range::vector_t from_result;
     if(!from.empty())
     {
-        parse_address_port(from, port_str, from_result, ipv6);
+        parse_address_port_ignore_duplicates(from, port_str, from_result, ipv6);
         if(from_result.size() > 1)
         {
-            emit_error("The \"from\" of an address range must be exactly one address.");
-            return;
+            emit_error("The \"from\" of an address range must be exactly one address."); // LCOV_EXCL_LINE
+            return; // LCOV_EXCL_LINE
         }
         if(from_result.empty())
         {
-            // parse_address_port() failed
+            // parse_address_port_ignore_duplicates() failed
+            //
             return;
         }
     }
@@ -1592,20 +1637,21 @@ void addr_parser::parse_address_range_port(
     addr_range::vector_t to_result;
     if(!to.empty())
     {
-        // our parse_address_port() function sees the input address as
+        // our parse_address_port_ignore_duplicates() function sees the input address as
         // the "from" address; the following moves that result to the
         // "to" address of our own result (assuming the parsing worked
         // as expected)
         //
-        parse_address_port(to, port_str, to_result, ipv6);
+        parse_address_port_ignore_duplicates(to, port_str, to_result, ipv6);
         if(to_result.size() > 1)
         {
-            emit_error("The \"to\" of an address range must be exactly one address.");
-            return;
+            emit_error("The \"to\" of an address range must be exactly one address."); // LCOV_EXCL_LINE
+            return; // LCOV_EXCL_LINE
         }
         if(to_result.empty())
         {
-            // parse_address_port() failed
+            // parse_address_port_ignore_duplicates() failed
+            //
             return;
         }
         to_result[0].swap_from_to();
@@ -1848,7 +1894,7 @@ void addr_parser::parse_address_port(
             || port < 0
             || port > 65535)
             {
-                emit_error("Invalid port in \""
+                emit_error("invalid port in \""
                          + port_str
                          + "\" (no service name lookup allowed).");
                 return;
@@ -1913,6 +1959,56 @@ void addr_parser::parse_address_port(
                          + address
                          + "\" (no DNS lookup was allowed).");
             }
+        }
+    }
+}
+
+
+/** \brief Parse the address and port and ignore duplicates.
+ *
+ * The default system search finds one address per protocol. So if the
+ * address matches TCP, UDP, and other protocols, then we get one
+ * address for each protocol.
+ *
+ * This function removes those duplicates which are an issue in a list
+ * of IPs when working with ranges (i.e. 192.168.1.1-192.168.1.254 would
+ * fail because we find at least a TCP and a UDP protocol for those
+ * two addresses).
+ *
+ * \param[in] address  The address to convert to binary.
+ * \param[in] port_str  The port as a string.
+ * \param[out] result  The range where we save the results.
+ * \param[in] ipv6  Use the default IPv6 address if the address is empty.
+ */
+void addr_parser::parse_address_port_ignore_duplicates(
+      std::string address
+    , std::string port_str
+    , addr_range::vector_t & result
+    , bool ipv6)
+{
+    parse_address_port(address, port_str, result, ipv6);
+    if(result.size() > 1)
+    {
+        // the following works only on a single set of addresses
+        // (i.e. if you called parse_address_port() multiple times,
+        // then it will not properly reduce all the equivalent IPs)
+        //
+        // note that since this is used for ranges, if we return multiple
+        // addresses (as in 192.168.1.1 and 192.168.3.1) then the range
+        // definition fails anyway, so the fact that we do not properly
+        // reduce the second set of addresses is not relevant here
+        //
+        addr first(result[0].get_from());
+        while(result.size() > 1)
+        {
+            addr next(result[1].get_from());
+            next.set_protocol(first.get_protocol());
+            if(first != next)
+            {
+                       // I'm not sure of how to get two IPs in a locally running unit test...
+                break; // LCOV_EXCL_LINE
+            }
+            result.erase(result.begin() + 1);
         }
     }
 }

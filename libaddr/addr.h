@@ -206,7 +206,7 @@ public:
     ssize_t                         sendto(int s, char const * buffer, std::size_t size) const;
     std::string                     get_name() const;
     std::string                     get_service() const;
-    bool                            get_port_defined() const;
+    bool                            is_port_defined() const;
     int                             get_port() const;
     std::string                     get_port_name() const;
     std::string                     get_str_port() const;

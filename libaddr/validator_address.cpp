@@ -533,10 +533,12 @@ bool validator_address::validate(std::string const & value) const
     f_parser.clear_errors();
     snapdev::NOT_USED(f_parser.parse(value));
 
-//if(f_parser.has_errors())
-//{
-//std::cerr << "--- parser errors: [" << f_parser.error_messages() << "]\n";
-//}
+#ifdef _DEBUG
+    if(f_parser.has_errors())
+    {
+        std::cerr << "--- parser errors: [" << f_parser.error_messages() << "]\n";
+    }
+#endif
 
     return !f_parser.has_errors();
 }

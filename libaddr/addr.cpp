@@ -241,10 +241,10 @@ struct in6_addr
          uint32_t   __u6_addr32[4];
 #endif
     } __in6_u;
-#define s6_addr			__in6_u.__u6_addr8
+#define s6_addr     __in6_u.__u6_addr8
 #ifdef __USE_MISC
-# define s6_addr16		__in6_u.__u6_addr16
-# define s6_addr32		__in6_u.__u6_addr32
+# define s6_addr16  __in6_u.__u6_addr16
+# define s6_addr32  __in6_u.__u6_addr32
 #endif
 };
 
@@ -420,11 +420,9 @@ bool addr::set_port(char const * port)
         }
         return false;
     }
-    else
-    {
-        set_port(s->s_port);
-        return true;
-    }
+
+    set_port(ntohs(s->s_port));
+    return true;
 }
 
 
@@ -521,8 +519,8 @@ void addr::set_protocol(char const * protocol)
                             + protocol
                             + "\", expected \"tcp\" or \"udp\" (string).");
         }
-        buf.increase_size(1024);
-    }
+        buf.increase_size(1024);    // LCOV_EXCL_LINE
+    }                               // LCOV_EXCL_LINE
 
     f_protocol_defined = true;
     f_protocol = proto.p_proto;
@@ -2139,7 +2137,7 @@ std::string addr::get_service() const
  *
  * \return true if the port was explicitly set, false otherwise.
  */
-bool addr::get_port_defined() const
+bool addr::is_port_defined() const
 {
     return f_port_defined;
 }

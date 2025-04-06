@@ -380,7 +380,7 @@ std::string route::flags_to_string() const
         });
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 int route::get_reference_count() const
