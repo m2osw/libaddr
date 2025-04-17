@@ -204,6 +204,7 @@ public:
     int                             bind(int s);
     int                             bind(int s) const;
     ssize_t                         sendto(int s, char const * buffer, std::size_t size) const;
+    ssize_t                         recvfrom(int s, char * buffer, std::size_t size);
     std::string                     get_name() const;
     std::string                     get_service() const;
     bool                            is_port_defined() const;

@@ -73,7 +73,7 @@ using namespace snapdev::literals;
  * the interfaces of your computer. This check requires the
  * use of a `struct ifaddrs` and as such it requires to
  * delete that structure. We define a deleter for that
- * strucure here.
+ * structure here.
  */
 namespace
 {
@@ -1603,7 +1603,10 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         addr::addr_range::vector_t const ips3(p.parse("invalid.from-:45"));
 
         CATCH_REQUIRE(p.has_errors());
-        CATCH_REQUIRE(p.error_messages() == "Invalid address in \"invalid.from:45\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
+        bool expected(
+               p.error_messages() == "Invalid address in \"invalid.from:45\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n"
+            || p.error_messages() == "Invalid address in \"invalid.from:45\" error -2 -- Name or service not known (errno: 6 -- No such device or address).\n");
+        CATCH_REQUIRE(expected);
 
         CATCH_REQUIRE(ips3.empty());
 
@@ -1613,7 +1616,10 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
         addr::addr_range::vector_t const ips4(p.parse("-invalid.tom:45"));
 
         CATCH_REQUIRE(p.has_errors());
-        CATCH_REQUIRE(p.error_messages() == "Invalid address in \"invalid.tom:45\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
+        expected =
+               p.error_messages() == "Invalid address in \"invalid.tom:45\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n"
+            || p.error_messages() == "Invalid address in \"invalid.tom:45\" error -2 -- Name or service not known (errno: 6 -- No such device or address).\n";
+        CATCH_REQUIRE(expected);
 
         CATCH_REQUIRE(ips4.empty());
     }
@@ -1623,6 +1629,94 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
 
 CATCH_TEST_CASE("ipv6::ports", "[ipv6]")
 {
+    CATCH_START_SECTION("ipv6::addr: verify port names")
+    {
+        // test a few ports that we know are and are not defined in /etc/services
+        //
+        addr::addr a;
+
+        struct sockaddr_in6 in6 = sockaddr_in6();
+        in6.sin6_family = AF_INET6;
+        in6.sin6_port = htons(rand());
+        do
+        {
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[0]);
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[1]);
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[2]);
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[3]);
+            a.set_ipv6(in6);
+        }
+        while(!a.is_valid() || a.is_ipv4());
+        CATCH_REQUIRE(!a.is_ipv4());
+
+        struct port_name_t
+        {
+            int             f_port = 0;
+            char const *    f_name = nullptr;
+        };
+        port_name_t names[] = {
+            { 21, "ftp" },
+            { 22, "ssh" },
+            { 23, "telnet" },
+            { 80, "http" },
+            { 443, "https" },
+            { 4004, "" },
+        };
+
+        for(auto n : names)
+        {
+            a.set_port(n.f_port);
+            CATCH_REQUIRE(a.get_port_name() == n.f_name);
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("ipv6::addr: verify protocol names")
+    {
+        // test a few ports that we know are and are not defined in /etc/services
+        //
+        addr::addr a;
+
+        struct sockaddr_in6 in6 = sockaddr_in6();
+        in6.sin6_family = AF_INET6;
+        in6.sin6_port = htons(rand());
+        do
+        {
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[0]);
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[1]);
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[2]);
+            SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[3]);
+            a.set_ipv6(in6);
+        }
+        while(!a.is_valid() || a.is_ipv4());
+        CATCH_REQUIRE(!a.is_ipv4());
+
+        struct protocol_name_t
+        {
+            int             f_protocol = 0;
+            char const *    f_name = nullptr;
+        };
+        protocol_name_t names[] = {
+            { 0, "ip" },
+            { 6, "tcp" },
+            { 17, "udp" },
+        };
+
+        for(auto n : names)
+        {
+            a.set_protocol(n.f_protocol);
+            CATCH_REQUIRE(a.get_protocol_name() == n.f_name);
+        }
+
+        for(auto n : names)
+        {
+            a.set_protocol(n.f_name);
+            CATCH_REQUIRE(a.get_protocol() == n.f_protocol);
+            CATCH_REQUIRE(a.get_protocol_name() == n.f_name);
+        }
+    }
+    CATCH_END_SECTION()
+
     // by default addr() is an IPv6 address so we test the basic port
     // functions here, although it could be in a common place instead...
     //
@@ -2464,6 +2558,7 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 CATCH_REQUIRE(a.is_wan());
                 CATCH_REQUIRE(a.is_wan(true));
                 CATCH_REQUIRE_FALSE(a.is_wan(false));
+                CATCH_REQUIRE(a.is_valid());
             }
 
             // make sure that if any byte is set to non-zero it is not
@@ -2765,6 +2860,64 @@ CATCH_TEST_CASE("ipv6::network_type", "[ipv6]")
                 CATCH_REQUIRE_FALSE(a.is_wan(true));
                 CATCH_REQUIRE_FALSE(a.is_wan(false));
                 freeaddrinfo(addrlist);
+            }
+        }
+        CATCH_END_SECTION()
+
+        CATCH_START_SECTION("ipv6::network_type: documentation (2001:db8:: and 3fff:0XXX::)")
+        {
+            for(int count(0); count < 100; ++count)
+            {
+                struct sockaddr_in6 in6 = sockaddr_in6();
+                in6.sin6_family = AF_INET6;
+                in6.sin6_port = htons(rand());
+                in6.sin6_addr.s6_addr16[0] = htons(0x2001);
+                in6.sin6_addr.s6_addr16[1] = htons(0xdb8);
+                SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[1]);
+                SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[2]);
+                SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[3]);
+
+                // verify network type
+                //
+                a.set_ipv6(in6);
+
+                CATCH_REQUIRE_FALSE(a.is_default());
+                CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_DOCUMENTATION);
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Documentation");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE_FALSE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
+                CATCH_REQUIRE_FALSE(a.is_valid());
+            }
+
+            for(int count(0); count < 100; ++count)
+            {
+                struct sockaddr_in6 in6 = sockaddr_in6();
+                in6.sin6_family = AF_INET6;
+                in6.sin6_port = htons(rand());
+                in6.sin6_addr.s6_addr16[0] = htons(0x3fff);
+                in6.sin6_addr.s6_addr16[1] = htons(rand() & 0xfff);
+                SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[1]);
+                SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[2]);
+                SNAP_CATCH2_NAMESPACE::random(in6.sin6_addr.s6_addr32[3]);
+
+                // verify network type
+                //
+                a.set_ipv6(in6);
+
+                CATCH_REQUIRE_FALSE(a.is_default());
+                CATCH_REQUIRE(a.get_network_type() == addr::network_type_t::NETWORK_TYPE_DOCUMENTATION);
+                CATCH_REQUIRE(std::string(a.get_network_type_string()) == "Documentation");
+                CATCH_REQUIRE_FALSE(a.is_lan());
+                CATCH_REQUIRE_FALSE(a.is_lan(true));
+                CATCH_REQUIRE_FALSE(a.is_lan(false));
+                CATCH_REQUIRE_FALSE(a.is_wan());
+                CATCH_REQUIRE_FALSE(a.is_wan(true));
+                CATCH_REQUIRE_FALSE(a.is_wan(false));
+                CATCH_REQUIRE_FALSE(a.is_valid());
             }
         }
         CATCH_END_SECTION()

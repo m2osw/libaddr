@@ -265,6 +265,7 @@ namespace
 {
 
 
+
 /** \brief Whether the ostream index was allocated.
  *
  * This flag tells us whether we already allocated the ostream index or
@@ -292,7 +293,6 @@ bool g_ostream_index_allocated = false;
  * we instead use the g_ostream_index_allocated flag.
  */
 int g_ostream_index = 0;
-
 
 
 
@@ -468,6 +468,8 @@ void addr::set_port(int port)
  * \param[in] defined  Whether the protocol was defined or not.
  *
  * \sa set_protocol()
+ * \sa get_protocol()
+ * \sa get_protocol_name()
  */
 void addr::set_protocol_defined(bool defined)
 {
@@ -482,11 +484,14 @@ void addr::set_protocol_defined(bool defined)
  *
  * \exception addr_invalid_argument
  * The supported protocol names are defined in /etc/protocols. However,
- * internally, we are likely to support many less protocols.
+ * internally, we are likely to support many less protocols. This function
+ * calls the set_protocol(int) function to define this address protocol
+ * and it is likely to raise an error on unsupported protocols.
  *
  * \param[in] protocol  The name of the protocol.
  *
  * \sa get_protocol()
+ * \sa get_protocol_name()
  */
 void addr::set_protocol(char const * protocol)
 {
@@ -522,10 +527,7 @@ void addr::set_protocol(char const * protocol)
         buf.increase_size(1024);    // LCOV_EXCL_LINE
     }                               // LCOV_EXCL_LINE
 
-    f_protocol_defined = true;
-    f_protocol = proto.p_proto;
-
-    address_changed();
+    set_protocol(proto.p_proto);
 }
 
 
@@ -557,8 +559,16 @@ void addr::set_protocol(int protocol)
     case IPPROTO_IP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
-        f_protocol_defined = true;
-        f_protocol = protocol;
+        if(protocol != f_protocol)
+        {
+            f_protocol_defined = true;
+            f_protocol = protocol;
+
+            // TBD: I don't think that the network type is affected by the
+            //      protocol value; but long term this may be a good idea?
+            //
+            address_changed();
+        }
         break;
 
     default:
@@ -1219,7 +1229,7 @@ std::string addr::to_ipv4_string(string_ip_t const mode) const
             {
                 // this should just never happen
                 //
-                throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+                throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address"); // LCOV_EXCL_LINE
             }
             result << buf;
         }
@@ -1266,7 +1276,7 @@ std::string addr::to_ipv4_string(string_ip_t const mode) const
         {
             // this should just never happen
             //
-            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address"); // LCOV_EXCL_LINE
         }
 
         if((mode & (STRING_IP_ADDRESS
@@ -1318,7 +1328,7 @@ std::string addr::to_ipv6_string(string_ip_t const mode) const
 {
     std::stringstream result;
 
-    bool const include_brackets((mode &
+    bool include_brackets((mode &
                 (STRING_IP_BRACKET_ADDRESS
                 | STRING_IP_BRACKET_MASK
                 | STRING_IP_PORT
@@ -1341,6 +1351,8 @@ std::string addr::to_ipv6_string(string_ip_t const mode) const
             }
             else if((mode & STRING_IP_DEFAULT_AS_IPV4) != 0)
             {
+                include_brackets = false;
+                result.str(std::string());
                 result << "0.0.0.0";
             }
             else
@@ -1358,7 +1370,7 @@ std::string addr::to_ipv6_string(string_ip_t const mode) const
             {
                 // this should just never happen
                 //
-                throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET6 and IPv6 address");
+                throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET6 and IPv6 address"); // LCOV_EXCL_LINE
             }
 
             result << buf;
@@ -1400,7 +1412,7 @@ std::string addr::to_ipv6_string(string_ip_t const mode) const
         {
             // this should just never happen
             //
-            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address");
+            throw addr_unexpected_error("inet_ntop() somehow failed with AF_INET and IPv4 address"); // LCOV_EXCL_LINE
         }
 
         if((mode & (STRING_IP_ADDRESS
@@ -1511,9 +1523,13 @@ void addr::ip_from_uint128(unsigned __int128 u)
  * See:
  *
  * \li https://en.wikipedia.org/wiki/Reserved_IP_addresses
+ * \li https://en.wikipedia.org/wiki/IPv6_address
  * \li https://tools.ietf.org/html/rfc3330
  * \li https://tools.ietf.org/html/rfc5735 (IPv4)
  * \li https://tools.ietf.org/html/rfc5156 (IPv6)
+ *
+ * \todo
+ * Look at implementing all the IPv6 types.
  *
  * \return One of the possible network types as defined in the
  *         network_type_t enumeration.
@@ -1642,7 +1658,7 @@ char const * addr::get_network_type_string() const
     switch(get_network_type())
     {
     case network_type_t::NETWORK_TYPE_UNDEFINED: // LCOV_EXCL_LINE -- get_network_type() defines it...
-        return "Undefined";
+        return "Undefined"; // LCOV_EXCL_LINE
 
     case network_type_t::NETWORK_TYPE_PRIVATE:
         return "Private";
@@ -1669,7 +1685,7 @@ char const * addr::get_network_type_string() const
         return "Unknown";
 
     }
-    snapdev::NOT_REACHED();
+    snapdev::NOT_REACHED(); // LCOV_EXCL_LINE
 }
 
 
@@ -1861,7 +1877,7 @@ int addr::bind(int s) const
 /** \brief Send a message over UDP.
  *
  * If you successfully called the create_socket() function on an address
- * using the UDP protocol, you can send send messages using this function.
+ * using the UDP protocol, you can then send messages using this function.
  *
  * If the address is not defined with the UDP protocol, then the function
  * fails and errno is set to EINVAL.
@@ -1872,6 +1888,8 @@ int addr::bind(int s) const
  *
  * \return the number of bytes sent on success, -1 on error and errno set
  * to the error code.
+ *
+ * \sa sendto(2)
  */
 ssize_t addr::sendto(int s, char const * buffer, std::size_t size) const
 {
@@ -1903,6 +1921,83 @@ ssize_t addr::sendto(int s, char const * buffer, std::size_t size) const
             , reinterpret_cast<sockaddr const *>(&f_address)
             , sizeof(sockaddr_in6));
     }
+}
+
+
+/** \brief Receive a message over UDP.
+ *
+ * If you successfully called the create_socket() function on an address
+ * using the UDP protocol, you can then receive messages using this function.
+ *
+ * If the socket was not opened with the UDP protocol, then the function
+ * fails and errno is set to EINVAL.
+ *
+ * \warning
+ * This addr object gets updated, first with the socket local information
+ * and assuming the recvfrom() succeeds, with the source socket information.
+ * So in the end this object has the address of the sender.
+ *
+ * \warning
+ * The function may return 0 for several different reasons: when an empty
+ * message was sent, when the source close the socket (orderly shutdown),
+ * if the \p size parameter was 0 on entry.
+ *
+ * \param[in] s  The socket as opened by create_socket().
+ * \param[in] buffer  The buffer where the message is saved.
+ * \param[in] size  The size of the buffer in bytes.
+ *
+ * \return the number of bytes received on success, -1 on error and errno set
+ * to the error code.
+ *
+ * \sa recvfrom(2)
+ */
+ssize_t addr::recvfrom(int s, char * buffer, std::size_t size)
+{
+    // get the socket family type
+    //
+    set_from_socket(s, false);
+
+    if(f_protocol != IPPROTO_UDP)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    socklen_t length(0);
+    int r;
+    if(is_ipv4())
+    {
+        sockaddr_in ipv4;
+        length = sizeof(ipv4);
+        r = ::recvfrom(
+              s
+            , buffer
+            , size
+            , 0
+            , reinterpret_cast<sockaddr *>(&ipv4)
+            , &length);
+        if(r >= 0)
+        {
+            set_ipv4(ipv4);
+        }
+    }
+    else
+    {
+        sockaddr_in6 ipv6;
+        length = sizeof(ipv6);
+        r = ::recvfrom(
+              s
+            , buffer
+            , size
+            , 0
+            , reinterpret_cast<sockaddr *>(&ipv6)
+            , &length);
+        if(r >= 0)
+        {
+            set_ipv6(ipv6);
+        }
+    }
+    return r;
 }
 
 
@@ -1975,7 +2070,8 @@ void addr::set_hostname(std::string const & hostname)
  * \exception addr_invalid_state
  * The type of addresses supported are INET (IPv4) and INET6 (IPv6). If
  * another type is returned (i.e. you passed a Unix socket), then this
- * exception is raised.
+ * exception is raised. Similarly, this exception is raised if the connection
+ * is not a TCP or UDP connection.
  *
  * \param[in] s  The socket from which you want to retrieve peer information.
  * \param[in] peer  Whether to retrieve the peer (other side
@@ -2032,7 +2128,40 @@ void addr::set_from_socket(int s, bool peer)
         throw addr_invalid_state(
                   std::string("addr::set_from_socket(): ")
                 + (peer ? "getpeername()" : "getsockname()")
-                + " returned a type of address, which is not understood, i.e. not AF_INET or AF_INET6.");
+                + " returned a type of address which is not understood, i.e. not AF_INET or AF_INET6.");
+
+    }
+
+    int type(0);
+    length = sizeof(type);
+    r = getsockopt(s, SOL_SOCKET, SO_TYPE, &type, &length);
+    if(r != 0)
+    {
+        int const e(errno);
+        throw addr_io_error(
+                  std::string("addr::set_from_socket(): ")
+                + (peer ? "getpeername()" : "getsockname()")
+                + " failed to retrieve IP address details (errno: "
+                + std::to_string(e)
+                + ", "
+                + strerror(e)
+                + ").");
+    }
+
+    switch(type)
+    {
+    case SOCK_STREAM:
+        f_protocol = IPPROTO_TCP;
+        break;
+
+    case SOCK_DGRAM:
+        f_protocol = IPPROTO_UDP;
+        break;
+
+    default:
+        throw addr_invalid_state(
+                  "addr::set_from_socket(): getsockopt() returned a type of connection which is not understood,"
+                  " i.e. not SOCK_STREAM or SICK_DGRAM.");
 
     }
 }
@@ -2133,7 +2262,7 @@ std::string addr::get_service() const
  *
  * This function returns the flag as set by the set_port_defined(). By
  * default the flag is set to false. It is also set to true if you
- * explicitely call the set_port() function.
+ * explicitly call the set_port() function.
  *
  * \return true if the port was explicitly set, false otherwise.
  */
@@ -2158,7 +2287,7 @@ int addr::get_port() const
 /** \brief Convert the port into a name.
  *
  * Many ports are used for specific services. For example, port 80 represents
- * HTTP. This function converts the ports using the /etc/service file.
+ * HTTP. This function converts the ports using the /etc/services file.
  *
  * \return The name of the port or an empty string.
  */
@@ -2172,7 +2301,7 @@ std::string addr::get_port_name() const
     for(;;)
     {
         int const r(getservbyport_r(
-              get_port()
+              htons(get_port())
             , proto.c_str()
             , &service
             , buf.get()
@@ -2186,8 +2315,8 @@ std::string addr::get_port_name() const
         {
             return std::string();
         }
-        buf.increase_size(1024);
-    }
+        buf.increase_size(1024);        // LCOV_EXCL_LINE
+    }                                   // LCOV_EXCL_LINE
 }
 
 
@@ -2228,10 +2357,12 @@ bool addr::is_protocol_defined() const
 
 /** \brief Retrieve the protocol.
  *
- * This function retrieves the protocol as specified on the
- * set_addr_port() function or corresponding constructor.
+ * This function retrieves the protocol as specified with the last
+ * set_protocol() function call. On construction, the protocol is
+ * set to IPPROTO_TCP but it is marked as undefined.
  *
- * You may change the protocol with the set_protocol() function.
+ * When you change the protocol with the set_protocol() function, it
+ * gets marked as defined.
  *
  * \return protocol such as IPPROTO_TCP or IPPROTO_UDP.
  */
@@ -2271,12 +2402,18 @@ std::string addr::get_protocol_name() const
         {
             return proto.p_name;
         }
+        // LCOV_EXCL_START
+        //
+        // at the moment it is not possible to set the protocol
+        // to a value that doesn't have a name in /etc/protocols
+        //
         if(r != ERANGE)
         {
             return std::string();
         }
         buf.increase_size(1024);
     }
+    // LCOV_EXCL_STOP
 }
 
 
@@ -2534,7 +2671,7 @@ addr addr::operator ++ (int)
     addr result(*this);
     ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), 1_uint128));
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Compute the previous IP address.
@@ -2590,7 +2727,7 @@ addr addr::operator -- (int)
     addr result(*this);
     ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), 1_uint128));
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Add an offset to this IP address.
@@ -2627,7 +2764,7 @@ addr addr::operator + (int offset) const
         result.ip_from_uint128(snapdev::saturated_add(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
     }
     return result;
-}
+} // LCOV_EXCL_LINE
 #pragma GCC diagnostic pop
 
 
@@ -2665,7 +2802,7 @@ addr addr::operator - (int offset) const
         result.ip_from_uint128(snapdev::saturated_subtract(ip_to_uint128(), static_cast<unsigned __int128>(offset)));
     }
     return result;
-}
+} // LCOV_EXCL_LINE
 #pragma GCC diagnostic pop
 
 
