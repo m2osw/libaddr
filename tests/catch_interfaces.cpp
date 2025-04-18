@@ -58,13 +58,16 @@
 
 
 
-CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
+CATCH_TEST_CASE( "iface::interfaces", "[iface]" )
 {
     CATCH_GIVEN("iface::get_local_addresses()")
     {
-        addr::iface::pointer_vector_t list(addr::iface::get_local_addresses());
+        addr::iface::set_local_addresses_cache_ttl(1500);
 
-        CATCH_START_SECTION("verify list")
+        addr::iface::pointer_vector_t list(addr::iface::get_local_addresses());
+        addr::iface_index_name::vector_t name_index(addr::get_interface_name_index());
+
+        CATCH_START_SECTION("iface::interfaces: verify list")
         {
             CATCH_REQUIRE_FALSE(list->empty()); // at least "lo"
 
@@ -93,7 +96,22 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
                 CATCH_REQUIRE(i->has_destination_address() == ((i->get_flags() & IFF_POINTOPOINT) != 0));
 
                 addr::addr const & b(i->get_broadcast_address());
-                if(!i->has_broadcast_address())
+                if(i->has_broadcast_address())
+                {
+                    if(b.is_ipv4())
+                    {
+                        CATCH_REQUIRE(addr::is_broadcast_address(b));
+                    }
+                    else
+                    {
+                        // IPv6 is not offering broadcast IPs so we always
+                        // get the default IP here
+                        //
+                        CATCH_REQUIRE(b.is_default());
+                        CATCH_REQUIRE_FALSE(addr::is_broadcast_address(b));
+                    }
+                }
+                else
                 {
                     CATCH_REQUIRE(b.is_default());
                 }
@@ -103,7 +121,18 @@ CATCH_TEST_CASE( "ipv4::interfaces", "[ipv4]" )
                 {
                     CATCH_REQUIRE(d.is_default());
                 }
+
+                unsigned int const index(addr::get_interface_index_by_name(i->get_name()));
+                for(auto & ni : name_index)
+                {
+                    if(ni.get_name() == i->get_name())
+                    {
+                        CATCH_REQUIRE(ni.get_index() == index);
+                    }
+                }
             }
+
+            addr::iface::reset_local_addresses_cache();
         }
         CATCH_END_SECTION()
     }

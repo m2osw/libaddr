@@ -146,7 +146,7 @@ void ifaddrs_deleter(struct ifaddrs * ia)
  * \param[in] index  The index of the interface.
  * \param[in] name  The name of the interface.
  */
-iface_index_name::iface_index_name(int index, std::string const & name)
+iface_index_name::iface_index_name(unsigned int index, std::string const & name)
     : f_index(index)
     , f_name(name)
 {
@@ -159,7 +159,7 @@ iface_index_name::iface_index_name(int index, std::string const & name)
  *
  * \return The index of the name/index pair.
  */
-int iface_index_name::get_index() const
+unsigned int iface_index_name::get_index() const
 {
     return f_index;
 }
@@ -195,7 +195,7 @@ iface_index_name::vector_t get_interface_name_index()
 
     // the index starts at 1
     //
-    for(int index(1);; ++index)
+    for(unsigned int index(1);; ++index)
     {
         // get the next interface name by index
         //
@@ -213,7 +213,7 @@ iface_index_name::vector_t get_interface_name_index()
         result.push_back(in);
     }
     snapdev::NOT_REACHED();
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Get the index of an interface from its name.
@@ -287,7 +287,7 @@ iface::pointer_vector_t iface::get_local_addresses()
 
     std::shared_ptr<struct ifaddrs> auto_free(ifa_start, ifaddrs_deleter);
 
-    uint8_t mask[16];
+    std::uint8_t mask[16];
     iface::pointer_vector_t iface_list(std::make_shared<vector_t>());
     for(struct ifaddrs * ifa(ifa_start); ifa != nullptr; ifa = ifa->ifa_next)
     {
@@ -296,7 +296,7 @@ iface::pointer_vector_t iface::get_local_addresses()
         //
         if(ifa->ifa_addr == nullptr)
         {
-            continue;
+            continue; // LCOV_EXCL_LINE
         }
 
         // initialize an interface
@@ -305,7 +305,7 @@ iface::pointer_vector_t iface::get_local_addresses()
 
         // copy the name and flags as is
         //
-        // TBD: can the ifa_name even be a null pointer?
+        // TBD: can the ifa_name ever be a null pointer?
         //
         the_interface->f_name = ifa->ifa_name;
         the_interface->f_flags = ifa->ifa_flags; // IFF_... flags (see `man 7 netdevice` search for SIOCGIFFLAGS)
@@ -315,22 +315,22 @@ iface::pointer_vector_t iface::get_local_addresses()
         // when an interface has an IPv4 and an IPv6, there are two entries in
         // the list, both with the same name
         //
-        uint16_t const family(ifa->ifa_addr->sa_family);
+        std::uint16_t const family(ifa->ifa_addr->sa_family);
 
         switch(family)
         {
         case AF_INET:
-            the_interface->f_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr)));
+            the_interface->f_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_addr)));
 
             if((ifa->ifa_flags & IFF_BROADCAST) != 0
             && ifa->ifa_broadaddr != nullptr)
             {
-                the_interface->f_broadcast_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_broadaddr)));
+                the_interface->f_broadcast_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_broadaddr)));
             }
             if((ifa->ifa_flags & IFF_POINTOPOINT) != 0
             && ifa->ifa_dstaddr != nullptr)  // LCOV_EXCL_LINE
             {
-                the_interface->f_destination_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
+                the_interface->f_destination_address.set_ipv4(*(reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
             }
 
             // if present, add the mask as well
@@ -341,10 +341,10 @@ iface::pointer_vector_t iface::get_local_addresses()
                 // way as to make it IPv6 compatible
                 //
                 memset(mask, 255, 12);
-                mask[12] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  0;
-                mask[13] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >>  8;
-                mask[14] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 16;
-                mask[15] = reinterpret_cast<struct sockaddr_in *>(ifa->ifa_netmask)->sin_addr.s_addr >> 24;
+                mask[12] = reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_netmask)->sin_addr.s_addr >>  0;
+                mask[13] = reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_netmask)->sin_addr.s_addr >>  8;
+                mask[14] = reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_netmask)->sin_addr.s_addr >> 16;
+                mask[15] = reinterpret_cast<struct sockaddr_in const *>(ifa->ifa_netmask)->sin_addr.s_addr >> 24;
                 the_interface->f_address.set_mask(mask);
             }
             break;
@@ -352,22 +352,24 @@ iface::pointer_vector_t iface::get_local_addresses()
         case AF_INET6:
             the_interface->f_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr)));
 
+            // this should never happen since IPv6 does not support broadcast addresses
+            //
             if((ifa->ifa_flags & IFF_BROADCAST) != 0
             && ifa->ifa_broadaddr != nullptr)
             {
-                the_interface->f_broadcast_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_broadaddr)));  // LCOV_EXCL_LINE
+                the_interface->f_broadcast_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 const *>(ifa->ifa_broadaddr)));  // LCOV_EXCL_LINE
             }
             if((ifa->ifa_flags & IFF_POINTOPOINT) != 0
             && ifa->ifa_dstaddr != nullptr)  // LCOV_EXCL_LINE
             {
-                the_interface->f_destination_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
+                the_interface->f_destination_address.set_ipv6(*(reinterpret_cast<struct sockaddr_in6 const *>(ifa->ifa_dstaddr)));  // LCOV_EXCL_LINE
             }
 
             // if present, add the mask as well
             //
             if(ifa->ifa_netmask != nullptr)
             {
-                the_interface->f_address.set_mask(reinterpret_cast<uint8_t *>(&reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_netmask)->sin6_addr));
+                the_interface->f_address.set_mask(reinterpret_cast<std::uint8_t const *>(&reinterpret_cast<struct sockaddr_in6 const *>(ifa->ifa_netmask)->sin6_addr));
             }
             break;
 
@@ -484,7 +486,11 @@ addr const & iface::get_address() const
  * you should call the has_broadcast_address() function to know whether
  * this address is indeed defined.
  *
- * \return The broadcast address of this interface.
+ * \note
+ * An interface with only IPv6 addresses has no broadcast addresses.
+ *
+ * \return The broadcast address of this interface or the ANY address if not
+ *         available.
  */
 addr const & iface::get_broadcast_address() const
 {
@@ -518,13 +524,16 @@ addr const & iface::get_destination_address() const
  *
  * Note that you can always call the get_broadcast_address(), but if
  * undefined it will appear as a default address (NETWORK_TYPE_ANY)
- * which you can't distinguish from a valid address although a
- * the NETWORK_TYPE_ANY is not a valid address for a broacast
+ * which you can't distinguish from a valid address although
+ * the NETWORK_TYPE_ANY is not a valid address for a broadcast
  * address.
  *
  * \note
  * When a broadcast address is defined on an interface, then there can't
  * be a destination address.
+ *
+ * \note
+ * An interface with only an IPv6 address has no broadcast address.
  *
  * \return true if a broadcast address is defined.
  */
@@ -654,8 +663,12 @@ iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destinat
  * available on this computer. If found, it then verifies that \p a
  * represents the broadcasting address of that interface.
  *
+ * \note
+ * IPv6 addresses do not support broadcast addresses. This function always
+ * return false for an IPv6 address.
+ *
  * \warning
- * This test does not return true if the address is a multicase address
+ * This test does not return true if the address is a multicast address
  * (the 224.0.0.0/4 address range in IPv4) for two reasons: (1) you can
  * always check that using the addr::get_network_type() function and
  * (2) that address range is deprecated and should not really be used
@@ -675,7 +688,7 @@ iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destinat
  * to look into a way to cache the data. The current version is that way
  * for two reasons: (1) in most cases the list is checked only once, and
  * (2) this way we can make sure to always test with the current set
- * of IPs in the system. Long term service need that ability.
+ * of IPs in the system. Long term services need that ability.
  *
  * \param[in] a  The address to check as a broadcast address.
  *
@@ -683,10 +696,15 @@ iface::pointer_t find_addr_interface(addr const & a, bool allow_default_destinat
  */
 bool is_broadcast_address(addr const & a)
 {
+    if(!a.is_ipv4())
+    {
+        return false;
+    }
+
     iface::pointer_t ptr(find_addr_interface(a, false));
     if(ptr == nullptr)
     {
-        return false;
+        return false; // LCOV_EXCL_LINE
     }
 
     return ptr->get_broadcast_address() == a;

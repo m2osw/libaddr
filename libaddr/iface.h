@@ -44,17 +44,18 @@ class iface_index_name
 public:
     typedef std::vector<iface_index_name>   vector_t;
 
-                                    iface_index_name(int index, std::string const & name);
+                                    iface_index_name(unsigned int index, std::string const & name);
 
-    int                             get_index() const;
+    unsigned int                    get_index() const;
     std::string const &             get_name() const;
 
 private:
-    int                             f_index;
-    std::string                     f_name;
+    unsigned int                    f_index = 0;
+    std::string                     f_name = std::string();
 };
 
 iface_index_name::vector_t          get_interface_name_index();
+unsigned int                        get_interface_index_by_name(std::string const & name);
 
 
 class iface

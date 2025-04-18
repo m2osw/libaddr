@@ -47,7 +47,7 @@ DECLARE_EXCEPTION(addr_error, addr_io_error);
 DECLARE_EXCEPTION(addr_error, addr_invalid_argument);
 DECLARE_EXCEPTION(addr_error, addr_invalid_state);
 DECLARE_EXCEPTION(addr_error, addr_invalid_structure);
-DECLARE_EXCEPTION(addr_error, addr_unexpected_error);
+DECLARE_EXCEPTION(addr_error, addr_unexpected_error); // LCOV_EXCL_LINE
 DECLARE_EXCEPTION(addr_error, addr_unexpected_mask);
 DECLARE_EXCEPTION(addr_error, addr_unsupported_as_range);
 

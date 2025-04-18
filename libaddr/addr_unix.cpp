@@ -274,7 +274,7 @@ void addr_unix::set_file(std::string const & file)
  * anyone running on the same server access the socket, use 0666.
  *
  * Note that the parent folder permissions are also checked. It needs to
- * have the 'x' flag set for the type of user that you autorize. The folder
+ * have the 'x' flag set for the type of user that you authorize. The folder
  * should not have the 'w' access or those users could temper with the file
  * (i.e. delete it).
  *
@@ -421,7 +421,7 @@ void addr_unix::set_uri(std::string const & uri)
     std::string::size_type const scheme_pos(uri.find(':'));
     if(scheme_pos == std::string::npos)
     {
-        throw addr_invalid_argument("invalid URI for a Unix address, scheme not found (':' missing)");
+        throw addr_invalid_argument("invalid URI for a Unix address, scheme not found (':' missing).");
     }
 
     std::string const scheme(uri.substr(0, scheme_pos));
@@ -434,9 +434,8 @@ void addr_unix::set_uri(std::string const & uri)
         std::string::value_type const c(*it);
         if((c < 'a' || c > 'z')
         && (c < 'A' || c > 'Z')
-        && (it != scheme.begin()
-            && (c < '0' || c > '9')
-            && c != '+' || c != '-' || c != '.'))
+        && (it == scheme.begin()
+            || ((c < '0' || c > '9') && c != '+' && c != '-' && c != '.')))
         {
             // as per RFC 3986
             // https://datatracker.ietf.org/doc/html/rfc3986
@@ -752,7 +751,7 @@ std::string addr_unix::to_uri() const
     }
 
     return result;
-}
+} // LCOV_EXCL_LINE
 
 
 /** \brief Delete the socket file.

@@ -35,7 +35,7 @@
  * These tests verify that the Unix address functions as expected.
  */
 
-// addr lib
+// addr
 //
 #include    <libaddr/addr_unix.h>
 
@@ -45,18 +45,18 @@
 #include    "catch_main.h"
 
 
-// libutf8 lib
+// libutf8
 //
 #include    <libutf8/libutf8.h>
 #include    <libutf8/exception.h>
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/raii_generic_deleter.h>
 
 
-// C lib
+// C
 //
 #include    <sys/stat.h>
 
@@ -73,7 +73,7 @@
 
 CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
 {
-    CATCH_START_SECTION("addr_unix() defaults (a.k.a. unnamed address)")
+    CATCH_START_SECTION("addr_unix::unnamed: addr_unix() defaults (a.k.a. unnamed address)")
     {
         addr::addr_unix u;
 
@@ -93,7 +93,7 @@ CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with an unnamed address")
+    CATCH_START_SECTION("addr_unix::unnamed: addr_unix() with an unnamed address")
     {
         sockaddr_un init = addr::init_un();
         CATCH_REQUIRE(init.sun_family == AF_UNIX);
@@ -120,7 +120,7 @@ CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with an unnamed string")
+    CATCH_START_SECTION("addr_unix::unnamed: addr_unix() with an unnamed string")
     {
         std::string no_name;
         addr::addr_unix u(no_name);
@@ -141,7 +141,7 @@ CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a forced unnamed URI")
+    CATCH_START_SECTION("addr_unix::unnamed: addr_unix() with a forced unnamed URI")
     {
         addr::addr_unix u;
 
@@ -164,7 +164,7 @@ CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with an unnamed which we re-collect from socket")
+    CATCH_START_SECTION("addr_unix::unnamed: addr_unix() with an unnamed which we re-collect from socket")
     {
         sockaddr_un un;
 
@@ -198,7 +198,7 @@ CATCH_TEST_CASE("addr_unix::unnamed", "[addr_unix]")
 
 CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
 {
-    CATCH_START_SECTION("addr_unix() with a relative file name")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() with a relative file name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -239,7 +239,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a relative file name; string constructor")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() with a relative file name; string constructor")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -270,7 +270,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a relative file name using set_file()")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() with a relative file name using set_file()")
     {
         addr::addr_unix u;
 
@@ -313,7 +313,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a full file name")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() with a full file name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -354,7 +354,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a long file name")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() with a long file name")
     {
         sockaddr_un un;
         for(int count(1); count < static_cast<int>(sizeof(un.sun_path) - 1); ++count)
@@ -384,7 +384,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() verify that file gets unlink()'ed")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() verify that file gets unlink()'ed")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -413,7 +413,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a file name which we re-collect from socket")
+    CATCH_START_SECTION("addr_unix::file: addr_unix() with a file name which we re-collect from socket")
     {
         sockaddr_un un;
 
@@ -457,7 +457,7 @@ CATCH_TEST_CASE("addr_unix::file", "[addr_unix]")
 
 CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
 {
-    CATCH_START_SECTION("addr_unix() with a relative abstract name")
+    CATCH_START_SECTION("addr_unix::abstract: addr_unix() with a relative abstract name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -500,7 +500,7 @@ CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a relative abstract name with string constructor")
+    CATCH_START_SECTION("addr_unix::abstract: addr_unix() with a relative abstract name with string constructor")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -532,7 +532,7 @@ CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with an abstract name using set_abstract()")
+    CATCH_START_SECTION("addr_unix::abstract: addr_unix() with an abstract name using set_abstract()")
     {
         addr::addr_unix u;
 
@@ -576,7 +576,7 @@ CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a full abstract name")
+    CATCH_START_SECTION("addr_unix::abstract: addr_unix() with a full abstract name")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -618,7 +618,7 @@ CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a long abstract name")
+    CATCH_START_SECTION("addr_unix::abstract: addr_unix() with a long abstract name")
     {
         sockaddr_un un;
         for(int count(1); count < static_cast<int>(sizeof(un.sun_path) - 2); ++count)
@@ -649,7 +649,7 @@ CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with an abstract name which we re-collect from socket")
+    CATCH_START_SECTION("addr_unix::abstract: addr_unix() with an abstract name which we re-collect from socket")
     {
         sockaddr_un un;
 
@@ -694,7 +694,7 @@ CATCH_TEST_CASE("addr_unix::abstract", "[addr_unix]")
 
 CATCH_TEST_CASE("addr_unix::compare", "[addr_unix]")
 {
-    CATCH_START_SECTION("two addr_unix() to compare with ==, !=, <, <=, >, >=")
+    CATCH_START_SECTION("addr_unix::compare: two addr_unix() to compare with ==, !=, <, <=, >, >=")
     {
         addr::addr_unix a;
         addr::addr_unix b;
@@ -727,7 +727,7 @@ CATCH_TEST_CASE("addr_unix::compare", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("two sockaddr_un to compare with ==, !=, <, <=, >, >=")
+    CATCH_START_SECTION("addr_unix::compare: two sockaddr_un to compare with ==, !=, <, <=, >, >=")
     {
         sockaddr_un a = addr::init_un();
         sockaddr_un b = addr::init_un();
@@ -764,7 +764,7 @@ CATCH_TEST_CASE("addr_unix::compare", "[addr_unix]")
 
 CATCH_TEST_CASE("addr_unix::mix", "[addr_unix]")
 {
-    CATCH_START_SECTION("addr_unix() with a relative file name then unnamed")
+    CATCH_START_SECTION("addr_unix::mix: addr_unix() with a relative file name then unnamed")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -820,7 +820,7 @@ CATCH_TEST_CASE("addr_unix::mix", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a full abstract name then unnamed")
+    CATCH_START_SECTION("addr_unix::mix: addr_unix() with a full abstract name then unnamed")
     {
         for(int count(0); count < 10; ++count)
         {
@@ -877,7 +877,7 @@ CATCH_TEST_CASE("addr_unix::mix", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with various set_uri()")
+    CATCH_START_SECTION("addr_unix::mix: addr_unix() with various set_uri()")
     {
         addr::addr_unix u;
 
@@ -890,6 +890,27 @@ CATCH_TEST_CASE("addr_unix::mix", "[addr_unix]")
             {
                 name = "/run/snapwebsites/sockets/test";
                 int const max(rand() % 25 + 3);
+                switch(rand() % 4)
+                {
+                case 0:
+                    break;
+
+                case 1:
+                    name += '-';
+                    break;
+
+                case 2:
+                    name += '+';
+                    break;
+
+                case 3:
+                    name += '.';
+                    break;
+
+                default:
+                    throw std::runtime_error("unexpected case");
+
+                }
                 for(int id(0); id < max; ++id)
                 {
                     name += '0' + rand() % 10;
@@ -962,9 +983,43 @@ CATCH_TEST_CASE("addr_unix::mix", "[addr_unix]")
 }
 
 
+CATCH_TEST_CASE("addr_unix::owner", "[addr_unix]")
+{
+    CATCH_START_SECTION("addr_unix::owner: addr_unix() check group")
+    {
+        addr::addr_unix u;
+
+        for(int count(0); count < 10; ++count)
+        {
+            std::string name("grp");
+            int const max(rand() % 5 + 3);
+            for(int id(0); id < max; ++id)
+            {
+                name += '0' + rand() % 10;
+            }
+            u.set_group(name);
+            CATCH_REQUIRE(u.get_group() == name);
+        }
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("addr_unix::owner: addr_unix() check mode")
+    {
+        addr::addr_unix u;
+
+        for(int m(0); m < 01777; ++m)
+        {
+            u.set_mode(m);
+            CATCH_REQUIRE(u.get_mode() == m);
+        }
+    }
+    CATCH_END_SECTION()
+}
+
+
 CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
 {
-    CATCH_START_SECTION("addr_unix() with an invalid address family")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with an invalid address family")
     {
         for(int family(-25); family <= 25; ++family)
         {
@@ -988,20 +1043,48 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with an unnamed string but marked abstract")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with an unnamed string but marked abstract")
     {
         CATCH_REQUIRE_THROWS_AS(addr::addr_unix(std::string(), true), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a URI and a missing path")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with a URI but a missing path")
     {
         addr::addr_unix u;
         CATCH_REQUIRE_THROWS_AS(u.set_uri("unix://"), addr::addr_invalid_argument);
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with too long a file name")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with a URI but a missing scheme")
+    {
+        addr::addr_unix u;
+        CATCH_REQUIRE_THROWS_AS(u.set_uri("://address"), addr::addr_invalid_argument);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with a URI but an invalid scheme")
+    {
+        addr::addr_unix u;
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("bad(scheme)://address")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: \"bad(scheme)\" is not a supported URI scheme for a Unix address; supported scheme are limited to `[a-zA-Z][-+.a-zA-Z0-9]*`."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("other;scheme://address")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: \"other;scheme\" is not a supported URI scheme for a Unix address; supported scheme are limited to `[a-zA-Z][-+.a-zA-Z0-9]*`."));
+
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("unknown|scheme://address")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: \"unknown|scheme\" is not a supported URI scheme for a Unix address; supported scheme are limited to `[a-zA-Z][-+.a-zA-Z0-9]*`."));
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with too long a file name")
     {
         sockaddr_un un;
         for(int count(static_cast<int>(sizeof(un.sun_path)));
@@ -1022,7 +1105,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with too long an abstract name")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with too long an abstract name")
     {
         sockaddr_un un;
         for(int count(static_cast<int>(sizeof(un.sun_path) - 1));
@@ -1043,7 +1126,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a long filename (missing '\\0')")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with a long filename (missing '\\0')")
     {
         sockaddr_un init = addr::init_un();
         for(std::size_t idx(0); idx < sizeof(init.sun_path); ++idx)
@@ -1062,7 +1145,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a long abstrat name (missing '\\0')")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with a long abstract name (missing '\\0')")
     {
         sockaddr_un init = addr::init_un();
         for(std::size_t idx(1); idx < sizeof(init.sun_path); ++idx)
@@ -1081,29 +1164,41 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with a long abstrat name (missing '\\0')")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with a long abstract name (missing '\\0')")
     {
         addr::addr_unix u;
 
         // missing ":"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("cu/run/snapwebsites/sockets"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("cu/run/snapwebsites/sockets")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: invalid URI for a Unix address, scheme not found (':' missing)."));
 
         // "?alexis"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("unix:/run/snapwebsites/sockets?alexis"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("unix:/run/snapwebsites/sockets?alexis")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: \"alexis\" is not a supported URI query string for a Unix address; supported query strings are one of: \"unnamed\", \"file\" and \"abstract\"."));
 
         // "_test:"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("_test:/run/snapwebsites/sockets?abstract"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("_test:/run/snapwebsites/sockets?abstract")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: \"_test\" is not a supported URI scheme for a Unix address; supported scheme are limited to `[a-zA-Z][-+.a-zA-Z0-9]*`."));
 
         // name with "?unnamed"
         //
-        CATCH_REQUIRE_THROWS_AS(u.set_uri("cd:not-empty?unnamed"), addr::addr_invalid_argument);
+        CATCH_REQUIRE_THROWS_MATCHES(
+              u.set_uri("cd:not-empty?unnamed")
+            , addr::addr_invalid_argument
+            , Catch::Matchers::ExceptionMessage("addr_error: address \"not-empty\" must be empty to represent an unnamed Unix address."));
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with invalid characters (controls)")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with invalid characters (controls)")
     {
         for(int c(1); c < 0x20; ++c)
         {
@@ -1122,7 +1217,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("addr_unix() with invalid UTF-8 characters")
+    CATCH_START_SECTION("addr_unix::invalid: addr_unix() with invalid UTF-8 characters")
     {
         std::string name;
         for(int c(0); c < 10; ++c)
@@ -1133,7 +1228,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("get addr_unix() of socket set to -1")
+    CATCH_START_SECTION("addr_unix::invalid: get addr_unix() of socket set to -1")
     {
         addr::addr_unix u;
         bool const result(u.set_from_socket(-1));
@@ -1143,7 +1238,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
     }
     CATCH_END_SECTION()
 
-    CATCH_START_SECTION("get addr_unix() of socket set to UDP")
+    CATCH_START_SECTION("addr_unix::invalid: get addr_unix() of socket set to UDP")
     {
         addr::addr udp(addr::string_to_addr(
                   "127.0.0.1:3999"
