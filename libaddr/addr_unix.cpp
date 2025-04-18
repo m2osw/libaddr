@@ -35,24 +35,24 @@
 #include    "libaddr/exception.h"
 
 
-// snapdev lib
+// snapdev
 //
 #include    <snapdev/join_strings.h>
 #include    <snapdev/raii_generic_deleter.h>
 #include    <snapdev/tokenize_string.h>
 
 
-// libutf8 library
+// libutf8
 //
 #include    <libutf8/libutf8.h>
 
 
-// C++ library
+// C++
 //
 #include    <iostream>
 
 
-// C library
+// C
 //
 #include    <sys/stat.h>
 

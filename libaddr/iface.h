@@ -29,7 +29,7 @@
  * address.
  */
 
-// addr library
+// addr
 //
 #include    <libaddr/addr.h>
 

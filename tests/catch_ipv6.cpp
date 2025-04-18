@@ -3052,4 +3052,140 @@ CATCH_TEST_CASE("ipv6::network", "[ipv6]")
 }
 
 
+CATCH_TEST_CASE("ipv6::udp", "[ipv6]")
+{
+    constexpr int const TEST_PORT(4004);
+    constexpr int const TEST_PROTOCOL(IPPROTO_UDP);
+    constexpr int const TEST_COUNT(10);
+
+    CATCH_START_SECTION("ipv6::udp: sendto() and recvfrom()")
+    {
+        class sr
+        {
+        public:
+            sr()
+            {
+                f_a.set_protocol(TEST_PROTOCOL);
+                f_a.set_ipv6_loopback();
+                f_a.set_port(TEST_PORT);
+                f_sa = f_a.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC | addr::addr::SOCKET_FLAG_REUSE);
+                CATCH_REQUIRE(f_sa != -1);
+
+                f_b.set_protocol(TEST_PROTOCOL);
+                f_b.set_ipv6_loopback();
+                f_b.set_port(TEST_PORT);
+                f_sb = f_b.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC | addr::addr::SOCKET_FLAG_REUSE);
+                CATCH_REQUIRE(f_sb != -1);
+                f_b.bind(f_sb); // the receive has to be bound
+
+                for(int i(0); i < TEST_COUNT; ++i)
+                {
+                    std::size_t const size(rand() % 350 + 50);
+                    f_buf[i].resize(size);
+                    for(std::size_t idx(0); idx < size; ++idx)
+                    {
+                        f_buf[i][idx] = rand();
+                    }
+                }
+            }
+
+            void run()
+            {
+                int client_port(-1);
+                for(int i(0); i < TEST_COUNT; ++i)
+                {
+                    sendto(i);
+
+                    std::vector<std::uint8_t> bb(f_buf[i].size());
+                    int const r(f_b.recvfrom(f_sb, reinterpret_cast<char *>(bb.data()), bb.size()));
+                    if(r == -1)
+                    {
+                        int const e(errno);
+                        std::cerr << "--- recvfrom() returned an error: " << strerror(e) << std::endl;
+                        return;
+                    }
+
+                    CATCH_REQUIRE(r == static_cast<int>(f_buf[i].size()));
+                    CATCH_REQUIRE(f_buf[i] == bb);
+                    CATCH_REQUIRE_FALSE(f_b.is_ipv4());
+                    if(client_port == -1)
+                    {
+                        client_port = f_b.get_port();
+                    }
+                    else
+                    {
+                        // the ephemeral port does not change once we sent
+                        // the first packet
+                        //
+                        CATCH_REQUIRE(f_b.get_port() == client_port);
+                    }
+                    CATCH_REQUIRE(f_b.get_network_type() == addr::network_type_t::NETWORK_TYPE_LOOPBACK);
+                }
+            }
+
+            void sendto(int idx)
+            {
+                int const r(f_a.sendto(f_sa, reinterpret_cast<char const *>(f_buf[idx].data()), f_buf[idx].size()));
+                if(r == -1)
+                {
+                    int const e(errno);
+                    std::cerr << "--- sendto() returned an error: " << strerror(e) << std::endl;
+                    return;
+                }
+                CATCH_REQUIRE(r == static_cast<int>(f_buf[idx].size()));
+            }
+
+            addr::addr                  f_a = addr::addr();
+            addr::addr                  f_b = addr::addr();
+            int                         f_sa = -1;
+            int                         f_sb = -1;
+            std::vector<std::uint8_t>   f_buf[TEST_COUNT] = {};
+        };
+
+        sr run;
+        run.run();
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("ipv6::udp: sendto() with wrong protocol")
+    {
+        addr::addr a;
+        a.set_protocol(IPPROTO_TCP);
+        a.set_ipv6_loopback();
+        a.set_port(TEST_PORT);
+        int sa(a.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC | addr::addr::SOCKET_FLAG_REUSE));
+        CATCH_REQUIRE(sa != -1);
+
+        char buf[256];
+        int const r(a.sendto(sa, buf, sizeof(buf)));
+        int const e(errno);
+        CATCH_REQUIRE(r == -1);
+        CATCH_REQUIRE(e == EINVAL);
+
+        close(sa);
+    }
+    CATCH_END_SECTION()
+
+    CATCH_START_SECTION("ipv6::udp: recvfrom() with wrong protocol")
+    {
+        addr::addr a;
+        a.set_protocol(IPPROTO_TCP);
+        a.set_ipv6_loopback();
+        a.set_port(TEST_PORT);
+        int sa(a.create_socket(addr::addr::SOCKET_FLAG_CLOEXEC | addr::addr::SOCKET_FLAG_REUSE));
+        CATCH_REQUIRE(sa != -1);
+        a.bind(sa); // the receive has to be bound
+
+        char buf[256];
+        int const r(a.recvfrom(sa, buf, sizeof(buf)));
+        int const e(errno);
+        CATCH_REQUIRE(r == -1);
+        CATCH_REQUIRE(e == EINVAL);
+
+        close(sa);
+    }
+    CATCH_END_SECTION()
+}
+
+
 // vim: ts=4 sw=4 et

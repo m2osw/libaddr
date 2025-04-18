@@ -28,13 +28,14 @@
  * This header defines various exceptions used throughout the addr library.
  */
 
-// libexcept library
+// libexcept
 //
 #include    <libexcept/exception.h>
 
 
 namespace addr
 {
+
 
 
 DECLARE_LOGIC_ERROR(logic_error); // LCOV_EXCL_LINE

@@ -55,13 +55,13 @@
 #include    <snapdev/static_to_dynamic_buffer.h>
 
 
-// C++ library
+// C++
 //
 #include    <sstream>
 #include    <iostream>
 
 
-// C library
+// C
 //
 #include    <netdb.h>
 
@@ -378,6 +378,25 @@ void addr::set_ipv4(sockaddr_in const & in)
     f_address.sin6_addr.s6_addr32[3] = in.sin_addr.s_addr;
 
     address_changed();
+}
+
+
+/** \brief Set the address as the IPv4 loopback address.
+ *
+ * This function sets the address to 127.0.0.1. Remember that loopback
+ * addresses can be anything in 127.0.0.0/8. The 127.0.0.1 is one out
+ * of 16 million possible addresses.
+ *
+ * For example, some DNS have been using 127.0.0.53.
+ */
+void addr::set_ipv4_loopback()
+{
+    sockaddr_in in = {};
+
+    in.sin_family = AF_INET;
+    in.sin_port = f_address.sin6_port;
+    in.sin_addr.s_addr = htonl((127 << 24) + 1);
+    set_ipv4(in);
 }
 
 
@@ -1156,6 +1175,21 @@ void addr::set_ipv6(sockaddr_in6 const & in6)
     memcpy(&f_address, &in6, sizeof(in6));
 
     address_changed();
+}
+
+
+/** \brief Set the address as the IPv6 loopback address.
+ *
+ * This function sets the address to ::1.
+ */
+void addr::set_ipv6_loopback()
+{
+    sockaddr_in6 in6 = {};
+
+    in6.sin6_family = AF_INET6;
+    in6.sin6_port = f_address.sin6_port;
+    in6.sin6_addr.s6_addr16[7] = htons(1);
+    set_ipv6(in6);
 }
 
 
@@ -2137,6 +2171,7 @@ void addr::set_from_socket(int s, bool peer)
     r = getsockopt(s, SOL_SOCKET, SO_TYPE, &type, &length);
     if(r != 0)
     {
+        // LCOV_EXCL_START
         int const e(errno);
         throw addr_io_error(
                   std::string("addr::set_from_socket(): ")
@@ -2146,6 +2181,7 @@ void addr::set_from_socket(int s, bool peer)
                 + ", "
                 + strerror(e)
                 + ").");
+        // LCOV_EXCL_STOP
     }
 
     switch(type)
@@ -2158,10 +2194,12 @@ void addr::set_from_socket(int s, bool peer)
         f_protocol = IPPROTO_UDP;
         break;
 
+    // LCOV_EXCL_START
     default:
         throw addr_invalid_state(
                   "addr::set_from_socket(): getsockopt() returned a type of connection which is not understood,"
                   " i.e. not SOCK_STREAM or SICK_DGRAM.");
+    // LCOV_EXCL_STOP
 
     }
 }

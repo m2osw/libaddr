@@ -164,7 +164,9 @@ public:
     void                            set_hostname(std::string const & hostname);
     void                            set_from_socket(int s, bool peer);
     void                            set_ipv4(sockaddr_in const & in);
+    void                            set_ipv4_loopback();
     void                            set_ipv6(sockaddr_in6 const & in6);
+    void                            set_ipv6_loopback();
     void                            set_port_defined(bool defined = true);
     bool                            set_port(char const * port);
     void                            set_port(int port);

@@ -29,7 +29,7 @@
  * in the routing tables of the kernel.
  */
 
-// addr lib
+// addr
 //
 #include    <libaddr/addr.h>
 

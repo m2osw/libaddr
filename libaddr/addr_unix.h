@@ -44,14 +44,14 @@
  * The child can be a process created by fork() and fork() + exec().
  */
 
-// C++ library
+// C++
 //
 #include    <memory>
 #include    <string>
 #include    <vector>
 
 
-// C library
+// C
 //
 #include    <sys/socket.h>
 #include    <sys/un.h>

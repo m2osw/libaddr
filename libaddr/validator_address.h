@@ -37,7 +37,7 @@
 #include    "advgetopt/validator.h"
 
 
-// C++ lib
+// C++
 //
 #include    <regex>
 
