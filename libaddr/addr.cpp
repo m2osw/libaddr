@@ -428,20 +428,44 @@ void addr::set_port_defined(bool defined)
  */
 bool addr::set_port(char const * port)
 {
-    struct servent * s(getservbyname(port, "tcp"));
-    if(s == nullptr)
+    // if the port is a decimal number, use it as is
+    //
+    std::int64_t p(0);
+    if(advgetopt::validator_integer::convert_string(port, p))
     {
-        std::int64_t p(0);
-        if(advgetopt::validator_integer::convert_string(port, p))
-        {
-            set_port(p);
-            return true;
-        }
-        return false;
+        set_port(p);
+        return true;
     }
 
-    set_port(ntohs(s->s_port));
-    return true;
+    struct servent service = {};
+    struct servent * list(nullptr);
+
+    snapdev::static_to_dynamic_buffer<char, 1024> buf;
+    std::string const proto(get_protocol_name());
+    for(;;)
+    {
+        int const r(getservbyname_r(
+                  port
+                , proto.c_str()
+                , &service
+                , buf.get()
+                , buf.size()
+                , &list));
+
+        // from the example, r may be 0 on a "not found" in which case
+        // the list pointer is nullptr
+        //
+        if(r == 0 && list != nullptr)
+        {
+            set_port(ntohs(service.s_port));
+            return true;
+        }
+        if(r != ERANGE)
+        {
+            return false;
+        }
+        buf.increase_size(1024);        // LCOV_EXCL_LINE
+    }                                   // LCOV_EXCL_LINE
 }
 
 
