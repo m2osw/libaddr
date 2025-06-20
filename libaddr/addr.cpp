@@ -2345,7 +2345,10 @@ std::string addr::get_port_name() const
             , buf.get()
             , buf.size()
             , &list));
-        if(r == 0)
+        // from the example, r may be 0 on a "not found" in which case
+        // the list pointer is nullptr
+        //
+        if(r == 0 && list != nullptr)
         {
             return service.s_name;
         }
