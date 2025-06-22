@@ -51,6 +51,11 @@
 #include    "catch_main.h"
 
 
+// libutf8
+//
+#include    <libutf8/locale.h>
+
+
 // snapdev
 //
 #include    <snapdev/int128_literal.h>
@@ -760,6 +765,11 @@ CATCH_TEST_CASE("ipv6::address", "[ipv6]")
             };
             for(auto const & l : locales)
             {
+                if(!libutf8::has_system_locale(l))
+                {
+                    std::cout << "--- skipping locale \"" << l << "\" (not found on this system)." << std::endl;
+                    continue;
+                }
                 std::cout << "--- testing locale \"" << l << "\"" << std::endl;
                 std::locale const loc(l);
 
