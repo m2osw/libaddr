@@ -152,8 +152,9 @@ CATCH_TEST_CASE("validator", "[validator]")
     CATCH_START_SECTION("validator: default improperly uses a range")
     {
         // in Ubuntu 24.04, the errno changed
-        //SNAP_CATCH2_NAMESPACE::push_expected_log("error: the default address \"192.168.19.1-192.168.19.254\" could not be parsed properly. Error: Invalid address in \"192.168.19.1-192.168.19.254\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n");
-        SNAP_CATCH2_NAMESPACE::push_expected_log("error: the default address \"192.168.19.1-192.168.19.254\" could not be parsed properly. Error: Invalid address in \"192.168.19.1-192.168.19.254\" error -2 -- Name or service not known (errno: 6 -- No such device or address).\n");
+        SNAP_CATCH2_NAMESPACE::push_expected_log(
+                  "error: the default address \"192.168.19.1-192.168.19.254\" could not be parsed properly. Error: Invalid address in \"192.168.19.1-192.168.19.254\" error -2 -- Name or service not known (errno: 22 -- Invalid argument).\n"
+                , "error: the default address \"192.168.19.1-192.168.19.254\" could not be parsed properly. Error: Invalid address in \"192.168.19.1-192.168.19.254\" error -2 -- Name or service not known (errno: 6 -- No such device or address).\n");
         advgetopt::string_list_t const flags{
             "defaults=192.168.19.1-192.168.19.254",
         };

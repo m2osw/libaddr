@@ -47,7 +47,18 @@ namespace SNAP_CATCH2_NAMESPACE
 namespace
 {
 
-std::vector<std::string>        g_expected_logs = std::vector<std::string>();
+
+
+struct messages_t
+{
+    std::string     f_message1;
+    std::string     f_message2;
+};
+
+
+std::vector<messages_t>     g_expected_logs = std::vector<messages_t>();
+
+
 
 }
 // no name namespace
@@ -56,7 +67,13 @@ std::vector<std::string>        g_expected_logs = std::vector<std::string>();
 
 void push_expected_log(std::string const & message)
 {
-    g_expected_logs.push_back(message);
+    g_expected_logs.push_back({message, std::string()});
+}
+
+
+void push_expected_log(std::string const & message1, std::string const & message2)
+{
+    g_expected_logs.push_back({message1, message2});
 }
 
 
@@ -93,7 +110,9 @@ void log_for_test(cppthread::log_level_t level, std::string const & message)
 
     // again, the REQUIRE() is not going to be useful in terms of line number
     //
-    if(g_expected_logs[0] != ss.str())
+    bool const equal(g_expected_logs[0].f_message1 == ss.str()
+                || (!g_expected_logs[0].f_message2.empty() && g_expected_logs[0].f_message2 == ss.str()));
+    if(!equal)
     {
         libexcept::stack_trace_t trace(libexcept::collect_stack_trace_with_line_numbers());
         std::cerr << "*** STACK TRACE ***" << std::endl;
@@ -104,10 +123,10 @@ void log_for_test(cppthread::log_level_t level, std::string const & message)
         std::cerr << "***" << std::endl;
     }
 
-    std::string expected_msg(g_expected_logs[0]);
+    messages_t const expected_msg(g_expected_logs[0]);
     g_expected_logs.erase(g_expected_logs.begin());
 
-    CATCH_REQUIRE(expected_msg == ss.str());
+    CATCH_REQUIRE(equal);
 }
 
 
@@ -116,9 +135,9 @@ void expected_logs_stack_is_empty()
     if(!g_expected_logs.empty())
     {
         std::cerr << "List of expected error logs which did not occur:" << std::endl;
-        for(auto l : g_expected_logs)
+        for(auto const & l : g_expected_logs)
         {
-            std::cerr << "  " << l << std::endl;
+            std::cerr << "  " << l.f_message1 << std::endl;
         }
         g_expected_logs.clear();
         throw std::logic_error("a test left an unexpected error message in the g_expected_logs vector.");

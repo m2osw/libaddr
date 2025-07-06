@@ -88,6 +88,7 @@ extern int          g_tcp_port;
 
 
 void                push_expected_log(std::string const & message);
+void                push_expected_log(std::string const & message1, std::string const & message2);
 void                log_for_test(cppthread::log_level_t level, std::string const & message);
 void                expected_logs_stack_is_empty();
 
