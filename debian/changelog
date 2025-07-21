@@ -1,8 +1,15 @@
 libaddr (1.0.37.0~jammy) jammy; urgency=high
 
-  * Fixed the tests and added a few more to slightly better coverage.
+  * Better handle duplicates & protocol in IP ranges.
+  * Detect documentation IPv6 addresses.
+  * Properly handle comments when newlines are accepted in the list.
+  * Enhanced tests and added new ones for 100% coverage.
+  * Added the recvfrom() function.
+  * The set_from_socket() saves the protocol too.
+  * Fixed get_port() to use the reentrant version of getservbyname().
+  * Our tests use a locale, now we first make sure it is defined.
 
- -- Alexis Wilke <alexis@m2osw.com>  Sun, 02 Jun 2024 20:28:11 -0700
+ -- Alexis Wilke <alexis@m2osw.com>  Sun, 20 Jul 2025 21:19:33 -0700
 
 libaddr (1.0.36.0~jammy) jammy; urgency=high
 
