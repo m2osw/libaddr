@@ -1,4 +1,4 @@
-libaddr (1.0.37.0~jammy) jammy; urgency=high
+libaddr (1.0.37.0~noble) noble; urgency=high
 
   * Better handle duplicates & protocol in IP ranges.
   * Detect documentation IPv6 addresses.
