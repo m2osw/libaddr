@@ -1767,7 +1767,6 @@ char const * addr::get_network_type_string() const
  * This class does not hold the socket created by this function.
  *
  * \param[in] flags  A set of socket flags to use when creating the socket.
- * \param[in] reuse_address  Set the reuse address flag.
  *
  * \return The socket file descriptor or -1 on errors.
  */
@@ -2133,7 +2132,7 @@ void addr::set_hostname(std::string const & hostname)
  *
  * \param[in] s  The socket from which you want to retrieve peer information.
  * \param[in] peer  Whether to retrieve the peer (other side
- * IP:<ephemeral port>) or socket name (your IP:<port used to connect>).
+ * IP:\<ephemeral port>) or socket name (your IP:\<port used to connect>).
  */
 void addr::set_from_socket(int s, bool peer)
 {

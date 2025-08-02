@@ -30,12 +30,12 @@
  *
  * The type of addresses support is really wide:
  *
- * * <domain name> -- if allowed to do a lookup
- * * <ipv4> -- an IPv4 with syntax x.x.x.x
- * * <ipv6> -- an IPv6 with syntax x:x:x:...:x
- * * <port> -- a decimal number from 0 to 65535
- * * <mask> -- a number from 0 to 128 or an <ipv4> or an <ipv6>
- * * <ip>-<ip> -- a range of <ipv4> or <ipv6> addresses
+ * * \<domain name> -- if allowed to do a lookup
+ * * \<ipv4> -- an IPv4 with syntax x.x.x.x
+ * * \<ipv6> -- an IPv6 with syntax x:x:x:...:x
+ * * \<port> -- a decimal number from 0 to 65535
+ * * \<mask> -- a number from 0 to 128 or an \<ipv4> or an \<ipv6>
+ * * \<ip>-\<ip> -- a range of \<ipv4> or \<ipv6> addresses
  *
  * The port is separated from the address by a colon (:). For IPv6, this means
  * the IPv6 address itself must be defined between square brackets as in
@@ -223,7 +223,7 @@ addr_parser::addr_parser()
  * as input (keep in mind that the default could also represent multiple
  * addresses).
  *
- * \param[in] addr  The new address.
+ * \param[in] address  The new address.
  */
 void addr_parser::set_default_address(std::string const & address)
 {
@@ -2301,7 +2301,7 @@ void addr_parser::parse_mask(
  * you to get error messages instead of an exception.
  *
  * \param[in] a  The address string to be converted.
- * \param[in] default_addrress  The default address or an empty string.
+ * \param[in] default_address  The default address or an empty string.
  * \param[in] default_port  The default port or -1
  * \param[in] protocol  The protocol the address has to be of, or the
  *                      empty string to allow any protocol.

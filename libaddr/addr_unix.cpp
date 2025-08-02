@@ -168,7 +168,7 @@ void addr_unix::set_scheme(std::string const & scheme)
  * \exception addr_invalid_argument
  * The input address must be of type AF_UNIX or AF_LOCAL.
  *
- * \param[in] in  The Unix address to save in this addr_unix object.
+ * \param[in] un  The Unix address to save in this addr_unix object.
  */
 void addr_unix::set_un(struct sockaddr_un const & un)
 {
