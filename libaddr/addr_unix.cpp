@@ -756,11 +756,16 @@ std::string addr_unix::to_uri() const
 
 /** \brief Delete the socket file.
  *
- * This function will delete the socket file if it exists.
+ * This function deletes the socket file if it exists.
  *
  * The function does nothing if the address is not representing a file.
  * In that case, the function returns 0 and does not modify the errno
  * variable.
+ *
+ * Note that deleting a file socket after connection(s) succeeded does
+ * not do anything to the existing connection(s). However, it prevents
+ * further connections from happening since the file is not accessible
+ * anymore.
  *
  * \note
  * This function does not verify whether the file is in use. That means
