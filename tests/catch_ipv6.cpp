@@ -316,7 +316,8 @@ CATCH_TEST_CASE("ipv6::invalid_input", "[ipv6]")
                 addr::addr_range::vector_t ips(p.parse("[1:2:3:4:5:6:7:8]:" + std::to_string(port) + "/" + std::to_string(mask)));
                 CATCH_REQUIRE(p.has_errors());
                 CATCH_REQUIRE(p.error_count() == 1);
-                CATCH_REQUIRE(p.error_messages() == "Unsupported mask size (" + std::to_string(mask) + ", expected 128 at the most for an IPv6).\n");
+                std::string const expected("Unsupported mask size (" + std::to_string(mask) + ", expected 128 at the most for an IPv6).\n");
+                CATCH_REQUIRE(p.error_messages() == expected);
                 CATCH_REQUIRE(ips.size() == 0);
             }
         }
