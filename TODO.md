@@ -9,7 +9,7 @@
       /usr/share/nmap/nmap-services
 
   I think nmap comes with a library. Either way, reading their file is not
-  complicated. However, we probably do not want to force the installtion of
+  complicated. However, we probably do not want to force the installation of
   that package. The nmap package can be installed by the build system and we
   can change the format to our own at build time.
 
@@ -40,5 +40,15 @@
 
   We have several issues at the moment with distinguishing between commas
   separating addresses or ports, etc. which I think would be easier to
-  resolve with a full fledge parser.
+  resolve with a full-fledged parser.
+
+* Look into having our own cache; it should use a globally allocated class.
+  More or less, Linux does not cache anything by default and yet, the correct
+  way to use a domain name is to re-query the IP each time we want to
+  connect. In most cases, at the moment I just cache the IP forever, which
+  is really bad too (i.e. you have to restart the process to update that IP).
+  Note that when systemd-resolved is running on a machine, it does all the
+  caching for us and the simple `getaddrinfo()` works fine. Otherwise, we
+  need to use a library such as libresolv or c-ares so we can get the TTL
+  along the IP address (and other info).
 

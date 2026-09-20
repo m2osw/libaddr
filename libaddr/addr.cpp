@@ -1908,7 +1908,7 @@ int addr::bind(int s)
 /** \brief Bind your socket to this address.
  *
  * The constant version of the bind() function does not modify your address.
- * If you used port 0, it will remain port 0. You can see obtain the port
+ * If you used port 0, it will remain port 0. You can obtain the port
  * with which your address is bound by calling a function such as the
  * set_from_socket() on a different address object.
  *
