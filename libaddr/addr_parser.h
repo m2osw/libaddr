@@ -75,6 +75,7 @@ constexpr sort_t const                      SORT_IPV4_FIRST     = 0x0002;       
 constexpr sort_t const                      SORT_FULL           = 0x0004;       // sort IPs between each others (default keep in order found)
 constexpr sort_t const                      SORT_MERGE          = 0x0008;       // merge ranges which support a union (implies SORT_FULL)
 constexpr sort_t const                      SORT_NO_EMPTY       = 0x0010;       // remove empty entries
+constexpr sort_t const                      SORT_INTERLEAVED    = 0x0020;       // one IPv6, one IPv4, repeat, keep order otherwise
 
 
 class addr_parser

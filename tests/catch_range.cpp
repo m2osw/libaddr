@@ -1402,7 +1402,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 sm << addr::setaddrmode(addr::STRING_IP_ADDRESS) << vec;
                 CATCH_REQUIRE(sm.str() == vec_result_ip_only);
 
-                addr::addr::vector_t all_addresses(addr::addr_range::to_addresses(vec, 1000));
+                addr::addr::vector_t all_addresses(addr::to_addresses(vec, 1000));
 
                 // the first 256 are 10.1.0.0 to 10.1.0.255
                 //
@@ -1443,7 +1443,7 @@ CATCH_TEST_CASE("ipv4::range", "[ipv4]")
                 }
 
                 CATCH_REQUIRE_THROWS_MATCHES(
-                          addr::addr_range::to_addresses(vec, 256 + 512 - 1)
+                          addr::to_addresses(vec, 256 + 512 - 1)
                         , addr::out_of_range
                         , Catch::Matchers::ExceptionMessage(
                                   "out_of_range: too many addresses in this range: 768 > 767"));

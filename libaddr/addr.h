@@ -261,6 +261,11 @@ private:
 
 
 
+addr            localhost_ipv4();
+addr            localhost_ipv6();
+
+
+
 /** \brief Set of flags attached to an ostream for an addr object.
  *
  * This structure holds data used to output an addr object in an ostream.

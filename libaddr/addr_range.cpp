@@ -474,32 +474,6 @@ addr::vector_t addr_range::to_addresses(std::size_t limit) const
 }
 
 
-addr::vector_t addr_range::to_addresses(vector_t ranges, std::size_t limit)
-{
-    std::size_t total_size(0);
-    for(auto const & r : ranges)
-    {
-        total_size += r.size();
-    }
-    if(total_size > limit)
-    {
-        throw out_of_range("too many addresses in this range: "
-            + std::to_string(total_size)
-            + " > "
-            + std::to_string(limit));
-    }
-
-    addr::vector_t result;
-    for(auto const & r : ranges)
-    {
-        addr::vector_t const v(r.to_addresses(limit));
-        result.insert(result.end(), v.begin(), v.end());
-    }
-
-    return result;
-} // LCOV_EXCL_LINE
-
-
 /** \brief Transform the range into a string.
  *
  * This function converts this range in a string.
@@ -1109,6 +1083,33 @@ bool optimize_vector(addr::vector_t & v)
 
     return result;
 }
+
+
+addr::vector_t to_addresses(addr_range::vector_t ranges, std::size_t limit)
+{
+    std::size_t total_size(0);
+    for(auto const & r : ranges)
+    {
+        total_size += r.size();
+    }
+    if(total_size > limit)
+    {
+        throw out_of_range("too many addresses in this range: "
+            + std::to_string(total_size)
+            + " > "
+            + std::to_string(limit));
+    }
+
+    addr::vector_t result;
+    for(auto const & r : ranges)
+    {
+        addr::vector_t const v(r.to_addresses(limit));
+        result.insert(result.end(), v.begin(), v.end());
+    }
+
+    return result;
+} // LCOV_EXCL_LINE
+
 
 
 }

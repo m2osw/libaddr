@@ -1012,7 +1012,15 @@ void addr_parser::clear_errors()
  *
  * The sort is particularly useful if you first want to connect with
  * IPv6 addresses instead of IPv4 (which is the current expected behavior
- * of your services and tools).
+ * of most services and tools).
+ *
+ * The interleave sort allow you to interleave IPv6 and IPv4 addresses.
+ * You should sort the addresses with IPv6 first if you are going to use
+ * these to connect to outside web servers:
+ *
+ * \code
+ *     p.set_sort_order(addr::SORT_IPV6_FIRST | addr::SORT_INTERLEAVED);
+ * \endcode
  *
  * \todo
  * The ALLOW_COMMENT_HASH and ALLOW_COMMENT_SEMICOLON currently gives the
@@ -1195,6 +1203,32 @@ addr_range::vector_t addr_parser::parse(std::string const & in)
 
                 }
             });
+    }
+
+    if((f_sort & SORT_INTERLEAVED) != 0
+    && !result.empty())
+    {
+        bool type(result[0].is_ipv4());
+        for(auto it(result.begin());
+            it != result.end();
+            type = !type, ++it)
+        {
+            if(it->is_ipv4() != type)
+            {
+                auto other(std::find_if(
+                      it + 1
+                    , result.end()
+                    , [type](addr_range const & r)
+                    {
+                        return r.is_ipv4() == type;
+                    }));
+                if(other == result.end())
+                {
+                    break;
+                }
+                std::rotate(it, other, other + 1);
+            }
+        }
     }
 
     return result;
@@ -1755,7 +1789,7 @@ void addr_parser::parse_address_port(
         }
     }
 
-    // prepare hints for the the getaddrinfo() function
+    // prepare hints for the getaddrinfo() function
     //
     addrinfo hints = {};
     hints.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG | AI_V4MAPPED;
@@ -1833,8 +1867,10 @@ void addr_parser::parse_address_port(
                 {
                     addr a(*reinterpret_cast<sockaddr_in *>(addrlist->ai_addr));
                     a.set_hostname(address);
+
                     // in most cases we do not get a protocol from
                     // the getaddrinfo() function...
+                    //
                     if(addrlist->ai_protocol != -1)
                     {
                         a.set_protocol(addrlist->ai_protocol);

@@ -80,8 +80,6 @@ public:
     compare_t                       compare(addr_range const & rhs, bool mixed = false) const;
     bool                            operator < (addr_range const & rhs) const;
 
-    static addr::vector_t           to_addresses(vector_t ranges, std::size_t limit = 1000);
-
 private:
     bool                            f_has_from = false;
     bool                            f_has_to = false;
@@ -92,6 +90,8 @@ private:
 
 bool address_match_ranges(addr_range::vector_t ranges, addr const & address);
 bool optimize_vector(addr::vector_t & v);
+addr::vector_t to_addresses(addr_range::vector_t ranges, std::size_t limit = 1000);
+
 
 
 template<typename _CharT, typename _Traits>

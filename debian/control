@@ -33,6 +33,7 @@ Package: libaddr-dev
 Architecture: any
 Section: libdevel
 Depends: libaddr (= ${binary:Version}), ${misc:Depends}
+Suggests: libaddr-doc
 Description: C++ library to convert IP addresses.
  Development library of the libaddr project.
  .

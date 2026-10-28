@@ -296,6 +296,31 @@ int g_ostream_index = 0;
 
 
 
+constexpr sockaddr_in const     g_localhost_ipv4{
+    .sin_family = AF_INET,
+    .sin_port = 0,
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    .sin_addr = { .s_addr = 0x0100007F }, // 127.0.0.1
+#else
+    .sin_addr = { .s_addr = 0x7F000001 }, // 127.0.0.1
+#endif
+    .sin_zero = {},
+};
+
+
+constexpr sockaddr_in6 const    g_localhost_ipv6{
+    .sin6_family = AF_INET6,
+    .sin6_port = 0,
+    .sin6_flowinfo = 0,
+    .sin6_addr = {
+        {
+            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }, // ::1
+        },
+    },
+    .sin6_scope_id = 0,
+};
+
+
 } // no name namespace
 
 
@@ -1141,6 +1166,10 @@ bool addr::is_wan(bool include_default) const
  * returns true if the embedded address is an IPv4. When this function
  * returns true, the get_ipv4() can be called. Otherwise, the get_ipv4()
  * function throws an exception.
+ *
+ * \todo
+ * I think that there are other ways to define an IPv4 in an IPv6 address.
+ * We should support all of them here.
  *
  * \return true if this address represents an IPv4 address.
  */
@@ -2990,6 +3019,18 @@ addr & addr::operator -= (int offset)
 void addr::address_changed()
 {
     f_private_network = network_type_t::NETWORK_TYPE_UNDEFINED;
+}
+
+
+addr localhost_ipv4()
+{
+    return addr(g_localhost_ipv4);
+}
+
+
+addr localhost_ipv6()
+{
+    return addr(g_localhost_ipv6);
 }
 
 
