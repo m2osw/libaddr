@@ -446,6 +446,11 @@ void addr::set_port_defined(bool defined)
  * /etc/services file, then the corresponding number is used. If not found
  * then the function throws.
  *
+ * \todo
+ * Rewrite the gathering of the port to read /etc/services.d as well so
+ * other services can add their own port (i.e. our communicatord adds the
+ * sc:... scheme for port 4040). See the TODO.md for additional info.
+ *
  * \param[in] port  The name of the protcol to use.
  *
  * \return true if the input was recognized as a valid number or a name
