@@ -1224,7 +1224,7 @@ CATCH_TEST_CASE("addr_unix::invalid", "[addr_unix]")
         {
             name += static_cast<char>(0x80);
         }
-        CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name), libutf8::libutf8_exception_decoding);
+        CATCH_REQUIRE_THROWS_AS(addr::addr_unix(name), libutf8::decoding);
     }
     CATCH_END_SECTION()
 
